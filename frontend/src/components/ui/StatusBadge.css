@@ -1,0 +1,87 @@
+/* ===========================
+   StatusBadge — monday.com style pill
+   =========================== */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 40px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Sizes ---- */
+.status-badge--sm {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+}
+
+.status-badge--md {
+  font-size: 0.8125rem;
+  padding: 5px 12px;
+}
+
+/* ---- Dot ---- */
+.status-badge__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---- Status variants ---- */
+
+/* Success */
+.status-badge--success {
+  background-color: rgba(0, 200, 117, 0.15);
+  color: #00854d;
+}
+
+.status-badge--success .status-badge__dot {
+  background-color: #00854d;
+}
+
+/* Warning */
+.status-badge--warning {
+  background-color: rgba(253, 171, 61, 0.15);
+  color: #956500;
+}
+
+.status-badge--warning .status-badge__dot {
+  background-color: #956500;
+}
+
+/* Danger */
+.status-badge--danger {
+  background-color: rgba(226, 68, 92, 0.15);
+  color: #b71c3a;
+}
+
+.status-badge--danger .status-badge__dot {
+  background-color: #b71c3a;
+}
+
+/* Info */
+.status-badge--info {
+  background-color: rgba(0, 134, 192, 0.15);
+  color: #006088;
+}
+
+.status-badge--info .status-badge__dot {
+  background-color: #006088;
+}
+
+/* Default */
+.status-badge--default {
+  background-color: var(--color-bg-surface-hover);
+  color: var(--color-text-muted);
+}
+
+.status-badge--default .status-badge__dot {
+  background-color: var(--color-text-muted);
+}

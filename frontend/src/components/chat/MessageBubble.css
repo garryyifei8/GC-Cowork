@@ -1,0 +1,126 @@
+/* MessageBubble — row layout: avatar + content */
+.message-bubble-wrapper {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 85%;
+}
+
+.message-bubble-wrapper.agent {
+  align-self: flex-start;
+  flex-direction: row;
+}
+
+.message-bubble-wrapper.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+/* Avatars */
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+.agent-avatar {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.user-avatar {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Meta row: badge + name + timestamp */
+.message-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.message-meta.meta-right {
+  justify-content: flex-end;
+}
+
+.agent-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.message-sender-name {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.message-timestamp {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+}
+
+/* Bubbles */
+.message-bubble {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-lg);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+/* Agent bubble — flat white */
+.bubble-agent {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+  border-bottom-left-radius: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+/* User bubble — iris gradient */
+.bubble-user {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #ffffff;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 4px 10px rgba(97, 97, 255, 0.2);
+}
+
+.bubble-text {
+  white-space: pre-wrap;
+}
+
+/* Cards rendered inside bubble */
+.bubble-cards {
+  margin-top: 0.875rem;
+}
