@@ -6,7 +6,8 @@ import {
   BookOpen,
   Sparkles,
 } from 'lucide-react';
-import StatusBadge, { StatusVariant } from '../components/ui/StatusBadge';
+import StatusBadge from '../components/ui/StatusBadge';
+import type { StatusVariant } from '../components/ui/StatusBadge';
 import './Overview.css';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

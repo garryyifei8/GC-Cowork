@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ChatMessage, InteractiveCard } from '../types';
+import type { ChatMessage } from '../types';
 import { chatService } from '../services/api';
 
 interface ChatState {
