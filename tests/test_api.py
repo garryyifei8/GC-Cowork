@@ -67,8 +67,13 @@ class TestChatMessage:
     @patch("src.api.routes.chat._get_llm_client")
     def test_send_message_routes_to_agent(self, mock_get_client):
         mock_client = AsyncMock()
+        # First chat_json call: DispatchAgent routes to "project"
+        # Second chat_json call: ProjectAgent returns structured response
         mock_client.chat_json = AsyncMock(
-            return_value=_mock_dispatch_intent("project")
+            side_effect=[
+                _mock_dispatch_intent("project"),
+                {"reply": "项目进度一切正常。", "cards": []},
+            ]
         )
         mock_client.chat = AsyncMock(return_value="项目进度一切正常。")
         mock_get_client.return_value = mock_client

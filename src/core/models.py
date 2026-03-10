@@ -164,6 +164,77 @@ class Project(TimestampedModel):
     milestones: list[dict[str, Any]] = Field(default_factory=list)
     team_members: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
+    # Extended fields for dashboard display
+    project_type: str = ""          # "EPC / 展馆", "信息化开发", "专项债咨询"
+    status: str = "planning"        # "active" | "risk" | "planning" | "completed"
+    status_label: str = ""          # "施工中", "进度延误", "立项评估"
+    due_date: str | None = None     # "2026-10-15"
+    budget_display: str | None = None  # "1.2亿", "450万"
+
+
+# ---------------------------------------------------------------------------
+# Task Management
+# ---------------------------------------------------------------------------
+
+class TaskStatus(str, Enum):
+    TODO = "todo"
+    IN_PROGRESS = "in_progress"
+    REVIEW = "review"
+    DONE = "done"
+    BLOCKED = "blocked"
+
+
+class TaskPriority(str, Enum):
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+
+class ProjectTask(TimestampedModel):
+    """A task within a project."""
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    project_id: str
+    name: str
+    assignee: str | None = None
+    status: TaskStatus = TaskStatus.TODO
+    priority: TaskPriority = TaskPriority.MEDIUM
+    due_date: str | None = None
+    description: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Bidding
+# ---------------------------------------------------------------------------
+
+class BiddingOpportunity(TimestampedModel):
+    """A bidding/tender opportunity."""
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    title: str
+    source: str = ""
+    publish_date: str = ""
+    deadline: str = ""
+    budget_amount: str | None = None
+    region: str = ""
+    category: str = ""
+    status: str = "monitoring"
+    match_score: float = Field(ge=0.0, le=100.0, default=0.0)
+    project_id: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Documents
+# ---------------------------------------------------------------------------
+
+class DocumentItem(TimestampedModel):
+    """A document in the system."""
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    title: str
+    doc_type: str = "report"
+    project_id: str | None = None
+    content_summary: str = ""
+    version: str = "1.0"
+    author: str = ""
+    status: str = "draft"
 
 
 # ---------------------------------------------------------------------------

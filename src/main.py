@@ -7,7 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from src.api.routes import chat, health
+from src.api.routes import bidding, chat, health, projects
 from src.core.config import settings
 from src.core.exceptions import (
     PlatformError,
@@ -58,6 +58,22 @@ async def validation_exception_handler(request, exc: RequestValidationError) -> 
 
 app.include_router(health.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
+app.include_router(projects.router, prefix="/api")
+app.include_router(projects.task_router, prefix="/api")
+app.include_router(bidding.router, prefix="/api")
+
+
+@app.on_event("startup")
+async def startup_event():
+    from src.stores.project_store import seed_projects
+    from src.stores.task_store import seed_tasks
+    from src.stores.bidding_store import seed_bidding
+    from src.stores.document_store import seed_documents
+
+    seed_projects()
+    seed_tasks()
+    seed_bidding()
+    seed_documents()
 
 
 @app.get("/")

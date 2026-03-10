@@ -60,6 +60,16 @@ class KnowledgeBaseError(PlatformError):
     error_code = "KNOWLEDGE_BASE_ERROR"
 
 
+class ProjectNotFoundError(PlatformError):
+    status_code = 404
+    error_code = "PROJECT_NOT_FOUND"
+
+
+class TaskNotFoundError(PlatformError):
+    status_code = 404
+    error_code = "TASK_NOT_FOUND"
+
+
 class PermissionDeniedError(PlatformError):
     status_code = 403
     error_code = "PERMISSION_DENIED"
