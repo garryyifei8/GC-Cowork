@@ -13,7 +13,8 @@ export interface ChatMessage {
 export interface InteractiveCard {
   type: 'action' | 'data' | 'alert' | 'form';
   title: string;
-  content: string;
+  content?: string;
+  data?: Record<string, any>;
   status?: 'success' | 'warning' | 'danger' | 'info';
   actions?: CardAction[];
 }
@@ -36,16 +37,44 @@ export interface ChatResponse {
 }
 
 export interface Project {
-  id: number;
-  title: string;
-  type: string;
+  id: string;
+  name: string;
+  project_type: string;
+  stage: string;
   status: 'active' | 'risk' | 'planning' | 'completed';
-  statusLabel: string;
-  progress: number;
-  dueDate: string;
-  budget: string;
-  teamSize: number;
+  status_label: string;
+  progress_pct: number;
+  due_date: string | null;
+  budget: string | null;
+  team_size: number;
+  team_members: string[];
 }
+
+export interface ProjectTask {
+  id: string;
+  project_id: string;
+  name: string;
+  assignee: string | null;
+  status: string;
+  priority: string;
+  due_date: string | null;
+  description: string;
+}
+
+export interface BiddingOpportunity {
+  id: string;
+  title: string;
+  source: string;
+  publish_date: string;
+  deadline: string;
+  budget_amount: string | null;
+  region: string;
+  category: string;
+  status: string;
+  match_score: number;
+}
+
+export type ViewType = 'table' | 'kanban' | 'gantt';
 
 export interface KnowledgeDoc {
   id: number;

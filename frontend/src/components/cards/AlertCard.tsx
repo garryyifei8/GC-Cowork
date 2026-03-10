@@ -22,7 +22,12 @@ const DOT_CLASS: Record<AlertStatus, string> = {
 };
 
 export const AlertCard: React.FC<AlertCardProps> = ({ card }) => {
-  const status: AlertStatus = card.status ?? 'info';
+  const rawSeverity = card.status || card.data?.severity || 'info';
+  // Ensure severity is a valid AlertStatus, fallback to 'info'
+  const validStatuses: AlertStatus[] = ['success', 'warning', 'danger', 'info'];
+  const status: AlertStatus = validStatuses.includes(rawSeverity as AlertStatus)
+    ? (rawSeverity as AlertStatus)
+    : 'info';
   const cardClass = STATUS_CLASS[status];
   const dotClass = DOT_CLASS[status];
 
@@ -44,6 +49,10 @@ export const AlertCard: React.FC<AlertCardProps> = ({ card }) => {
 
       {card.content && (
         <p className="card__content">{card.content}</p>
+      )}
+
+      {card.data?.description && (
+        <p className="card__content">{card.data.description}</p>
       )}
 
       {card.actions && card.actions.length > 0 && (

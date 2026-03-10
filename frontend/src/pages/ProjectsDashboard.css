@@ -294,3 +294,17 @@
     color: var(--color-text-muted);
     white-space: nowrap;
 }
+
+/* ── View placeholder for views in development ──────────── */
+
+.view-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}

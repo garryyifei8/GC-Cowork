@@ -173,3 +173,37 @@
 .card__btn--secondary:active {
   background-color: #e8eaf0;
 }
+
+/* ── KV Grid for structured data display ──────────────────── */
+.card__kv-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0.5rem 0;
+}
+
+.card__kv-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.375rem 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.8125rem;
+}
+
+.card__kv-row:last-child {
+    border-bottom: none;
+}
+
+.card__kv-key {
+    color: var(--color-text-muted);
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-right: 1rem;
+}
+
+.card__kv-value {
+    color: var(--color-text-main);
+    font-weight: 600;
+    text-align: right;
+}

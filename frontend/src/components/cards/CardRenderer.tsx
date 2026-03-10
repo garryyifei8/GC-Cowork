@@ -9,19 +9,26 @@ interface CardRendererProps {
   cards: InteractiveCard[];
 }
 
-export const CardRenderer: React.FC<CardRendererProps> = ({ cards }) => (
-  <div className="card-list">
-    {cards.map((card, i) => {
-      switch (card.type) {
-        case 'action':
-          return <ActionCard key={i} card={card} />;
-        case 'alert':
-          return <AlertCard key={i} card={card} />;
-        case 'data':
-          return <DataCard key={i} card={card} />;
-        default:
-          return <ActionCard key={i} card={card} />;
-      }
-    })}
-  </div>
-);
+export const CardRenderer: React.FC<CardRendererProps> = ({ cards }) => {
+  if (!cards || cards.length === 0) return null;
+
+  return (
+    <div className="card-list">
+      {cards.map((card, i) => {
+        const cardType = card.type || 'data';
+        switch (cardType) {
+          case 'action':
+            return <ActionCard key={i} card={card} />;
+          case 'alert':
+            return <AlertCard key={i} card={card} />;
+          case 'data':
+            return <DataCard key={i} card={card} />;
+          case 'form':
+            return <DataCard key={i} card={card} />; // fallback form to data for now
+          default:
+            return <DataCard key={i} card={card} />;
+        }
+      })}
+    </div>
+  );
+};

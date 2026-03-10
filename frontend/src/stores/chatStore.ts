@@ -49,6 +49,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       const response = await chatService.sendMessage(content, context);
 
+      // Normalize cards: backend may send card_type instead of type, and data dict instead of content string
+      const normalizedCards = (response.cards || []).map((card: any) => ({
+        ...card,
+        type: card.type || card.card_type || 'data',
+        content: card.content || '',
+        data: card.data || {},
+        status: card.data?.severity || card.status,
+        actions: card.actions || [],
+      }));
+
       const agentMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'agent',
@@ -56,7 +66,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         agentType: response.agent_type,
         senderName: getAgentName(response.agent_type),
         timestamp: new Date(),
-        cards: response.cards,
+        cards: normalizedCards,
       };
 
       set((state) => ({

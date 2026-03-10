@@ -1,0 +1,116 @@
+.gantt-container {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-bg-surface);
+}
+
+.gantt-header {
+    display: flex;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-base);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.gantt-label-col {
+    width: 200px;
+    min-width: 200px;
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+.gantt-project-name {
+    font-weight: 600;
+    color: var(--color-text-main);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gantt-project-status {
+    font-size: 0.6875rem;
+    color: var(--color-text-muted);
+    font-weight: 400;
+}
+
+.gantt-timeline-header {
+    display: flex;
+    overflow-x: auto;
+}
+
+.gantt-month {
+    padding: 0.625rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-align: center;
+    border-right: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.gantt-body {
+    overflow-x: auto;
+}
+
+.gantt-row {
+    display: flex;
+    border-bottom: 1px solid var(--color-border);
+    min-height: 48px;
+}
+
+.gantt-row:last-child {
+    border-bottom: none;
+}
+
+.gantt-timeline {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.gantt-today-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-primary);
+    opacity: 0.4;
+    z-index: 1;
+}
+
+.gantt-bar {
+    position: absolute;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 8px;
+    min-width: 40px;
+    opacity: 0.9;
+    transition: opacity var(--transition-fast);
+}
+
+.gantt-bar:hover {
+    opacity: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.gantt-bar-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+}

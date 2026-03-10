@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MessageSquare,
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import StatusBadge from '../components/ui/StatusBadge';
 import type { StatusVariant } from '../components/ui/StatusBadge';
+import { useProjectStore } from '../stores/projectStore';
 import './Overview.css';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -29,7 +30,7 @@ function getChineseDate(): string {
   return `${year}年${month}月${day}日 · ${weekday}`;
 }
 
-// ── Mock Data ─────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Task {
   id: string;
@@ -38,49 +39,31 @@ interface Task {
   status: StatusVariant;
   statusLabel: string;
   dueDate: string;
-  priority: 'high' | 'medium' | 'low';
-  overdue?: boolean;
+  priority: string;
 }
 
-const MOCK_TASKS: Task[] = [
-  {
-    id: '1',
-    name: '准备投标技术方案',
-    project: '城市基础设施升级项目',
-    status: 'warning',
-    statusLabel: '进行中',
-    dueDate: '3月12日',
-    priority: 'high',
-  },
-  {
-    id: '2',
-    name: '审核采购合同',
-    project: '供应链优化专项',
-    status: 'danger',
-    statusLabel: '待审核',
-    dueDate: '3月8日',
-    priority: 'high',
-    overdue: true,
-  },
-  {
-    id: '3',
-    name: '更新项目周报',
-    project: '智慧园区建设',
-    status: 'success',
-    statusLabel: '已完成',
-    dueDate: '3月10日',
-    priority: 'low',
-  },
-  {
-    id: '4',
-    name: '完成可研报告初稿',
-    project: '新能源储能示范工程',
-    status: 'info',
-    statusLabel: '规划中',
-    dueDate: '3月18日',
-    priority: 'medium',
-  },
-];
+// ── Task helpers ──────────────────────────────────────────────────────────────
+
+function mapTaskStatus(status: string): StatusVariant {
+  switch (status) {
+    case 'in_progress': return 'warning';
+    case 'done': return 'success';
+    case 'blocked': return 'danger';
+    case 'review': return 'info';
+    default: return 'default';
+  }
+}
+
+function mapTaskStatusLabel(status: string): string {
+  switch (status) {
+    case 'todo': return '待开始';
+    case 'in_progress': return '进行中';
+    case 'done': return '已完成';
+    case 'blocked': return '已阻塞';
+    case 'review': return '审核中';
+    default: return status;
+  }
+}
 
 interface ActivityItem {
   id: string;
@@ -165,9 +148,42 @@ const QuickActionCard: React.FC<QuickActionCardProps> = ({
 
 export const Overview: React.FC = () => {
   const navigate = useNavigate();
+  const { projects, tasks, fetchProjects, fetchTasks } = useProjectStore();
 
   const greeting = useMemo(() => getGreeting(), []);
   const chineseDate = useMemo(() => getChineseDate(), []);
+
+  // Fetch projects on mount
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  // Fetch tasks for all projects once projects are loaded
+  useEffect(() => {
+    projects.forEach((p) => fetchTasks(p.id));
+  }, [projects, fetchTasks]);
+
+  // Derive flat task list from store
+  const allTasks = useMemo((): Task[] => {
+    return projects.flatMap((project) => {
+      const projectTasks = tasks[project.id] || [];
+      return projectTasks.map((t) => ({
+        id: t.id,
+        name: t.name,
+        project: project.name,
+        status: mapTaskStatus(t.status),
+        statusLabel: mapTaskStatusLabel(t.status),
+        dueDate: t.due_date || '',
+        priority: t.priority,
+      }));
+    });
+  }, [projects, tasks]);
+
+  // Dynamic AI insight based on real project data
+  const riskProject = projects.find((p) => p.status === 'risk');
+  const insightText = riskProject
+    ? `${riskProject.name}进度偏差明显（当前${riskProject.progress_pct}%），建议关注并及时调配资源。`
+    : '所有项目进展顺利，暂无需要重点关注的风险项。';
 
   return (
     <div className="overview-dashboard">
@@ -219,33 +235,38 @@ export const Overview: React.FC = () => {
             <div className="task-table__head-cell" role="columnheader">状态</div>
             <div className="task-table__head-cell" role="columnheader">截止日期</div>
           </div>
-          {MOCK_TASKS.map((task) => (
-            <div
-              key={task.id}
-              className={`task-row task-row--${task.priority}`}
-              role="row"
-            >
-              <div className="task-row__cell task-row__name" role="cell">
-                {task.name}
-              </div>
-              <div className="task-row__cell task-row__project" role="cell">
-                {task.project}
-              </div>
-              <div className="task-row__cell" role="cell">
-                <StatusBadge
-                  status={task.status}
-                  label={task.statusLabel}
-                  size="sm"
-                />
-              </div>
-              <div
-                className={`task-row__cell task-row__due${task.overdue ? ' task-row__due--overdue' : ''}`}
-                role="cell"
-              >
-                {task.overdue ? `${task.dueDate} (逾期)` : task.dueDate}
+          {allTasks.length === 0 ? (
+            <div className="task-row" role="row">
+              <div className="task-row__cell" role="cell" style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                暂无任务数据
               </div>
             </div>
-          ))}
+          ) : (
+            allTasks.map((task) => (
+              <div
+                key={task.id}
+                className={`task-row task-row--${task.priority}`}
+                role="row"
+              >
+                <div className="task-row__cell task-row__name" role="cell">
+                  {task.name}
+                </div>
+                <div className="task-row__cell task-row__project" role="cell">
+                  {task.project}
+                </div>
+                <div className="task-row__cell" role="cell">
+                  <StatusBadge
+                    status={task.status}
+                    label={task.statusLabel}
+                    size="sm"
+                  />
+                </div>
+                <div className="task-row__cell task-row__due" role="cell">
+                  {task.dueDate}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
@@ -287,8 +308,7 @@ export const Overview: React.FC = () => {
           <div className="insight-card__body">
             <div className="insight-card__title">智能调度洞察</div>
             <p className="insight-card__desc">
-              检测到 2 项任务即将逾期，建议优先处理"审核采购合同"。
-              法务 Agent 当前负载较低，可自动接入协助审查工作，预计可将完成时间提前 40%。
+              {insightText}
             </p>
             <div className="insight-card__actions">
               <button className="btn-outline" type="button">查看详情</button>
