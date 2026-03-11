@@ -4,7 +4,7 @@ import { useChatStore } from '../stores/chatStore';
 import { MessageBubble } from '../components/chat/MessageBubble';
 import { TypingIndicator } from '../components/chat/TypingIndicator';
 import { ChatInput } from '../components/chat/ChatInput';
-import './ChatDashboard.css';
+
 
 const SIDEBAR_CONVERSATIONS = [
     { id: 'c1', label: '博物馆项目进度', active: true },

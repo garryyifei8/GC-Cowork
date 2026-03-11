@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import { Paperclip, Image as ImageIcon, Mic, Send } from 'lucide-react';
-import './ChatInput.css';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -41,17 +40,33 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }
   const canSend = value.trim().length > 0 && !disabled;
 
   return (
-    <div className="chat-input-outer">
-      <div className="chat-input-pill">
+    <div className="px-3 py-2.5">
+      {/* Pill container */}
+      <div className="flex items-end gap-1.5 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-3xl px-2.5 py-2 transition-shadow focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(59,130,246,0.12)]">
         {/* Left: attachment icons */}
-        <div className="chat-input-left-icons">
-          <button className="chat-icon-btn" title="附件" type="button" disabled={disabled}>
+        <div className="flex items-center gap-0.5 pb-0.5 shrink-0">
+          <button
+            className="w-8 h-8 rounded-full flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary bg-transparent border-0 cursor-pointer transition-colors hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover hover:text-primary disabled:opacity-45 disabled:cursor-not-allowed"
+            title="附件"
+            type="button"
+            disabled={disabled}
+          >
             <Paperclip size={17} />
           </button>
-          <button className="chat-icon-btn" title="图片" type="button" disabled={disabled}>
+          <button
+            className="w-8 h-8 rounded-full flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary bg-transparent border-0 cursor-pointer transition-colors hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover hover:text-primary disabled:opacity-45 disabled:cursor-not-allowed"
+            title="图片"
+            type="button"
+            disabled={disabled}
+          >
             <ImageIcon size={17} />
           </button>
-          <button className="chat-icon-btn" title="语音" type="button" disabled={disabled}>
+          <button
+            className="w-8 h-8 rounded-full flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary bg-transparent border-0 cursor-pointer transition-colors hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover hover:text-primary disabled:opacity-45 disabled:cursor-not-allowed"
+            title="语音"
+            type="button"
+            disabled={disabled}
+          >
             <Mic size={17} />
           </button>
         </div>
@@ -59,7 +74,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }
         {/* Center: auto-resize textarea */}
         <textarea
           ref={textareaRef}
-          className="chat-input-textarea"
+          className="flex-1 border-0 bg-transparent font-sans text-[0.9375rem] text-light-text dark:text-dark-text leading-relaxed resize-none outline-none min-h-6 max-h-[150px] py-1.5 px-1 self-end placeholder:text-light-text-secondary dark:placeholder:text-dark-text-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
@@ -70,7 +85,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }
 
         {/* Right: send button */}
         <button
-          className={`chat-send-btn ${canSend ? 'active' : 'inactive'}`}
+          className={`w-9 h-9 rounded-full border-0 flex items-center justify-center shrink-0 mb-0.5 cursor-pointer transition-all ${
+            canSend
+              ? 'bg-primary text-white shadow-[0_3px_8px_rgba(59,130,246,0.35)] hover:scale-105 hover:shadow-[0_5px_12px_rgba(59,130,246,0.45)] active:scale-95'
+              : 'bg-light-border dark:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary shadow-none cursor-not-allowed'
+          }`}
           onClick={handleSend}
           disabled={!canSend}
           type="button"

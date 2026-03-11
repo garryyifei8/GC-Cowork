@@ -1,19 +1,25 @@
 import { create } from 'zustand';
-import type { Project, ProjectTask, ViewType } from '../types';
+import type { Project, ProjectDetail, ProjectTask, ActivityEvent, ViewType } from '../types';
 import { projectService } from '../services/api';
 
 interface ProjectState {
   projects: Project[];
+  projectDetail: ProjectDetail | null;
   tasks: Record<string, ProjectTask[]>;
+  activities: Record<string, ActivityEvent[]>;
   selectedProjectId: string | null;
   isLoading: boolean;
   error: string | null;
   viewType: ViewType;
 
   fetchProjects: () => Promise<void>;
+  fetchProjectDetail: (id: string) => Promise<void>;
   fetchTasks: (projectId: string) => Promise<void>;
+  fetchActivities: (projectId: string) => Promise<void>;
   updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
   updateTask: (taskId: string, updates: Partial<ProjectTask>) => Promise<void>;
+  transitionProject: (id: string, targetStage: string) => Promise<void>;
+  createTask: (projectId: string, data: { name: string; assignee?: string; priority?: string; due_date?: string }) => Promise<void>;
   setViewType: (view: ViewType) => void;
   selectProject: (id: string | null) => void;
   clearError: () => void;
@@ -21,7 +27,9 @@ interface ProjectState {
 
 export const useProjectStore = create<ProjectState>((set, _get) => ({
   projects: [],
+  projectDetail: null,
   tasks: {},
+  activities: {},
   selectedProjectId: null,
   isLoading: false,
   error: null,
@@ -36,6 +44,23 @@ export const useProjectStore = create<ProjectState>((set, _get) => ({
       set({
         isLoading: false,
         error: err instanceof Error ? err.message : '加载项目失败',
+      });
+    }
+  },
+
+  fetchProjectDetail: async (id: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const detail = await projectService.get(id);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [id]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({
+        isLoading: false,
+        error: err instanceof Error ? err.message : '加载项目详情失败',
       });
     }
   },
@@ -78,6 +103,49 @@ export const useProjectStore = create<ProjectState>((set, _get) => ({
       });
     } catch (err) {
       console.error('Failed to update task:', err);
+    }
+  },
+
+  fetchActivities: async (projectId: string) => {
+    try {
+      const activities = await projectService.getActivities(projectId);
+      set((state) => ({
+        activities: { ...state.activities, [projectId]: activities },
+      }));
+    } catch (err) {
+      console.error('Failed to fetch activities:', err);
+    }
+  },
+
+  transitionProject: async (id: string, targetStage: string) => {
+    try {
+      const updated = await projectService.transition(id, targetStage);
+      set((state) => ({
+        projects: state.projects.map((p) => (p.id === id ? updated : p)),
+        projectDetail: state.projectDetail?.id === id
+          ? { ...state.projectDetail, ...updated }
+          : state.projectDetail,
+      }));
+    } catch (err) {
+      set({
+        error: err instanceof Error ? err.message : '阶段转换失败',
+      });
+    }
+  },
+
+  createTask: async (projectId: string, data) => {
+    try {
+      const created = await projectService.createTask(projectId, data);
+      set((state) => ({
+        tasks: {
+          ...state.tasks,
+          [projectId]: [...(state.tasks[projectId] || []), created],
+        },
+      }));
+    } catch (err) {
+      set({
+        error: err instanceof Error ? err.message : '创建任务失败',
+      });
     }
   },
 

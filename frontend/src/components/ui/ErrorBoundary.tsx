@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -39,55 +40,21 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
       return (
         <div
           role="alert"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '16px',
-            padding: '48px 24px',
-            textAlign: 'center',
-            fontFamily: 'var(--font-sans)',
-          }}
+          className="flex flex-col items-center justify-center gap-4 py-12 px-6 text-center"
         >
-          {/* Warning icon — inline SVG, no external dependencies */}
-          <svg
+          <AlertTriangle
             aria-hidden="true"
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--color-danger, #E2445C)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
+            size={48}
+            className="text-danger"
+            strokeWidth={1.5}
+          />
 
-          <h3
-            style={{
-              margin: 0,
-              fontSize: '1.125rem',
-              fontWeight: 600,
-              color: 'var(--color-text-main, #323338)',
-            }}
-          >
+          <h3 className="m-0 text-lg font-semibold">
             出了点问题
           </h3>
 
           {this.state.error?.message && (
-            <p
-              style={{
-                margin: 0,
-                fontSize: '0.875rem',
-                color: 'var(--color-text-muted, #676879)',
-                maxWidth: '360px',
-                lineHeight: 1.5,
-              }}
-            >
+            <p className="m-0 text-sm text-light-text-secondary dark:text-dark-text-secondary max-w-sm leading-relaxed">
               {this.state.error.message}
             </p>
           )}
@@ -95,27 +62,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
           <button
             type="button"
             onClick={this.resetErrorBoundary}
-            style={{
-              marginTop: '8px',
-              padding: '9px 20px',
-              backgroundColor: 'var(--color-primary, #6161FF)',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '9999px',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              transition: 'background-color 150ms cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                'var(--color-primary-dark, #4B4EC9)';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                'var(--color-primary, #6161FF)';
-            }}
+            className="mt-2 px-5 py-2 bg-primary text-white border-none rounded-full text-sm font-semibold cursor-pointer transition-colors duration-150 hover:bg-primary/90"
           >
             重新加载
           </button>

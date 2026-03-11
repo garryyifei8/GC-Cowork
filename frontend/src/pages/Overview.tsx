@@ -1,17 +1,27 @@
 import React, { useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  MessageSquare,
   FolderKanban,
-  BookOpen,
   Sparkles,
+  Activity,
+  AlertTriangle,
+  Clock,
+  CheckCircle2,
+  Loader2,
+  Users,
+  Wallet,
+  ShieldAlert,
 } from 'lucide-react';
-import StatusBadge from '../components/ui/StatusBadge';
-import type { StatusVariant } from '../components/ui/StatusBadge';
+import { useDashboardStore } from '../stores/dashboardStore';
 import { useProjectStore } from '../stores/projectStore';
-import './Overview.css';
+import { hrService, financeService } from '../services/api';
+import type { AIInsight, ActivityEvent, HRSummary, FinanceSummary } from '../types';
+import { StagePipeline } from '../components/dashboard/StagePipeline';
+import { TaskStatusDonut } from '../components/dashboard/TaskStatusDonut';
+import { ProjectProgressChart } from '../components/dashboard/ProjectProgressChart';
+import { BudgetOverview } from '../components/dashboard/BudgetOverview';
+import { RiskHeatmap } from '../components/dashboard/RiskHeatmap';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -30,294 +40,439 @@ function getChineseDate(): string {
   return `${year}年${month}月${day}日 · ${weekday}`;
 }
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+function formatRelativeTime(isoString: string): string {
+  const now = Date.now();
+  const then = new Date(isoString).getTime();
+  const diffMs = now - then;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
 
-interface Task {
-  id: string;
-  name: string;
-  project: string;
-  status: StatusVariant;
-  statusLabel: string;
-  dueDate: string;
-  priority: string;
+  if (diffMin < 1) return '刚刚';
+  if (diffMin < 60) return `${diffMin}分钟前`;
+  if (diffHour < 24) return `${diffHour}小时前`;
+  if (diffDay < 7) return `${diffDay}天前`;
+  const d = new Date(isoString);
+  return `${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
-// ── Task helpers ──────────────────────────────────────────────────────────────
-
-function mapTaskStatus(status: string): StatusVariant {
-  switch (status) {
-    case 'in_progress': return 'warning';
-    case 'done': return 'success';
-    case 'blocked': return 'danger';
-    case 'review': return 'info';
-    default: return 'default';
+// Maps event_type to a Tailwind color name used for bg-{color}/10 and text-{color}
+function getActivityDotColorClass(eventType: string): string {
+  switch (eventType) {
+    case 'task_created':    return 'bg-primary';
+    case 'task_updated':    return 'bg-info';
+    case 'stage_transition': return 'bg-success';
+    case 'status_changed':  return 'bg-warning';
+    default:                return 'bg-slate-400';
   }
 }
 
-function mapTaskStatusLabel(status: string): string {
-  switch (status) {
-    case 'todo': return '待开始';
-    case 'in_progress': return '进行中';
-    case 'done': return '已完成';
-    case 'blocked': return '已阻塞';
-    case 'review': return '审核中';
-    default: return status;
-  }
+// ── ProgressRing ──────────────────────────────────────────────────────────────
+
+interface ProgressRingProps {
+  rate: number;
+  size?: number;
 }
 
-interface ActivityItem {
-  id: string;
-  text: React.ReactNode;
-  time: string;
-  color: string;
-}
+const ProgressRing: React.FC<ProgressRingProps> = ({ rate, size = 48 }) => {
+  const radius = (size - 6) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (rate / 100) * circumference;
 
-const MOCK_ACTIVITIES: ActivityItem[] = [
-  {
-    id: '1',
-    text: <><strong>项目管理 Agent</strong> 生成了智慧园区建设项目周报</>,
-    time: '2小时前',
-    color: '#6161FF',
-  },
-  {
-    id: '2',
-    text: <><strong>法务 Agent</strong> 完成了采购合同的合规性审查</>,
-    time: '5小时前',
-    color: '#00C875',
-  },
-  {
-    id: '3',
-    text: <><strong>王磊</strong> 在城市基础设施升级项目中上传了技术附件</>,
-    time: '昨天 17:45',
-    color: '#0086C0',
-  },
-  {
-    id: '4',
-    text: <><strong>调度 Agent</strong> 将"审核采购合同"标记为高优先级</>,
-    time: '昨天 14:30',
-    color: '#FDAB3D',
-  },
-  {
-    id: '5',
-    text: <><strong>张敏</strong> 创建了新能源储能示范工程项目</>,
-    time: '2天前',
-    color: '#E2445C',
-  },
-];
+  let color = '#e2445c'; // danger
+  if (rate >= 80) color = '#00ca72';      // success
+  else if (rate >= 50) color = '#f59e0b'; // warning
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+  return (
+    <svg
+      width={size}
+      height={size}
+      className="block"
+      aria-label={`完成率 ${rate}%`}
+      role="img"
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        strokeWidth={5}
+        fill="none"
+        className="stroke-slate-200 dark:stroke-slate-700"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        strokeWidth={5}
+        fill="none"
+        stroke={color}
+        strokeDasharray={`${circumference} ${circumference}`}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+      />
+      <text
+        x={size / 2}
+        y={size / 2}
+        textAnchor="middle"
+        dominantBaseline="central"
+        style={{ fontSize: 11, fontWeight: 700, fontFamily: 'inherit', fill: color }}
+      >
+        {Math.round(rate)}%
+      </text>
+    </svg>
+  );
+};
 
-interface QuickActionCardProps {
+// ── MetricCard ────────────────────────────────────────────────────────────────
+
+interface MetricCardProps {
   icon: React.ReactNode;
-  title: string;
-  description: string;
-  borderColor: string;
-  onClick: () => void;
+  value: React.ReactNode;
+  label: string;
+  /** Inline hex/rgb color for the icon tint — used via inline style since arbitrary values aren't always safe */
+  accentColor: string;
 }
 
-const QuickActionCard: React.FC<QuickActionCardProps> = ({
-  icon,
-  title,
-  description,
-  borderColor,
-  onClick,
-}) => (
-  <div
-    className="quick-action-card"
-    style={{ borderTopColor: borderColor }}
-    onClick={onClick}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onClick();
-      }
-    }}
-    aria-label={title}
-  >
-    <div className="quick-action-card__icon" style={{ color: borderColor }}>
+const MetricCard: React.FC<MetricCardProps> = ({ icon, value, label, accentColor }) => (
+  <div className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-xl p-4 flex flex-col gap-2 transition-colors duration-200 hover:-translate-y-px">
+    <div
+      className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mb-1"
+      style={{ color: accentColor, backgroundColor: `${accentColor}1a` }}
+      aria-hidden="true"
+    >
       {icon}
     </div>
-    <div className="quick-action-card__title">{title}</div>
-    <div className="quick-action-card__desc">{description}</div>
+    {value != null && (
+      <div className="text-2xl font-bold font-heading leading-none min-h-8 flex items-center">
+        {value}
+      </div>
+    )}
+    <div className="text-xs text-light-text-secondary dark:text-dark-text-secondary font-medium">
+      {label}
+    </div>
   </div>
 );
+
+// ── InsightCard ───────────────────────────────────────────────────────────────
+
+interface InsightCardProps {
+  insight: AIInsight;
+  projectNameMap: Map<string, string>;
+}
+
+const InsightCard: React.FC<InsightCardProps> = ({ insight, projectNameMap }) => {
+  const borderColor =
+    insight.severity === 'critical'
+      ? '#9B1B30'
+      : insight.severity === 'warning'
+      ? '#f59e0b'
+      : '#0086c0';
+
+  const iconColorClass =
+    insight.severity === 'critical'
+      ? 'text-danger'
+      : insight.severity === 'warning'
+      ? 'text-warning'
+      : 'text-primary';
+
+  const IconComponent =
+    insight.severity === 'critical'
+      ? ShieldAlert
+      : insight.severity === 'warning'
+      ? AlertTriangle
+      : Sparkles;
+
+  const projectName = insight.project_id
+    ? (projectNameMap.get(insight.project_id) ?? insight.project_id)
+    : null;
+
+  return (
+    <div
+      className="flex gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 mb-2 last:mb-0 border-l-[3px] relative"
+      style={{ borderLeftColor: borderColor }}
+    >
+      <div className={`flex-shrink-0 mt-0.5 ${iconColorClass}`} aria-hidden="true">
+        <IconComponent size={18} />
+      </div>
+      <div className="flex-1 flex flex-col gap-1">
+        <div className="text-sm font-semibold">{insight.title}</div>
+        <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary leading-relaxed">
+          {insight.description}
+        </p>
+        {projectName && (
+          <span className="inline-block text-[11px] font-semibold text-info bg-info/10 px-2 py-0.5 rounded-full mt-1 self-start">
+            {projectName}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ── ActivityRow ───────────────────────────────────────────────────────────────
+
+interface ActivityRowProps {
+  activity: ActivityEvent;
+  isLast: boolean;
+  projectNameMap: Map<string, string>;
+}
+
+const ActivityRow: React.FC<ActivityRowProps> = ({ activity, isLast, projectNameMap }) => {
+  const dotColorClass = getActivityDotColorClass(activity.event_type);
+  const relTime = formatRelativeTime(activity.created_at);
+  const projectName = projectNameMap.get(activity.project_id);
+
+  return (
+    <div className="flex gap-3 relative">
+      {/* Timeline connector line — shown on all rows except the last */}
+      {!isLast && (
+        <div className="absolute left-[7px] top-5 bottom-0 w-px bg-slate-200 dark:bg-slate-700" aria-hidden="true" />
+      )}
+      {/* Dot */}
+      <div
+        className={`w-3.5 h-3.5 rounded-full mt-1 flex-shrink-0 ${dotColorClass}`}
+        aria-hidden="true"
+      />
+      {/* Content */}
+      <div className="flex-1 flex flex-col gap-0.5 pb-4">
+        <span className="text-sm leading-snug flex items-baseline flex-wrap gap-1">
+          {projectName && (
+            <span className="inline-flex items-center text-[11px] font-semibold text-primary bg-primary/10 px-1.5 py-px rounded-full whitespace-nowrap flex-shrink-0">
+              {projectName}
+            </span>
+          )}
+          {activity.summary}
+        </span>
+        <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+          {relTime}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export const Overview: React.FC = () => {
-  const navigate = useNavigate();
-  const { projects, tasks, fetchProjects, fetchTasks } = useProjectStore();
+  const {
+    metrics,
+    recentActivities,
+    isLoading,
+    error,
+    fetchMetrics,
+    fetchRecentActivities,
+  } = useDashboardStore();
+
+  const { projects, fetchProjects } = useProjectStore();
+
+  const [hrSummary, setHrSummary] = React.useState<HRSummary | null>(null);
+  const [financeSummary, setFinanceSummary] = React.useState<FinanceSummary | null>(null);
 
   const greeting = useMemo(() => getGreeting(), []);
   const chineseDate = useMemo(() => getChineseDate(), []);
 
-  // Fetch projects on mount
   useEffect(() => {
+    fetchMetrics();
+    fetchRecentActivities(8);
     fetchProjects();
-  }, [fetchProjects]);
+    hrService.getSummary().then(setHrSummary).catch(() => {});
+    financeService.getSummary().then(setFinanceSummary).catch(() => {});
+  }, [fetchMetrics, fetchRecentActivities, fetchProjects]);
 
-  // Fetch tasks for all projects once projects are loaded
-  useEffect(() => {
-    projects.forEach((p) => fetchTasks(p.id));
-  }, [projects, fetchTasks]);
+  // Build project name map (project_id -> project_name)
+  const projectNameMap = useMemo<Map<string, string>>(() => {
+    const map = new Map<string, string>();
+    if (metrics?.project_risks) {
+      for (const risk of metrics.project_risks) {
+        map.set(risk.project_id, risk.project_name);
+      }
+    }
+    for (const p of projects) {
+      if (!map.has(p.id)) {
+        map.set(p.id, p.name);
+      }
+    }
+    return map;
+  }, [metrics?.project_risks, projects]);
 
-  // Derive flat task list from store
-  const allTasks = useMemo((): Task[] => {
-    return projects.flatMap((project) => {
-      const projectTasks = tasks[project.id] || [];
-      return projectTasks.map((t) => ({
-        id: t.id,
-        name: t.name,
-        project: project.name,
-        status: mapTaskStatus(t.status),
-        statusLabel: mapTaskStatusLabel(t.status),
-        dueDate: t.due_date || '',
-        priority: t.priority,
-      }));
-    });
-  }, [projects, tasks]);
+  // ── Loading ───────────────────────────────────────────────────────────────
+  if (isLoading && !metrics) {
+    return (
+      <div className="flex items-center justify-center py-20" aria-live="polite">
+        <div className="flex flex-col items-center gap-3 text-light-text-secondary dark:text-dark-text-secondary">
+          <Loader2 size={36} className="animate-spin text-primary" aria-label="加载中" />
+          <span className="text-sm">正在加载仪表盘数据…</span>
+        </div>
+      </div>
+    );
+  }
 
-  // Dynamic AI insight based on real project data
-  const riskProject = projects.find((p) => p.status === 'risk');
-  const insightText = riskProject
-    ? `${riskProject.name}进度偏差明显（当前${riskProject.progress_pct}%），建议关注并及时调配资源。`
-    : '所有项目进展顺利，暂无需要重点关注的风险项。';
+  // ── Error ─────────────────────────────────────────────────────────────────
+  if (error && !metrics) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center gap-4 min-h-[60vh] text-light-text-secondary dark:text-dark-text-secondary"
+        role="alert"
+      >
+        <AlertTriangle size={32} className="text-danger" aria-hidden="true" />
+        <p className="text-sm text-danger max-w-sm text-center">{error}</p>
+        <button
+          className="px-5 py-1.5 text-sm font-medium text-white bg-primary border border-primary rounded-md cursor-pointer hover:bg-primary-dark hover:border-primary-dark transition-colors duration-150"
+          type="button"
+          onClick={() => { fetchMetrics(); fetchRecentActivities(8); fetchProjects(); }}
+        >
+          重新加载
+        </button>
+      </div>
+    );
+  }
+
+  const m = metrics;
 
   return (
-    <div className="overview-dashboard">
+    <div className="flex flex-col gap-6 px-10 py-8 max-w-[1400px] mx-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
 
-      {/* Greeting */}
-      <div className="overview-greeting">
-        <h1 className="overview-greeting__heading">
-          {greeting}, 用户
+      {/* ── Compact greeting — single line ──────────────────────────────────── */}
+      <div className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-xl px-8 py-4 flex flex-row items-center gap-4 flex-wrap transition-colors duration-200">
+        <h1 className="text-[1.375rem] font-bold font-heading tracking-tight whitespace-nowrap">
+          {greeting}, 用户 👋
         </h1>
-        <p className="overview-greeting__date">{chineseDate}</p>
+        <span className="ml-auto text-sm text-light-text-secondary dark:text-dark-text-secondary whitespace-nowrap">
+          {chineseDate}
+        </span>
       </div>
 
-      {/* Quick Actions */}
-      <div className="quick-actions">
-        <QuickActionCard
-          icon={<MessageSquare size={22} />}
-          title="新建对话"
-          description="向 AI 助手发起新的工作对话"
-          borderColor="#0086C0"
-          onClick={() => navigate('/chat')}
-        />
-        <QuickActionCard
+      {/* ── Metric cards ─────────────────────────────────────────────────────── */}
+      <div
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4"
+        role="list"
+        aria-label="项目统计指标"
+      >
+        <MetricCard
           icon={<FolderKanban size={22} />}
-          title="创建项目"
-          description="新建项目并分配 AI Agent 协作"
-          borderColor="#00C875"
-          onClick={() => navigate('/projects')}
+          value={m?.total_projects ?? '—'}
+          label="项目总数"
+          accentColor="#3b82f6"
         />
-        <QuickActionCard
-          icon={<BookOpen size={22} />}
-          title="搜索知识库"
-          description="在企业知识库中检索相关文档"
-          borderColor="#6161FF"
-          onClick={() => navigate('/knowledge')}
+        <MetricCard
+          icon={<Activity size={22} />}
+          value={m?.active_projects ?? '—'}
+          label="活跃项目"
+          accentColor="#00ca72"
+        />
+        <MetricCard
+          icon={<AlertTriangle size={22} />}
+          value={m?.at_risk_projects ?? '—'}
+          label="风险项目"
+          accentColor="#e2445c"
+        />
+        <MetricCard
+          icon={<Clock size={22} />}
+          value={m?.overdue_tasks ?? '—'}
+          label="逾期任务"
+          accentColor="#f59e0b"
+        />
+        <MetricCard
+          icon={
+            m ? (
+              <ProgressRing rate={m.completion_rate} size={48} />
+            ) : (
+              <CheckCircle2 size={22} />
+            )
+          }
+          value={m ? null : '—'}
+          label="完成率"
+          accentColor="#0086c0"
+        />
+        <MetricCard
+          icon={<Users size={22} />}
+          value={hrSummary?.active_count ?? '—'}
+          label="员工在岗"
+          accentColor="#009688"
+        />
+        <MetricCard
+          icon={<Wallet size={22} />}
+          value={financeSummary?.pending_approvals ?? '—'}
+          label="待审报销"
+          accentColor="#FF9800"
         />
       </div>
 
-      {/* My Tasks */}
-      <section className="overview-section" aria-labelledby="tasks-heading">
-        <div className="overview-section__header">
-          <h2 className="overview-section__title" id="tasks-heading">
-            我的任务
-          </h2>
-        </div>
-        <div className="task-table" role="table" aria-label="我的任务列表">
-          <div className="task-table__head" role="row">
-            <div className="task-table__head-cell" role="columnheader">任务名称</div>
-            <div className="task-table__head-cell" role="columnheader">项目</div>
-            <div className="task-table__head-cell" role="columnheader">状态</div>
-            <div className="task-table__head-cell" role="columnheader">截止日期</div>
-          </div>
-          {allTasks.length === 0 ? (
-            <div className="task-row" role="row">
-              <div className="task-row__cell" role="cell" style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                暂无任务数据
+      {/* ── Stage pipeline — full width ──────────────────────────────────────── */}
+      <StagePipeline stageDistribution={m?.stage_distribution ?? {}} />
+
+      {/* ── Three-column chart row ───────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <TaskStatusDonut
+          distribution={m?.task_status_distribution ?? {}}
+          totalTasks={m?.total_tasks ?? 0}
+        />
+        <ProjectProgressChart projects={projects} />
+        <BudgetOverview budgetSummary={m?.budget_summary ?? []} />
+      </div>
+
+      {/* ── Two-column body ──────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+
+        {/* Left column (3/5): risk heatmap + AI insights */}
+        <div className="lg:col-span-3 space-y-4">
+
+          <RiskHeatmap risks={m?.project_risks ?? []} />
+
+          {m && m.ai_insights.length > 0 && (
+            <section
+              className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-xl p-5 transition-colors duration-200"
+              aria-labelledby="insights-heading"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles size={16} className="text-primary" aria-hidden="true" />
+                <h2 className="text-base font-heading font-semibold" id="insights-heading">
+                  AI 洞察
+                </h2>
               </div>
-            </div>
-          ) : (
-            allTasks.map((task) => (
-              <div
-                key={task.id}
-                className={`task-row task-row--${task.priority}`}
-                role="row"
-              >
-                <div className="task-row__cell task-row__name" role="cell">
-                  {task.name}
-                </div>
-                <div className="task-row__cell task-row__project" role="cell">
-                  {task.project}
-                </div>
-                <div className="task-row__cell" role="cell">
-                  <StatusBadge
-                    status={task.status}
-                    label={task.statusLabel}
-                    size="sm"
-                  />
-                </div>
-                <div className="task-row__cell task-row__due" role="cell">
-                  {task.dueDate}
-                </div>
+              <div className="flex flex-col">
+                {m.ai_insights.map((insight, idx) => (
+                  <InsightCard key={idx} insight={insight} projectNameMap={projectNameMap} />
+                ))}
               </div>
-            ))
+            </section>
           )}
         </div>
-      </section>
 
-      {/* Recent Activity */}
-      <section className="overview-section" aria-labelledby="activity-heading">
-        <div className="overview-section__header">
-          <h2 className="overview-section__title" id="activity-heading">
-            最近活动
-          </h2>
-        </div>
-        <div className="activity-timeline" role="log" aria-label="最近活动列表">
-          {MOCK_ACTIVITIES.map((item) => (
-            <div key={item.id} className="activity-item">
-              <div
-                className="activity-item__dot"
-                style={{ backgroundColor: item.color }}
-                aria-hidden="true"
-              />
-              <div className="activity-item__content">
-                <span className="activity-item__text">{item.text}</span>
-                <span className="activity-item__time">{item.time}</span>
-              </div>
+        {/* Right column (2/5): activity timeline */}
+        <div className="lg:col-span-2">
+          <section
+            className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-xl p-5 transition-colors duration-200"
+            aria-labelledby="activity-heading"
+          >
+            <div className="mb-4">
+              <h2 className="text-base font-heading font-semibold" id="activity-heading">
+                最近活动
+              </h2>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* AI Insight */}
-      <section className="overview-section" aria-labelledby="insight-heading">
-        <div className="overview-section__header">
-          <h2 className="overview-section__title" id="insight-heading">
-            AI 洞察
-          </h2>
-        </div>
-        <div className="insight-card">
-          <div className="insight-card__icon" aria-hidden="true">
-            <Sparkles size={20} />
-          </div>
-          <div className="insight-card__body">
-            <div className="insight-card__title">智能调度洞察</div>
-            <p className="insight-card__desc">
-              {insightText}
-            </p>
-            <div className="insight-card__actions">
-              <button className="btn-outline" type="button">查看详情</button>
-              <button className="btn-primary" type="button">立即处理</button>
+            <div className="space-y-0" role="log" aria-label="最近活动列表">
+              {recentActivities.length === 0 ? (
+                <p className="text-[13px] text-light-text-secondary dark:text-dark-text-secondary text-center py-6">
+                  暂无活动记录
+                </p>
+              ) : (
+                recentActivities.map((item, idx) => (
+                  <ActivityRow
+                    key={item.id}
+                    activity={item}
+                    isLast={idx === recentActivities.length - 1}
+                    projectNameMap={projectNameMap}
+                  />
+                ))
+              )}
             </div>
-          </div>
+          </section>
         </div>
-      </section>
 
+      </div>
     </div>
   );
 };

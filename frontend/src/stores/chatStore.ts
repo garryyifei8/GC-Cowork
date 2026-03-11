@@ -6,15 +6,19 @@ interface ChatState {
   messages: ChatMessage[];
   isLoading: boolean;
   error: string | null;
+  isPanelOpen: boolean;
   sendMessage: (content: string) => Promise<void>;
   clearError: () => void;
   clearMessages: () => void;
+  togglePanel: () => void;
+  openPanel: () => void;
+  closePanel: () => void;
 }
 
 const WELCOME_MESSAGE: ChatMessage = {
   id: 'welcome',
   role: 'agent',
-  content: '你好！我是 GC TeamWork 智能协作助手。我可以帮你管理项目进度、起草文档、处理报销，或者检索公司知识库。今天有什么我可以帮你的吗？',
+  content: '你好！我是 牛油果CoWork 智能协作助手。我可以帮你管理项目进度、起草文档、处理报销，或者检索公司知识库。今天有什么我可以帮你的吗？',
   agentType: 'dispatch',
   senderName: '通用调度 Agent',
   timestamp: new Date(),
@@ -24,6 +28,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   messages: [WELCOME_MESSAGE],
   isLoading: false,
   error: null,
+  isPanelOpen: false,
 
   sendMessage: async (content: string) => {
     const userMsg: ChatMessage = {
@@ -83,6 +88,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   clearError: () => set({ error: null }),
   clearMessages: () => set({ messages: [WELCOME_MESSAGE] }),
+  togglePanel: () => set((state) => ({ isPanelOpen: !state.isPanelOpen })),
+  openPanel: () => set({ isPanelOpen: true }),
+  closePanel: () => set({ isPanelOpen: false }),
 }));
 
 function getAgentName(agentType: string): string {

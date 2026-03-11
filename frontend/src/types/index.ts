@@ -76,6 +76,110 @@ export interface BiddingOpportunity {
 
 export type ViewType = 'table' | 'kanban' | 'gantt';
 
+// ---------------------------------------------------------------------------
+// Project Detail (extended fields from backend ProjectDetail)
+// ---------------------------------------------------------------------------
+
+export interface ProjectDetail extends Project {
+  budget_amount: number | null;
+  actual_spend: number | null;
+  risks: RiskItem[];
+  milestones: MilestoneItem[];
+  tasks: ProjectTask[];
+  documents?: DocumentItem[];
+}
+
+export interface RiskItem {
+  title: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  owner: string | null;
+}
+
+export interface MilestoneItem {
+  name: string;
+  date: string;
+  status: string;
+}
+
+// ---------------------------------------------------------------------------
+// Activity Log
+// ---------------------------------------------------------------------------
+
+export interface ActivityEvent {
+  id: string;
+  project_id: string;
+  event_type: 'task_created' | 'task_updated' | 'stage_transition' | 'status_changed';
+  actor: string;
+  summary: string;
+  detail: Record<string, any>;
+  created_at: string;
+}
+
+// ---------------------------------------------------------------------------
+// Dashboard Metrics
+// ---------------------------------------------------------------------------
+
+export interface ProjectRiskSummary {
+  project_id: string;
+  project_name: string;
+  risk_score: number;
+  risk_level: 'low' | 'medium' | 'high' | 'critical';
+  top_risk: string;
+}
+
+export interface AIInsight {
+  title: string;
+  description: string;
+  severity: 'warning' | 'info' | 'critical';
+  project_id: string | null;
+}
+
+export interface BudgetSummaryItem {
+  project_id: string;
+  project_name: string;
+  budget_amount: number | null;
+  actual_spend: number | null;
+}
+
+export interface DashboardMetrics {
+  total_projects: number;
+  active_projects: number;
+  at_risk_projects: number;
+  completed_projects: number;
+  total_tasks: number;
+  overdue_tasks: number;
+  completion_rate: number;
+  stage_distribution: Record<string, number>;
+  project_risks: ProjectRiskSummary[];
+  ai_insights: AIInsight[];
+  task_status_distribution: Record<string, number>;
+  budget_summary: BudgetSummaryItem[];
+}
+
+// ---------------------------------------------------------------------------
+// AI Suggestions
+// ---------------------------------------------------------------------------
+
+export interface SuggestedAction {
+  action_type: 'create_task' | 'reassign' | 'escalate' | 'transition';
+  params: Record<string, any>;
+}
+
+export interface AISuggestion {
+  id: string;
+  type: 'task_suggestion' | 'risk_alert' | 'optimization';
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  project_id: string | null;
+  suggested_action: SuggestedAction;
+}
+
+// ---------------------------------------------------------------------------
+// Knowledge Base
+// ---------------------------------------------------------------------------
+
 export interface KnowledgeDoc {
   id: number;
   title: string;
@@ -83,4 +187,135 @@ export interface KnowledgeDoc {
   date: string;
   type: string;
   likes: number;
+}
+
+// ---------------------------------------------------------------------------
+// Documents
+// ---------------------------------------------------------------------------
+
+export interface DocumentItem {
+  id: string;
+  title: string;
+  doc_type: string;
+  project_id: string | null;
+  content_summary: string;
+  version: string;
+  author: string;
+  status: string;
+}
+
+// ---------------------------------------------------------------------------
+// Task with Project (cross-project task view)
+// ---------------------------------------------------------------------------
+
+export interface TaskWithProject extends ProjectTask {
+  project_name: string;
+}
+
+// ---------------------------------------------------------------------------
+// HR
+// ---------------------------------------------------------------------------
+
+export interface Employee {
+  id: string;
+  name: string;
+  department: string;
+  position: string;
+  hire_date: string;
+  salary: number;
+  status: string;
+  phone: string;
+  email: string;
+  emergency_contact: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  employee_id: string;
+  date: string;
+  check_in: string | null;
+  check_out: string | null;
+  status: string;
+}
+
+export interface LeaveRequest {
+  id: string;
+  employee_id: string;
+  leave_type: string;
+  start_date: string;
+  end_date: string;
+  days: number;
+  reason: string;
+  status: string;
+  approver: string | null;
+}
+
+export interface SalaryRecord {
+  id: string;
+  employee_id: string;
+  month: string;
+  base_salary: number;
+  overtime_pay: number;
+  bonus: number;
+  deductions: number;
+  social_insurance: number;
+  tax: number;
+  net_salary: number;
+}
+
+export interface HRSummary {
+  total_employees: number;
+  active_count: number;
+  on_leave_count: number;
+  department_distribution: Record<string, number>;
+  avg_salary: number;
+  attendance_rate: number;
+}
+
+// ---------------------------------------------------------------------------
+// Finance
+// ---------------------------------------------------------------------------
+
+export interface ExpenseReport {
+  id: string;
+  submitter: string;
+  project_id: string | null;
+  category: string;
+  amount: number;
+  description: string;
+  receipts_count: number;
+  submit_date: string;
+  status: string;
+  approver: string | null;
+  payment_date: string | null;
+}
+
+export interface BudgetLine {
+  id: string;
+  project_id: string | null;
+  category: string;
+  planned_amount: number;
+  actual_amount: number;
+  fiscal_year: number;
+  quarter: number;
+  notes: string;
+}
+
+export interface FinanceInvoice {
+  id: string;
+  project_id: string | null;
+  vendor: string;
+  amount: number;
+  invoice_date: string;
+  due_date: string;
+  status: string;
+  category: string;
+}
+
+export interface FinanceSummary {
+  total_expenses: number;
+  pending_approvals: number;
+  budget_utilization_rate: number;
+  overdue_invoices: number;
+  monthly_expense_trend: Array<{ month: string; amount: number }>;
 }
