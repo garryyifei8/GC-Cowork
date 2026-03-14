@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import type { WidgetDef } from './types'
 import {
   StatCard,
@@ -63,6 +64,28 @@ for (const w of atomicWidgets) {
   registry.register({
     type: w.type,
     layer: 'atomic',
+    component: w.component,
+    title: w.title,
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Register Layer 3 (view) widgets — lazy loaded
+// ---------------------------------------------------------------------------
+
+const viewWidgets: Array<{ type: string; component: any; title: string }> = [
+  { type: 'task_kanban', component: lazy(() => import('./views/TaskKanban')), title: '任务看板' },
+  { type: 'task_list', component: lazy(() => import('./views/TaskList')), title: '任务列表' },
+  { type: 'project_table', component: lazy(() => import('./views/ProjectTable')), title: '项目表格' },
+  { type: 'project_kanban', component: lazy(() => import('./views/ProjectKanban')), title: '项目看板' },
+  { type: 'gantt', component: lazy(() => import('./views/GanttChart')), title: '甘特图' },
+  { type: 'project_mindmap', component: lazy(() => import('./views/ProjectMindMap')), title: '思维导图' },
+]
+
+for (const w of viewWidgets) {
+  registry.register({
+    type: w.type,
+    layer: 'view',
     component: w.component,
     title: w.title,
   })
