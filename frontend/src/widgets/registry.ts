@@ -80,6 +80,23 @@ const viewWidgets: Array<{ type: string; component: any; title: string }> = [
   { type: 'project_kanban', component: lazy(() => import('./views/ProjectKanban')), title: '项目看板' },
   { type: 'gantt', component: lazy(() => import('./views/GanttChart')), title: '甘特图' },
   { type: 'project_mindmap', component: lazy(() => import('./views/ProjectMindMap')), title: '思维导图' },
+  // Dashboard views
+  { type: 'budget_overview', component: lazy(() => import('./views/BudgetOverview')), title: '预算概览' },
+  { type: 'risk_heatmap', component: lazy(() => import('./views/RiskHeatmap')), title: '风险热力图' },
+  { type: 'task_donut', component: lazy(() => import('./views/TaskDonut')), title: '任务状态分布' },
+  { type: 'project_progress', component: lazy(() => import('./views/ProjectProgress')), title: '项目进度对比' },
+  { type: 'stage_pipeline', component: lazy(() => import('./views/StagePipeline')), title: '阶段管线' },
+  // Activity
+  { type: 'activity_feed', component: lazy(() => import('./views/ActivityFeed')), title: '活动动态' },
+  // HR & Finance
+  { type: 'staff_directory', component: lazy(() => import('./views/StaffDirectory')), title: '员工名录' },
+  { type: 'finance_table', component: lazy(() => import('./views/FinanceTable')), title: '财务管理' },
+  // Procurement & Process
+  { type: 'procurement_table', component: lazy(() => import('./views/ProcurementTable')), title: '采购管理' },
+  { type: 'process_timeline', component: lazy(() => import('./views/ProcessTimeline')), title: '过程记录' },
+  // Documents
+  { type: 'document_list', component: lazy(() => import('./views/DocumentList')), title: '文档列表' },
+  { type: 'document_viewer', component: lazy(() => import('./views/DocumentViewer')), title: '文档查看器' },
 ]
 
 for (const w of viewWidgets) {
