@@ -1,4 +1,5 @@
 
+import './widgets/registry';  // Initialize widget registry
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { ProjectsDashboard } from './pages/ProjectsDashboard';
@@ -8,6 +9,8 @@ import { ProjectDetail } from './pages/ProjectDetail';
 import { Tasks } from './pages/Tasks';
 import { HRDashboard } from './pages/HRDashboard';
 import { FinanceDashboard } from './pages/FinanceDashboard';
+import { MyDaily } from './pages/MyDaily';
+import { ChatPage } from './pages/ChatPage';
 
 function App() {
   return (
@@ -15,8 +18,9 @@ function App() {
       <Routes>
         <Route path="/" element={<AppLayout />}>
           <Route index element={<Overview />} />
-          <Route path="chat" element={<Navigate to="/" replace />} />
+          <Route path="chat" element={<ChatPage />} />
           <Route path="tasks" element={<Tasks />} />
+          <Route path="daily" element={<MyDaily />} />
           <Route path="projects" element={<ProjectsDashboard />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
           <Route path="hr" element={<HRDashboard />} />

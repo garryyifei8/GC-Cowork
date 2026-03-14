@@ -8,15 +8,19 @@ export interface ChatMessage {
   senderName: string;
   timestamp: Date;
   cards?: InteractiveCard[];
+  /** True while SSE tokens are still streaming in. */
+  isStreaming?: boolean;
 }
 
 export interface InteractiveCard {
-  type: 'action' | 'data' | 'alert' | 'form';
+  type: 'action' | 'data' | 'alert' | 'form' | 'task_list' | 'progress' | 'table' | 'kanban' | 'file' | 'chart' | 'report';
   title: string;
   content?: string;
   data?: Record<string, any>;
   status?: 'success' | 'warning' | 'danger' | 'info';
   actions?: CardAction[];
+  /** Explicit widget type for registry lookup (snake_case). Falls back to heuristic detection. */
+  widget_type?: string;
 }
 
 export interface CardAction {
@@ -318,4 +322,75 @@ export interface FinanceSummary {
   budget_utilization_rate: number;
   overdue_invoices: number;
   monthly_expense_trend: Array<{ month: string; amount: number }>;
+}
+
+// ---------------------------------------------------------------------------
+// OA
+// ---------------------------------------------------------------------------
+
+export interface Notice {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  target_user: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface VehicleRequest {
+  id: string;
+  applicant: string;
+  date: string;
+  origin: string;
+  destination: string;
+  reason: string;
+  status: string;
+  approver: string | null;
+  created_at: string;
+}
+
+export interface ReceiptParseResult {
+  amount: number;
+  date: string;
+  category: string;
+  vendor: string;
+  description: string;
+  confidence: number;
+}
+
+// ---------------------------------------------------------------------------
+// Procurement
+// ---------------------------------------------------------------------------
+
+export interface ProcurementPackage {
+  id: string;
+  project_id: string;
+  name: string;
+  category: string;
+  supplier: string | null;
+  budget_amount: number | null;
+  actual_amount: number | null;
+  status: string;
+  plan_date: string | null;
+  arrival_date: string | null;
+  responsible: string | null;
+  notes: string;
+}
+
+// ---------------------------------------------------------------------------
+// Process Management
+// ---------------------------------------------------------------------------
+
+export interface ProcessRecord {
+  id: string;
+  project_id: string;
+  record_type: string;
+  title: string;
+  date: string;
+  author: string;
+  content: string;
+  status: string;
+  attachments: string[];
+  related_stage: string;
 }
