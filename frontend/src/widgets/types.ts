@@ -18,6 +18,7 @@ export interface WidgetSlot {
   widgetType: string
   props?: Record<string, any>
   area?: string
+  className?: string
 }
 
 export type GridType = 'single' | '2-col' | '3-col' | '4-col' | 'dashboard'
@@ -33,5 +34,6 @@ export interface WidgetHostProps {
   props?: Record<string, any>
   data?: any
   area?: string
+  className?: string
   showHeader?: boolean
 }

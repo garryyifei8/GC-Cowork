@@ -9,24 +9,10 @@ import {
   MoreHorizontal,
   ChevronDown,
 } from 'lucide-react'
-import type { TaskWithProject } from '../../types'
 import { TASK_STATUS_LABELS, PRIORITY_LABELS } from '../../utils/constants'
+import { useTaskWorkbenchStore } from '../../stores/taskWorkbenchStore'
 
 export interface TaskFiltersProps {
-  tasks: TaskWithProject[]
-  filterStatus: string | null
-  filterPriority: string | null
-  filterProjectId: string | null
-  viewMode: 'list' | 'kanban'
-  groupBy: 'date' | 'none' | 'project' | 'priority'
-  searchQuery: string
-  onFilterStatus: (value: string | null) => void
-  onFilterPriority: (value: string | null) => void
-  onFilterProjectId: (value: string | null) => void
-  onViewMode: (mode: 'list' | 'kanban') => void
-  onGroupBy: (groupBy: 'date' | 'none' | 'project' | 'priority') => void
-  onSearchQuery: (query: string) => void
-  onNewTask: () => void
   /** Chat injection data */
   data?: any
 }
@@ -108,21 +94,25 @@ const DropdownItem: React.FC<{
   </button>
 )
 
-const TaskFilters: React.FC<TaskFiltersProps> = ({
-  tasks,
-  filterStatus,
-  filterPriority,
-  filterProjectId,
-  viewMode,
-  groupBy,
-  searchQuery,
-  onFilterStatus,
-  onFilterPriority,
-  onFilterProjectId,
-  onGroupBy,
-  onSearchQuery,
-  onNewTask,
-}) => {
+const TaskFilters: React.FC<TaskFiltersProps> = () => {
+  const tasks = useTaskWorkbenchStore((s) => s.tasks)
+  const filterStatus = useTaskWorkbenchStore((s) => s.filterStatus)
+  const filterPriority = useTaskWorkbenchStore((s) => s.filterPriority)
+  const filterProjectId = useTaskWorkbenchStore((s) => s.filterProjectId)
+  const viewMode = useTaskWorkbenchStore((s) => s.viewMode)
+  const groupBy = useTaskWorkbenchStore((s) => s.groupBy)
+  const searchQuery = useTaskWorkbenchStore((s) => s.searchQuery)
+  const setFilterStatus = useTaskWorkbenchStore((s) => s.setFilterStatus)
+  const setFilterPriority = useTaskWorkbenchStore((s) => s.setFilterPriority)
+  const setFilterProjectId = useTaskWorkbenchStore((s) => s.setFilterProjectId)
+  const setGroupBy = useTaskWorkbenchStore((s) => s.setGroupBy)
+  const setSearchQuery = useTaskWorkbenchStore((s) => s.setSearchQuery)
+  const fetchTasks = useTaskWorkbenchStore((s) => s.fetchTasks)
+
+  React.useEffect(() => {
+    fetchTasks()
+  }, [fetchTasks])
+
   const uniqueProjects = React.useMemo(() => {
     return Array.from(new Set(tasks.map((t) => t.project_name))).sort()
   }, [tasks])
@@ -134,6 +124,10 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
     if (searchExpanded) searchRef.current?.focus()
   }, [searchExpanded])
 
+  const handleNewTask = () => {
+    // placeholder — no-op for now
+  }
+
   return (
     <div
       className="flex flex-wrap items-center gap-1.5"
@@ -144,13 +138,13 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
       <div className="flex items-center">
         <button
           className="flex items-center gap-1.5 h-8 px-3.5 rounded-l bg-primary text-white text-[14px] font-medium hover:bg-primary/90 transition-colors"
-          onClick={onNewTask}
+          onClick={handleNewTask}
         >
           新建任务
         </button>
         <button
           className="flex items-center h-8 px-1.5 rounded-r bg-primary text-white hover:bg-primary/90 transition-colors border-l border-white/30"
-          onClick={onNewTask}
+          onClick={handleNewTask}
           aria-label="新建选项"
         >
           <ChevronDown size={14} />
@@ -171,7 +165,7 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
             ref={searchRef}
             type="search"
             value={searchQuery}
-            onChange={(e) => onSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="搜索"
             className="pl-8 pr-3 py-1.5 rounded-md border border-primary/40 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 outline-none ring-2 ring-primary/20 placeholder:text-gray-400 dark:placeholder:text-gray-500 w-48"
             aria-label="搜索任务"
@@ -180,7 +174,7 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
             }}
             onKeyDown={(e) => {
               if (e.key === 'Escape') {
-                onSearchQuery('')
+                setSearchQuery('')
                 setSearchExpanded(false)
               }
             }}
@@ -204,14 +198,14 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
         <DropdownItem
           label="全部项目"
           active={!filterProjectId}
-          onClick={() => onFilterProjectId(null)}
+          onClick={() => setFilterProjectId(null)}
         />
         {uniqueProjects.map((name) => (
           <DropdownItem
             key={name}
             label={name}
             active={filterProjectId === name}
-            onClick={() => onFilterProjectId(name)}
+            onClick={() => setFilterProjectId(name)}
           />
         ))}
       </ToolbarBtn>
@@ -229,14 +223,14 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
         <DropdownItem
           label="全部状态"
           active={!filterStatus}
-          onClick={() => onFilterStatus(null)}
+          onClick={() => setFilterStatus(null)}
         />
         {Object.entries(TASK_STATUS_LABELS).map(([key, label]) => (
           <DropdownItem
             key={key}
             label={label}
             active={filterStatus === key}
-            onClick={() => onFilterStatus(key)}
+            onClick={() => setFilterStatus(key)}
           />
         ))}
         <div className="mx-2 my-1 border-t border-gray-200 dark:border-gray-700" />
@@ -246,14 +240,14 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
         <DropdownItem
           label="全部优先级"
           active={!filterPriority}
-          onClick={() => onFilterPriority(null)}
+          onClick={() => setFilterPriority(null)}
         />
         {Object.entries(PRIORITY_LABELS).map(([key, label]) => (
           <DropdownItem
             key={key}
             label={`${label}优先级`}
             active={filterPriority === key}
-            onClick={() => onFilterPriority(key)}
+            onClick={() => setFilterPriority(key)}
           />
         ))}
       </ToolbarBtn>
@@ -284,7 +278,7 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
               key={key}
               label={label}
               active={groupBy === key}
-              onClick={() => onGroupBy(key)}
+              onClick={() => setGroupBy(key)}
             />
           ))}
         </ToolbarBtn>

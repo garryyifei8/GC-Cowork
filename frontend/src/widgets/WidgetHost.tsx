@@ -25,7 +25,7 @@ function WidgetNotFound({ type }: { type: string }) {
   )
 }
 
-export default function WidgetHost({ type, props, data, area, showHeader = true }: WidgetHostProps) {
+export default function WidgetHost({ type, props, data, area, className, showHeader = true }: WidgetHostProps) {
   const def = registry.get(type)
   if (!def) return <WidgetNotFound type={type} />
 
@@ -33,7 +33,7 @@ export default function WidgetHost({ type, props, data, area, showHeader = true 
   const mergedProps = { ...def.defaultProps, ...props, data }
 
   return (
-    <div style={area ? { gridArea: area } : undefined}>
+    <div className={className} style={area ? { gridArea: area } : undefined}>
       {showHeader && def.title && (
         <div className="flex items-center gap-2 mb-3">
           {def.icon && <def.icon className="w-4 h-4 text-primary" />}

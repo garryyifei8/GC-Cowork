@@ -27,6 +27,7 @@ export default function PageRenderer({ layout, pageProps }: PageRendererProps) {
             type={slot.widgetType}
             props={{ ...slot.props, ...pageProps }}
             area={slot.area}
+            className={slot.className}
           />
         ))}
       </div>
