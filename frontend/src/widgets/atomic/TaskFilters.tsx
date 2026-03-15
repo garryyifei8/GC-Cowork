@@ -15,6 +15,8 @@ import { useTaskWorkbenchStore } from '../../stores/taskWorkbenchStore'
 export interface TaskFiltersProps {
   /** Chat injection data */
   data?: any
+  /** Callback when "新建任务" is clicked. If not provided, the button is a no-op. */
+  onNewTask?: () => void
 }
 
 const ToolbarBtn: React.FC<{
@@ -94,7 +96,7 @@ const DropdownItem: React.FC<{
   </button>
 )
 
-const TaskFilters: React.FC<TaskFiltersProps> = () => {
+const TaskFilters: React.FC<TaskFiltersProps> = ({ onNewTask }) => {
   const tasks = useTaskWorkbenchStore((s) => s.tasks)
   const filterStatus = useTaskWorkbenchStore((s) => s.filterStatus)
   const filterPriority = useTaskWorkbenchStore((s) => s.filterPriority)
@@ -125,7 +127,7 @@ const TaskFilters: React.FC<TaskFiltersProps> = () => {
   }, [searchExpanded])
 
   const handleNewTask = () => {
-    // placeholder — no-op for now
+    onNewTask?.()
   }
 
   return (

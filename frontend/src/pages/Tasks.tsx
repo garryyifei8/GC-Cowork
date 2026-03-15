@@ -120,7 +120,10 @@ export const Tasks = () => {
       </div>
 
       {/* Filters toolbar */}
-      <TaskFilters />
+      <TaskFilters onNewTask={() => {
+        const name = window.prompt('请输入任务名称')
+        if (name?.trim()) handleQuickAdd(name.trim(), 'todo')
+      }} />
 
       {/* Main view */}
       <div className="flex-1 min-h-0">
