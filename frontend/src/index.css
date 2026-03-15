@@ -1,44 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-/* ── Dark Mode: class-based ───────────────────────── */
+/* Force class-based dark mode — only activates when .dark is on <html> */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ── Theme Variables ──────────────────────────────── */
+/* ── Monday.com Design Tokens ─────────────────────── */
 
 @theme {
-  --color-primary: #3b82f6;
-  --color-primary-light: #60a5fa;
-  --color-primary-dark: #2563eb;
+  --color-primary: #0073ea;
+  --color-primary-light: #579bfc;
+  --color-primary-dark: #0060b9;
 
-  --color-success: #00ca72;
-  --color-success-light: #34d399;
-  --color-warning: #f59e0b;
-  --color-warning-light: #fbbf24;
-  --color-danger: #e2445c;
-  --color-danger-light: #f87171;
-  --color-info: #0086c0;
-  --color-info-light: #38bdf8;
+  --color-success: #00c875;
+  --color-success-light: #9cd326;
+  --color-warning: #fdab3d;
+  --color-warning-light: #ffcb00;
+  --color-danger: #df2f4a;
+  --color-danger-light: #ff7575;
+  --color-info: #579bfc;
+  --color-info-light: #66ccff;
 
-  --color-avocado: #00ca72;
-  --color-pink: #ec4899;
+  --color-avocado: #00c875;
+  --color-pink: #e50073;
 
-  --color-dark-bg: #0f172a;
-  --color-dark-surface: #1e293b;
-  --color-dark-surface-hover: #334155;
-  --color-dark-border: #334155;
+  --color-dark-bg: #181b34;
+  --color-dark-surface: #30324e;
+  --color-dark-surface-hover: #4b4e69;
+  --color-dark-border: #4b4e69;
   --color-dark-text: #f1f5f9;
-  --color-dark-text-secondary: #94a3b8;
+  --color-dark-text-secondary: #9699a7;
 
-  --color-light-bg: #f1f5f9;
+  --color-light-bg: #f6f7fb;
   --color-light-surface: #ffffff;
-  --color-light-surface-hover: #f8fafc;
-  --color-light-border: #e2e8f0;
-  --color-light-text: #0f172a;
-  --color-light-text-secondary: #64748b;
+  --color-light-surface-hover: #f0f1f8;
+  --color-light-border: #d0d4e4;
+  --color-light-text: #323338;
+  --color-light-text-secondary: #676879;
 
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-heading: 'Outfit', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Figtree', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Figtree', 'Outfit', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ── Base Layer ───────────────────────────────────── */
@@ -54,22 +54,17 @@
     @apply bg-light-bg text-light-text transition-colors duration-200;
   }
 
-  .dark body {
-    @apply bg-dark-bg text-dark-text;
-  }
-
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-300 rounded-full;
-  }
-  .dark ::-webkit-scrollbar-thumb {
-    @apply bg-slate-600;
+    @apply bg-[#c3c6d4] rounded-full;
   }
 }
 
@@ -77,32 +72,117 @@
 
 @layer utilities {
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
   @keyframes slide-in-right {
-    from { opacity: 0; transform: translateX(16px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
+
   @keyframes pulse-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.4;
+    }
   }
+
   @keyframes bounce-dots {
-    0%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-6px); }
+
+    0%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+
+    40% {
+      transform: translateY(-6px);
+    }
   }
 
   .animate-fade-in {
     animation: fade-in 0.3s ease-out;
   }
+
   .animate-slide-in-right {
     animation: slide-in-right 0.3s ease-out;
   }
+
   .animate-pulse-dot {
     animation: pulse-dot 1.5s ease-in-out infinite;
   }
+
   .animate-bounce-dot {
     animation: bounce-dots 1.2s ease-in-out infinite;
   }
+}
+
+/* ── Avocado SVG Animations ──────────────────────── */
+@keyframes avocado-wave {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(15deg);
+  }
+
+  50% {
+    transform: rotate(-8deg);
+  }
+
+  75% {
+    transform: rotate(5deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes avocado-fade {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: translateY(-3px);
+  }
+}
+
+.animate-avocado-wave {
+  animation: avocado-wave 1.5s ease-in-out infinite;
+  transform-origin: 24px 60px;
+}
+
+.animate-avocado-fade {
+  animation: avocado-fade 1.5s ease-in-out infinite;
+}
+
+.animate-avocado-fade-delayed {
+  animation: avocado-fade 1.5s ease-in-out infinite 0.15s;
 }
