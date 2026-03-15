@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft, Plus, X, Check, Loader2, ChevronDown,
+  ArrowLeft, Plus, X, Check, ChevronDown,
   Users, AlertTriangle, Milestone, ClipboardList, Wallet, Cog, Package,
 } from 'lucide-react'
 import { LoadingSpinner, AvatarGroup } from '../widgets/atomic'
-import { BudgetOverview, RiskHeatmap, StagePipeline, ProcessTimeline, ProcurementTable } from '../widgets/views'
+import { BudgetOverview, StagePipeline, ProcessTimeline, ProcurementTable } from '../widgets/views'
 import { TaskDetailModal } from '../components/tasks/TaskDetailModal'
 import { useProjectStore } from '../stores/projectStore'
 import { projectService } from '../services/api'

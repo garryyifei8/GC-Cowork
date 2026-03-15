@@ -5,7 +5,7 @@ import TaskKanban from '../widgets/views/TaskKanban'
 import TaskList from '../widgets/views/TaskList'
 import { TaskDetailModal } from '../components/tasks/TaskDetailModal'
 import { useTaskWorkbenchStore } from '../stores/taskWorkbenchStore'
-import type { TaskWithProject } from '../types'
+import type { ProjectTask, TaskWithProject } from '../types'
 import { TASK_STATUS_LABELS } from '../utils/constants'
 
 export const Tasks = () => {
@@ -62,8 +62,8 @@ export const Tasks = () => {
     await createTask(defaultProjectId, { name })
   }
 
-  const handleTaskClick = (task: TaskWithProject) => {
-    setSelectedTask(task)
+  const handleTaskClick = (task: ProjectTask | TaskWithProject) => {
+    setSelectedTask(task as TaskWithProject)
   }
 
   return (

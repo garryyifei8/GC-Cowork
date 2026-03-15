@@ -53,7 +53,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ label, value, icon, iconColor, 
 )
 
 export const Overview: React.FC = () => {
-  const { metrics, fetchMetrics, recentActivities, fetchRecentActivities } = useDashboardStore()
+  const { metrics, fetchMetrics, fetchRecentActivities } = useDashboardStore()
   const { fetchProjects } = useProjectStore()
   const navigate = useNavigate()
 
@@ -85,7 +85,7 @@ export const Overview: React.FC = () => {
           <div className="space-y-2">
             {aiInsights.slice(0, 3).map((insight, i) => (
               <div key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
-                <AlertTriangle size={14} className={`mt-0.5 flex-shrink-0 ${insight.severity === 'high' ? 'text-red-500' : insight.severity === 'medium' ? 'text-amber-500' : 'text-blue-500'}`} />
+                <AlertTriangle size={14} className={`mt-0.5 flex-shrink-0 ${insight.severity === 'critical' ? 'text-red-500' : insight.severity === 'warning' ? 'text-amber-500' : 'text-blue-500'}`} />
                 <div>
                   <span className="font-medium">{insight.title}</span>
                   <span className="text-gray-500 dark:text-gray-400"> — {insight.description}</span>
