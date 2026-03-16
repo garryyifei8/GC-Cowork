@@ -62,9 +62,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 
   return (
     <div
-      className={`group flex items-start gap-2.5 px-4 py-3 border-b border-light-border/50 dark:border-dark-border/50 last:border-b-0 transition-colors duration-150 cursor-pointer relative ${
+      className={`group flex items-start gap-2.5 px-4 py-3 border-b border-light-border/50 last:border-b-0 transition-colors duration-150 cursor-pointer relative ${
         notification.read
-          ? 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
+          ? 'hover:bg-[#f6f7fb]'
           : 'bg-primary/[0.03] hover:bg-primary/[0.06]'
       }`}
       onClick={handleClick}
@@ -83,14 +83,14 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
       {/* Content */}
       <div className="flex-1 min-w-0 flex flex-col gap-0.5">
         <span className="text-[0.8125rem] font-semibold truncate">{notification.title}</span>
-        <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary leading-snug line-clamp-2">
+        <span className="text-xs text-light-text-secondary leading-snug line-clamp-2">
           {notification.message}
         </span>
         <div className="flex items-center gap-1.5 mt-1">
           {!notification.read && (
             <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" aria-hidden="true" />
           )}
-          <span className="text-[0.6875rem] text-light-text-secondary dark:text-dark-text-secondary flex-shrink-0">
+          <span className="text-[0.6875rem] text-light-text-secondary flex-shrink-0">
             {formatRelativeTime(notification.timestamp)}
           </span>
         </div>
@@ -98,7 +98,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 
       {/* Dismiss */}
       <button
-        className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary bg-transparent border-none cursor-pointer opacity-0 group-hover:opacity-100 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-danger transition-all duration-150 mt-0.5"
+        className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-light-text-secondary bg-transparent border-none cursor-pointer opacity-0 group-hover:opacity-100 hover:bg-[#ecedf5] hover:text-danger transition-all duration-150 mt-0.5"
         onClick={handleDismiss}
         aria-label="删除通知"
         type="button"
@@ -132,13 +132,13 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
 
   return (
     <div
-      className="absolute right-0 top-12 w-80 max-h-96 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-xl shadow-xl z-50 flex flex-col overflow-hidden"
+      className="absolute right-0 top-12 w-80 max-h-96 bg-light-surface border border-light-border rounded-xl shadow-xl z-50 flex flex-col overflow-hidden"
       role="dialog"
       aria-modal="false"
       aria-label="通知面板"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-light-border dark:border-dark-border flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-light-border flex-shrink-0">
         <h2 className="text-[0.9375rem] font-semibold m-0">
           通知{unreadCount > 0 ? `（${unreadCount}）` : ''}
         </h2>
@@ -158,7 +158,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
       <div className="flex-1 overflow-y-auto overscroll-contain" role="list">
         {notifications.length === 0 ? (
           <div
-            className="flex flex-col items-center justify-center py-10 gap-2 text-light-text-secondary dark:text-dark-text-secondary"
+            className="flex flex-col items-center justify-center py-10 gap-2 text-light-text-secondary"
             role="listitem"
           >
             <Bell size={32} className="opacity-35" />
@@ -178,7 +178,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
 
       {/* Footer — only shown when there are notifications */}
       {notifications.length > 0 && (
-        <div className="px-4 py-2 border-t border-light-border dark:border-dark-border text-center flex-shrink-0">
+        <div className="px-4 py-2 border-t border-light-border text-center flex-shrink-0">
           <button
             className="text-xs font-medium text-primary bg-transparent border-none px-2 py-1 rounded cursor-pointer transition-colors duration-150 hover:bg-primary/10"
             onClick={onClose}

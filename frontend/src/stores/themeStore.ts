@@ -1,44 +1,18 @@
 import { create } from 'zustand';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light';
 
 interface ThemeState {
   theme: Theme;
-  toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
 }
 
-const getInitialTheme = (): Theme => {
-  const stored = localStorage.getItem('theme');
-  if (stored === 'light' || stored === 'dark') return stored;
-  return 'dark';
+// Always light mode — remove any lingering dark class
+const init = () => {
+  document.documentElement.classList.remove('dark');
+  localStorage.setItem('theme', 'light');
 };
 
-const applyTheme = (theme: Theme) => {
-  const root = document.documentElement;
-  if (theme === 'dark') {
-    root.classList.add('dark');
-  } else {
-    root.classList.remove('dark');
-  }
-  localStorage.setItem('theme', theme);
-};
-
-export const useThemeStore = create<ThemeState>((set) => {
-  const initial = getInitialTheme();
-  applyTheme(initial);
-
-  return {
-    theme: initial,
-    toggleTheme: () =>
-      set((state) => {
-        const next = state.theme === 'dark' ? 'light' : 'dark';
-        applyTheme(next);
-        return { theme: next };
-      }),
-    setTheme: (theme) => {
-      applyTheme(theme);
-      set({ theme });
-    },
-  };
+export const useThemeStore = create<ThemeState>(() => {
+  init();
+  return { theme: 'light' };
 });

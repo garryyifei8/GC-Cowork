@@ -42,11 +42,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }
   return (
     <div className="px-3 py-2.5">
       {/* Pill container */}
-      <div className="flex items-end gap-1.5 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-3xl px-2.5 py-2 transition-shadow focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(59,130,246,0.12)]">
+      <div className="flex items-end gap-1.5 bg-light-surface border border-light-border rounded-3xl px-2.5 py-2 transition-shadow focus-within:border-primary focus-within:shadow-[0_0_0_3px_rgba(59,130,246,0.12)]">
         {/* Left: attachment icons */}
         <div className="flex items-center gap-0.5 pb-0.5 shrink-0">
           <button
-            className="w-8 h-8 rounded-full flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary bg-transparent border-0 cursor-pointer transition-colors hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover hover:text-primary disabled:opacity-45 disabled:cursor-not-allowed"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-light-text-secondary bg-transparent border-0 cursor-pointer transition-colors hover:bg-light-surface-hover hover:text-primary disabled:opacity-45 disabled:cursor-not-allowed"
             title="附件"
             type="button"
             disabled={disabled}
@@ -54,7 +54,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }
             <Paperclip size={17} />
           </button>
           <button
-            className="w-8 h-8 rounded-full flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary bg-transparent border-0 cursor-pointer transition-colors hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover hover:text-primary disabled:opacity-45 disabled:cursor-not-allowed"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-light-text-secondary bg-transparent border-0 cursor-pointer transition-colors hover:bg-light-surface-hover hover:text-primary disabled:opacity-45 disabled:cursor-not-allowed"
             title="图片"
             type="button"
             disabled={disabled}
@@ -62,7 +62,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }
             <ImageIcon size={17} />
           </button>
           <button
-            className="w-8 h-8 rounded-full flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary bg-transparent border-0 cursor-pointer transition-colors hover:bg-light-surface-hover dark:hover:bg-dark-surface-hover hover:text-primary disabled:opacity-45 disabled:cursor-not-allowed"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-light-text-secondary bg-transparent border-0 cursor-pointer transition-colors hover:bg-light-surface-hover hover:text-primary disabled:opacity-45 disabled:cursor-not-allowed"
             title="语音"
             type="button"
             disabled={disabled}
@@ -74,7 +74,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }
         {/* Center: auto-resize textarea */}
         <textarea
           ref={textareaRef}
-          className="flex-1 border-0 bg-transparent font-sans text-[0.9375rem] text-light-text dark:text-dark-text leading-relaxed resize-none outline-none min-h-6 max-h-[150px] py-1.5 px-1 self-end placeholder:text-light-text-secondary dark:placeholder:text-dark-text-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 border-0 bg-transparent font-sans text-[0.9375rem] text-light-text leading-relaxed resize-none outline-none min-h-6 max-h-[150px] py-1.5 px-1 self-end placeholder:text-light-text-secondary disabled:opacity-50 disabled:cursor-not-allowed"
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
@@ -88,7 +88,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }
           className={`w-9 h-9 rounded-full border-0 flex items-center justify-center shrink-0 mb-0.5 cursor-pointer transition-all ${
             canSend
               ? 'bg-primary text-white shadow-[0_3px_8px_rgba(59,130,246,0.35)] hover:scale-105 hover:shadow-[0_5px_12px_rgba(59,130,246,0.45)] active:scale-95'
-              : 'bg-light-border dark:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary shadow-none cursor-not-allowed'
+              : 'bg-light-border text-light-text-secondary shadow-none cursor-not-allowed'
           }`}
           onClick={handleSend}
           disabled={!canSend}

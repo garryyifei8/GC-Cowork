@@ -20,6 +20,16 @@ interface ProjectState {
   updateTask: (taskId: string, updates: Partial<ProjectTask>) => Promise<void>;
   transitionProject: (id: string, targetStage: string) => Promise<void>;
   createTask: (projectId: string, data: { name: string; assignee?: string; priority?: string; due_date?: string }) => Promise<void>;
+  deleteProject: (id: string, navigate: (path: string) => void) => Promise<void>;
+  createMilestone: (projectId: string, data: { name: string; date?: string; status?: string }) => Promise<void>;
+  updateMilestone: (projectId: string, milestoneId: string, data: Record<string, unknown>) => Promise<void>;
+  deleteMilestone: (projectId: string, milestoneId: string) => Promise<void>;
+  createRisk: (projectId: string, data: { description: string; level?: string; mitigation?: string }) => Promise<void>;
+  updateRisk: (projectId: string, riskId: string, data: Record<string, unknown>) => Promise<void>;
+  deleteRisk: (projectId: string, riskId: string) => Promise<void>;
+  addTeamMember: (projectId: string, name: string) => Promise<void>;
+  removeTeamMember: (projectId: string, name: string) => Promise<void>;
+  deleteTask: (taskId: string, projectId: string) => Promise<void>;
   setViewType: (view: ViewType) => void;
   selectProject: (id: string | null) => void;
   clearError: () => void;
@@ -146,6 +156,159 @@ export const useProjectStore = create<ProjectState>((set, _get) => ({
       set({
         error: err instanceof Error ? err.message : '创建任务失败',
       });
+    }
+  },
+
+  deleteProject: async (id: string, navigate: (path: string) => void) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.delete(id);
+      set((state) => ({
+        projects: state.projects.filter((p) => p.id !== id),
+        projectDetail: state.projectDetail?.id === id ? null : state.projectDetail,
+        isLoading: false,
+      }));
+      navigate('/projects');
+    } catch (err) {
+      set({
+        isLoading: false,
+        error: err instanceof Error ? err.message : '删除项目失败',
+      });
+    }
+  },
+
+  createMilestone: async (projectId: string, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.createMilestone(projectId, data);
+      const detail = await projectService.get(projectId);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [projectId]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '创建里程碑失败' });
+    }
+  },
+
+  updateMilestone: async (projectId: string, milestoneId: string, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.updateMilestone(projectId, milestoneId, data);
+      const detail = await projectService.get(projectId);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [projectId]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '更新里程碑失败' });
+    }
+  },
+
+  deleteMilestone: async (projectId: string, milestoneId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.deleteMilestone(projectId, milestoneId);
+      const detail = await projectService.get(projectId);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [projectId]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '删除里程碑失败' });
+    }
+  },
+
+  createRisk: async (projectId: string, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.createRisk(projectId, data);
+      const detail = await projectService.get(projectId);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [projectId]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '创建风险失败' });
+    }
+  },
+
+  updateRisk: async (projectId: string, riskId: string, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.updateRisk(projectId, riskId, data);
+      const detail = await projectService.get(projectId);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [projectId]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '更新风险失败' });
+    }
+  },
+
+  deleteRisk: async (projectId: string, riskId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.deleteRisk(projectId, riskId);
+      const detail = await projectService.get(projectId);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [projectId]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '删除风险失败' });
+    }
+  },
+
+  addTeamMember: async (projectId: string, name: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.addTeamMember(projectId, name);
+      const detail = await projectService.get(projectId);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [projectId]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '添加团队成员失败' });
+    }
+  },
+
+  removeTeamMember: async (projectId: string, name: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.removeTeamMember(projectId, name);
+      const detail = await projectService.get(projectId);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [projectId]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '移除团队成员失败' });
+    }
+  },
+
+  deleteTask: async (taskId: string, projectId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await projectService.deleteTask(taskId);
+      const detail = await projectService.get(projectId);
+      set((state) => ({
+        projectDetail: detail,
+        tasks: { ...state.tasks, [projectId]: detail.tasks },
+        isLoading: false,
+      }));
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '删除任务失败' });
     }
   },
 

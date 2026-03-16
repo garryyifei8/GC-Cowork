@@ -1,4 +1,4 @@
-import type { ChatResponse, Project, ProjectDetail, ProjectTask, BiddingOpportunity, ActivityEvent, DashboardMetrics, AISuggestion, TaskWithProject, DocumentItem, Employee, AttendanceRecord, LeaveRequest, SalaryRecord, HRSummary, ExpenseReport, BudgetLine, FinanceInvoice, FinanceSummary } from '../types';
+import type { ChatResponse, Project, ProjectDetail, ProjectTask, BiddingOpportunity, ActivityEvent, DashboardMetrics, AISuggestion, TaskWithProject, DocumentItem, Employee, AttendanceRecord, LeaveRequest, SalaryRecord, HRSummary, ExpenseReport, BudgetLine, FinanceInvoice, FinanceSummary, ProcurementPackage, ProcessRecord } from '../types';
 
 const API_BASE = '/api';
 
@@ -14,11 +14,103 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const chatService = {
+  /** Non-streaming fallback — waits for the full response. */
   sendMessage: (message: string, context?: Array<{ role: string; content: string }>) =>
     request<ChatResponse>('/chat', {
       method: 'POST',
       body: JSON.stringify({ message, context }),
     }),
+
+  /**
+   * Streaming variant using `fetch` + `ReadableStream`.
+   * POSTs to `/api/chat/stream` and parses server-sent events:
+   *   - `event: token`  → calls `onToken(content)`
+   *   - `event: done`   → calls `onDone({ agent_type, cards })`
+   *   - `event: error`  → calls `onError(message)`
+   *
+   * Returns a Promise that resolves when the stream is fully consumed
+   * or rejects on network failure.
+   */
+  streamMessage: async (
+    message: string,
+    context: Array<{ role: string; content: string }> | undefined,
+    onToken: (token: string) => void,
+    onDone: (payload: { agent_type: string; cards: any[] }) => void,
+    onError: (errorMessage: string) => void,
+  ): Promise<void> => {
+    const res = await fetch(`${API_BASE}/chat/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, context }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status}`);
+    }
+
+    if (!res.body) {
+      throw new Error('Response body is not readable');
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    // Buffer for incomplete SSE frames between chunks
+    let buffer = '';
+
+    const parseAndDispatch = (rawBlock: string) => {
+      // Each SSE block contains one or more lines; extract event + data
+      const lines = rawBlock.split('\n');
+      let eventType = '';
+      let dataLine = '';
+
+      for (const line of lines) {
+        if (line.startsWith('event:')) {
+          eventType = line.slice('event:'.length).trim();
+        } else if (line.startsWith('data:')) {
+          dataLine = line.slice('data:'.length).trim();
+        }
+      }
+
+      if (!eventType || !dataLine) return;
+
+      try {
+        const parsed = JSON.parse(dataLine);
+        if (eventType === 'token') {
+          onToken(parsed.content ?? '');
+        } else if (eventType === 'done') {
+          onDone({ agent_type: parsed.agent_type ?? 'dispatch', cards: parsed.cards ?? [] });
+        } else if (eventType === 'error') {
+          onError(parsed.message ?? '流式响应发生错误');
+        }
+      } catch {
+        // Malformed JSON in SSE data — silently ignore
+      }
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // SSE events are delimited by double newlines
+      const blocks = buffer.split('\n\n');
+      // Keep the last (potentially incomplete) block in the buffer
+      buffer = blocks.pop() ?? '';
+
+      for (const block of blocks) {
+        const trimmed = block.trim();
+        if (trimmed) {
+          parseAndDispatch(trimmed);
+        }
+      }
+    }
+
+    // Handle any trailing data in buffer after stream closes
+    if (buffer.trim()) {
+      parseAndDispatch(buffer.trim());
+    }
+  },
 };
 
 export const projectService = {
@@ -58,6 +150,116 @@ export const projectService = {
     request<ActivityEvent[]>(`/projects/${projectId}/activities`),
   getDocuments: (projectId: string) =>
     request<DocumentItem[]>(`/projects/${projectId}/documents`),
+  delete: async (projectId: string) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json().catch(() => ({}));
+  },
+  createMilestone: async (projectId: string, data: { name: string; date?: string; status?: string }) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/milestones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+  updateMilestone: async (projectId: string, milestoneId: string, data: Record<string, unknown>) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/milestones/${milestoneId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+  deleteMilestone: async (projectId: string, milestoneId: string) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/milestones/${milestoneId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json().catch(() => ({}));
+  },
+  createRisk: async (projectId: string, data: { description: string; level?: string; mitigation?: string }) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/risks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+  updateRisk: async (projectId: string, riskId: string, data: Record<string, unknown>) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/risks/${riskId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+  deleteRisk: async (projectId: string, riskId: string) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/risks/${riskId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json().catch(() => ({}));
+  },
+  updateTeam: async (projectId: string, members: string[]) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/team`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ members }),
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+  addTeamMember: async (projectId: string, name: string) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/team`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  },
+  removeTeamMember: async (projectId: string, name: string) => {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/team/${encodeURIComponent(name)}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json().catch(() => ({}));
+  },
+  deleteTask: async (taskId: string) => {
+    const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json().catch(() => ({}));
+  },
+  getProcurements: (projectId: string) =>
+    request<ProcurementPackage[]>(`/projects/${projectId}/procurement`).then((res: any) => res.items ?? res),
+  updateProcurement: (projectId: string, pkgId: string, updates: Record<string, any>) =>
+    request<ProcurementPackage>(`/projects/${projectId}/procurement/${pkgId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    }),
+  getProcessRecords: (projectId: string, recordType?: string) => {
+    const params = recordType ? `?record_type=${recordType}` : '';
+    return request<ProcessRecord[]>(`/projects/${projectId}/processes${params}`).then((res: any) => res.items ?? res);
+  },
+  createProcessRecord: (projectId: string, data: Record<string, any>) =>
+    request<ProcessRecord>(`/projects/${projectId}/processes`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 export const activityService = {
