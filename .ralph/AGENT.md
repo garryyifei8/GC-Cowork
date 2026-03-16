@@ -2,48 +2,40 @@
 
 ## Project Setup
 ```bash
-# Install dependencies (example for Node.js project)
-npm install
-
-# Or for Python project
+# Python 3.11+ required
 pip install -r requirements.txt
-
-# Or for Rust project  
-cargo build
+cp .env.example .env   # then fill in real values
 ```
 
 ## Running Tests
 ```bash
-# Node.js
-npm test
-
-# Python
-pytest
-
-# Rust
-cargo test
+pytest tests/ -v
+pytest tests/ --cov=src --cov-report=term-missing   # with coverage
 ```
 
 ## Build Commands
 ```bash
-# Production build
-npm run build
-# or
-cargo build --release
+# No build step required — Python runtime
 ```
 
 ## Development Server
 ```bash
-# Start development server
-npm run dev
-# or
-cargo run
+uvicorn src.main:app --reload --port 8000
 ```
 
+## API Endpoints (P0)
+- GET  /                            — root welcome
+- GET  /api/health                  — health check
+- POST /api/chat/sessions           — create conversation session
+- GET  /api/chat/sessions?user_id=X — list user sessions
+- POST /api/chat/message            — send message, get agent response
+
 ## Key Learnings
-- Update this section when you learn new build optimizations
-- Document any gotchas or special setup requirements
-- Keep track of the fastest test/build cycle
+- Tech stack: Python FastAPI + Pydantic v2 + pytest
+- Agent system: DispatchAgent does keyword-based intent routing (P1: replace with LLM classifier)
+- All domain models in src/core/models.py (Session, Message, Agent*, Project, KnowledgeItem)
+- Configuration via pydantic-settings + .env (src/core/config.py)
+- In-memory session store in P0; replace with persistent DB in P1
 
 ## Feature Development Quality Standards
 
