@@ -1,8 +1,6 @@
 """项目管理Agent — project lifecycle management with structured card output."""
 from src.agents.base import BaseAgent
-from src.core.models import (
-    AgentRequest, AgentResponse, AgentType, CardType, InteractiveCard,
-)
+from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import PROJECT_SYSTEM_PROMPT
 from src.stores.project_store import list_projects
 from src.stores.task_store import list_tasks
@@ -43,6 +41,19 @@ class ProjectAgent(BaseAgent):
         response.cards = cards
         return response
 
+    def build_stream_messages(self, request: AgentRequest) -> list[dict[str, str]]:
+        """Build messages for streaming with project data injected."""
+        messages = self._build_messages(request)
+        messages.insert(1, {
+            "role": "system",
+            "content": f"以下是当前系统中的项目数据，请基于这些数据回答用户问题：\n\n{self._build_project_context()}",
+        })
+        messages.append({
+            "role": "system",
+            "content": "重要：本次请直接用自然语言回复用户。不要使用JSON格式，不要输出代码块。请使用清晰的中文段落和列表来组织回答。",
+        })
+        return messages
+
     def _build_project_context(self) -> str:
         """Serialize current project data for LLM context."""
         projects = list_projects()
@@ -78,39 +89,3 @@ class ProjectAgent(BaseAgent):
             )
         return "\n\n".join(lines)
 
-    def _parse_cards(self, raw_cards: list) -> list[InteractiveCard]:
-        """Convert LLM JSON card output to InteractiveCard models."""
-        cards: list[InteractiveCard] = []
-        for raw in raw_cards:
-            if not isinstance(raw, dict):
-                continue
-            try:
-                card_type_str = raw.get("card_type", "data")
-                # Map string to CardType enum.
-                # The LLM may return "alert" which has no enum member;
-                # we map it to DATA and preserve severity in the data dict.
-                card_type_map = {
-                    "action": CardType.ACTION,
-                    "data": CardType.DATA,
-                    "form": CardType.FORM,
-                    "file": CardType.FILE,
-                    "alert": CardType.DATA,
-                }
-                card_type = card_type_map.get(card_type_str, CardType.DATA)
-
-                data = raw.get("data", {})
-                # When the LLM returns "alert", inject a severity marker
-                # so the frontend can render the card differently.
-                if card_type_str == "alert" and "severity" not in data:
-                    data["severity"] = "warning"
-
-                card = InteractiveCard(
-                    card_type=card_type,
-                    title=raw.get("title", ""),
-                    data=data,
-                    actions=raw.get("actions", []),
-                )
-                cards.append(card)
-            except Exception:
-                continue
-        return cards

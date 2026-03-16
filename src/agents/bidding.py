@@ -1,8 +1,6 @@
 """投标管理Agent — bidding management with structured card output."""
 from src.agents.base import BaseAgent
-from src.core.models import (
-    AgentRequest, AgentResponse, AgentType, CardType, InteractiveCard,
-)
+from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import BIDDING_SYSTEM_PROMPT
 from src.stores.bidding_store import list_opportunities
 
@@ -46,27 +44,3 @@ class BiddingAgent(BaseAgent):
             )
         return "\n\n".join(lines)
 
-    def _parse_cards(self, raw_cards: list) -> list[InteractiveCard]:
-        cards = []
-        for raw in raw_cards:
-            if not isinstance(raw, dict):
-                continue
-            try:
-                card_type_str = raw.get("card_type", "data")
-                card_type_map = {
-                    "action": CardType.ACTION,
-                    "data": CardType.DATA,
-                    "form": CardType.FORM,
-                    "file": CardType.FILE,
-                    "alert": CardType.DATA,
-                }
-                card = InteractiveCard(
-                    card_type=card_type_map.get(card_type_str, CardType.DATA),
-                    title=raw.get("title", ""),
-                    data=raw.get("data", {}),
-                    actions=raw.get("actions", []),
-                )
-                cards.append(card)
-            except Exception:
-                continue
-        return cards

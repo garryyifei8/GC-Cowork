@@ -58,10 +58,17 @@ class ProjectStage(str, Enum):
 
 
 class CardType(str, Enum):
-    ACTION = "action"   # 操作卡片 — buttons for approve/reject/assign
-    DATA = "data"       # 数据卡片 — charts and summaries
-    FORM = "form"       # 表单卡片 — inline form filling
-    FILE = "file"       # 文件卡片 — document preview/edit
+    ACTION = "action"        # 操作卡片 — buttons for approve/reject/assign
+    DATA = "data"            # 数据卡片 — charts and summaries
+    FORM = "form"            # 表单卡片 — inline form filling
+    FILE = "file"            # 文件卡片 — document preview/edit
+    ALERT = "alert"          # 预警卡片 — risk / anomaly warnings
+    TASK_LIST = "task_list"  # 可交互任务列表
+    KANBAN = "kanban"        # 可交互看板
+    PROGRESS = "progress"    # 项目进度图
+    TABLE = "table"          # 表格（项目/通用）
+    CHART = "chart"          # 图表（环形/柱状等）
+    REPORT = "report"        # 报告卡片
 
 
 # ---------------------------------------------------------------------------
@@ -203,6 +210,21 @@ class ProjectTask(TimestampedModel):
 
 
 # ---------------------------------------------------------------------------
+# Activity Log (活动日志)
+# ---------------------------------------------------------------------------
+
+class ActivityEvent(BaseModel):
+    """A single activity event in the project lifecycle."""
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    project_id: str
+    event_type: str  # task_created | task_updated | stage_transition | status_changed
+    actor: str
+    summary: str        # 人类可读的中文摘要
+    detail: dict[str, Any] = Field(default_factory=dict)  # before/after
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ---------------------------------------------------------------------------
 # Bidding
 # ---------------------------------------------------------------------------
 
@@ -238,6 +260,63 @@ class DocumentItem(TimestampedModel):
 
 
 # ---------------------------------------------------------------------------
+# Procurement (采购管理)
+# ---------------------------------------------------------------------------
+
+class ProcurementStatus(str, Enum):
+    PLANNING = "planning"       # 计划中
+    BIDDING = "bidding"         # 招标中
+    EVALUATING = "evaluating"   # 评标中
+    CONTRACTED = "contracted"   # 已签约
+    DELIVERING = "delivering"   # 供货中
+    INSPECTING = "inspecting"   # 验收中
+    COMPLETED = "completed"     # 已完成
+
+
+class ProcurementPackage(TimestampedModel):
+    """采购包 — EPC项目的材料/设备/分包采购单元"""
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    project_id: str
+    name: str                    # "幕墙玻璃采购"
+    category: str = ""           # "材料" | "设备" | "分包"
+    supplier: str | None = None
+    budget_amount: float | None = None
+    actual_amount: float | None = None
+    status: ProcurementStatus = ProcurementStatus.PLANNING
+    plan_date: str | None = None     # 计划采购日期
+    arrival_date: str | None = None  # 到货日期
+    responsible: str | None = None
+    notes: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Process Records (过程管理)
+# ---------------------------------------------------------------------------
+
+class ProcessRecordType(str, Enum):
+    DAILY_LOG = "daily_log"         # 施工日志
+    QUALITY_CHECK = "quality_check" # 质量检查
+    INSPECTION = "inspection"       # 巡检记录
+    MATERIAL_ENTRY = "material_entry" # 材料进场
+    HIDDEN_WORK = "hidden_work"     # 隐蔽工程验收
+    SAFETY_CHECK = "safety_check"   # 安全检查
+
+
+class ProcessRecord(TimestampedModel):
+    """过程管理记录 — 施工日志、质检、巡检等"""
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    project_id: str
+    record_type: ProcessRecordType
+    title: str
+    date: str                  # "2026-03-13"
+    author: str
+    content: str = ""
+    status: str = "normal"     # "normal" | "issue" | "resolved"
+    attachments: list[str] = Field(default_factory=list)  # 附件文件名列表
+    related_stage: str = ""    # 关联阶段
+
+
+# ---------------------------------------------------------------------------
 # Knowledge Base
 # ---------------------------------------------------------------------------
 
@@ -253,3 +332,176 @@ class KnowledgeItem(TimestampedModel):
     classification_level: str = "internal"  # public | internal | confidential | secret
     version: str = "1.0"
     embedding_vector: list[float] | None = None  # populated after ingestion
+
+
+# ---------------------------------------------------------------------------
+# Shared Enums (HR + Finance approval flow)
+# ---------------------------------------------------------------------------
+
+class ApprovalStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+# ---------------------------------------------------------------------------
+# HR Enums & Models
+# ---------------------------------------------------------------------------
+
+class EmployeeStatus(str, Enum):
+    ACTIVE = "active"
+    ON_LEAVE = "on_leave"
+    RESIGNED = "resigned"
+
+
+class AttendanceStatus(str, Enum):
+    NORMAL = "normal"
+    LATE = "late"
+    ABSENT = "absent"
+    LEAVE = "leave"
+
+
+class LeaveType(str, Enum):
+    ANNUAL = "annual"
+    SICK = "sick"
+    PERSONAL = "personal"
+    MATERNITY = "maternity"
+
+
+class Employee(TimestampedModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    name: str
+    department: str
+    position: str
+    hire_date: str           # "2024-03-01"
+    salary: float
+    status: EmployeeStatus = EmployeeStatus.ACTIVE
+    phone: str = ""
+    email: str = ""
+    emergency_contact: str = ""
+
+
+class AttendanceRecord(TimestampedModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    employee_id: str
+    date: str                # "2026-03-11"
+    check_in: str | None = None   # "08:55"
+    check_out: str | None = None  # "18:05"
+    status: AttendanceStatus = AttendanceStatus.NORMAL
+
+
+class LeaveRequest(TimestampedModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    employee_id: str
+    leave_type: LeaveType
+    start_date: str
+    end_date: str
+    days: float
+    reason: str = ""
+    status: ApprovalStatus = ApprovalStatus.PENDING
+    approver: str | None = None
+
+
+class SalaryRecord(TimestampedModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    employee_id: str
+    month: str               # "2026-03"
+    base_salary: float
+    overtime_pay: float = 0
+    bonus: float = 0
+    deductions: float = 0
+    social_insurance: float = 0
+    tax: float = 0
+    net_salary: float = 0
+
+
+# ---------------------------------------------------------------------------
+# Finance Enums & Models
+# ---------------------------------------------------------------------------
+
+class ExpenseCategory(str, Enum):
+    TRAVEL = "travel"
+    OFFICE = "office"
+    ENTERTAINMENT = "entertainment"
+    MATERIAL = "material"
+    OTHER = "other"
+
+
+class ExpenseStatus(str, Enum):
+    DRAFT = "draft"
+    SUBMITTED = "submitted"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    PAID = "paid"
+
+
+class InvoiceStatus(str, Enum):
+    PENDING = "pending"
+    PAID = "paid"
+    OVERDUE = "overdue"
+
+
+class ExpenseReport(TimestampedModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    submitter: str
+    project_id: str | None = None
+    category: ExpenseCategory
+    amount: float
+    description: str = ""
+    receipts_count: int = 0
+    submit_date: str = ""
+    status: ExpenseStatus = ExpenseStatus.DRAFT
+    approver: str | None = None
+    payment_date: str | None = None
+
+
+class BudgetLine(TimestampedModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    project_id: str | None = None
+    category: str
+    planned_amount: float
+    actual_amount: float = 0
+    fiscal_year: int = 2026
+    quarter: int = 1
+    notes: str = ""
+
+
+class Invoice(TimestampedModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    project_id: str | None = None
+    vendor: str
+    amount: float
+    invoice_date: str = ""
+    due_date: str = ""
+    status: InvoiceStatus = InvoiceStatus.PENDING
+    category: str = ""
+
+
+# ---------------------------------------------------------------------------
+# OA Enums & Models
+# ---------------------------------------------------------------------------
+
+class NoticeType(str, Enum):
+    SYSTEM = "system"
+    ANNOUNCEMENT = "announcement"
+    APPROVAL_RESULT = "approval_result"
+
+
+class Notice(TimestampedModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    title: str
+    content: str
+    type: NoticeType = NoticeType.SYSTEM
+    target_user: str | None = None  # None = broadcast to all
+    is_read: bool = False
+
+
+class VehicleRequest(TimestampedModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    applicant: str
+    date: str          # YYYY-MM-DD
+    origin: str
+    destination: str
+    reason: str = ""
+    status: ApprovalStatus = ApprovalStatus.PENDING
+    approver: str | None = None

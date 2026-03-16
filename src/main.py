@@ -7,7 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from src.api.routes import bidding, chat, health, projects
+from src.api.routes import bidding, chat, dashboard, finance, health, hr, oa, projects
 from src.core.config import settings
 from src.core.exceptions import (
     PlatformError,
@@ -60,20 +60,38 @@ app.include_router(health.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(projects.router, prefix="/api")
 app.include_router(projects.task_router, prefix="/api")
+app.include_router(projects.activity_router, prefix="/api")
 app.include_router(bidding.router, prefix="/api")
+app.include_router(dashboard.router, prefix="/api")
+app.include_router(hr.router, prefix="/api")
+app.include_router(finance.router, prefix="/api")
+app.include_router(oa.router, prefix="/api")
 
 
 @app.on_event("startup")
 async def startup_event():
     from src.stores.project_store import seed_projects
     from src.stores.task_store import seed_tasks
+    from src.stores.activity_store import seed_activities
     from src.stores.bidding_store import seed_bidding
     from src.stores.document_store import seed_documents
 
     seed_projects()
     seed_tasks()
+    seed_activities()
     seed_bidding()
     seed_documents()
+
+    from src.stores.hr_store import seed_hr
+    from src.stores.finance_store import seed_finance
+    from src.stores.oa_store import seed_oa
+    from src.stores.procurement_store import seed_procurement
+    from src.stores.process_store import seed_processes
+    seed_hr()
+    seed_finance()
+    seed_oa()
+    seed_procurement()
+    seed_processes()
 
 
 @app.get("/")
