@@ -11,6 +11,7 @@ import { HRDashboard } from './pages/HRDashboard';
 import { FinanceDashboard } from './pages/FinanceDashboard';
 import { MyDaily } from './pages/MyDaily';
 import { ChatPage } from './pages/ChatPage';
+import AgentsPage from './pages/AgentsPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Routes>
         <Route path="/" element={<AppLayout />}>
           <Route index element={<Overview />} />
+          <Route path="agents" element={<AgentsPage />} />
           <Route path="chat" element={<ChatPage />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="daily" element={<MyDaily />} />

@@ -282,6 +282,7 @@ export const AppLayout: React.FC = () => {
           {/* ---- AI section — Monday.com "monday AI" group ---- */}
           <div className="px-2 pt-0.5">
             <SidebarSection label="AI" defaultOpen={true}>
+              <SidebarNavItem to="/agents" icon={<Bot size={18} />} label="Agent中心" />
               <SidebarNavItem to="/chat" icon={<Sparkles size={18} />} label="AI小助理" />
             </SidebarSection>
           </div>
