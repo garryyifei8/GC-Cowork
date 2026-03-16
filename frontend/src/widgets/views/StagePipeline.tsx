@@ -1,5 +1,5 @@
 import React from 'react'
-import { StatusBadge } from '../atomic'
+
 import { useDashboardStore } from '../../stores/dashboardStore'
 
 export interface StagePipelineProps {

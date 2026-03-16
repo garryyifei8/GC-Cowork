@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Loader2 } from 'lucide-react'
-import { ProcurementItem } from '../business'
+
 import { EmptyState } from '../atomic'
 import type { ProcurementPackage } from '../../types'
 import {

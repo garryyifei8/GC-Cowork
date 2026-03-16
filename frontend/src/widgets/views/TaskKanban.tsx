@@ -4,7 +4,7 @@ import { TaskCard } from '../business'
 import { EmptyState } from '../atomic'
 import { useTaskWorkbenchStore } from '../../stores/taskWorkbenchStore'
 import { TASK_STATUS_COLORS, TASK_STATUS_LABELS } from '../../utils/constants'
-import type { TaskWithProject } from '../../types'
+import type { ProjectTask, TaskWithProject } from '../../types'
 
 // ---------------------------------------------------------------------------
 // Kanban column definitions
@@ -81,7 +81,7 @@ const KanbanQuickAdd: React.FC<{
 
 export interface TaskKanbanProps {
   data?: { tasks?: TaskWithProject[] }
-  onTaskClick?: (task: TaskWithProject) => void
+  onTaskClick?: (task: ProjectTask | TaskWithProject) => void
   onQuickAdd?: (name: string, groupKey: string) => void
 }
 

@@ -96,7 +96,7 @@ const Chart: React.FC<ChartProps> = (props) => {
           />
           <Tooltip content={<ChartTooltip />} />
           <Legend />
-          {series.map((s, i) => (
+          {series.map((s: ChartSeries, i: number) => (
             <Bar
               key={s.dataKey}
               dataKey={s.dataKey}
@@ -125,7 +125,7 @@ const Chart: React.FC<ChartProps> = (props) => {
           <YAxis tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
           <Tooltip content={<ChartTooltip />} />
           <Legend />
-          {series.map((s, i) => (
+          {series.map((s: ChartSeries, i: number) => (
             <Line
               key={s.dataKey}
               type="monotone"
@@ -162,7 +162,7 @@ const Chart: React.FC<ChartProps> = (props) => {
           startAngle={90}
           endAngle={-270}
         >
-          {chartData.map((entry, i) => (
+          {chartData.map((entry: Record<string, any>, i: number) => (
             <Cell
               key={i}
               fill={entry.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length]}
