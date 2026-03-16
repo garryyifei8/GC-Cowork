@@ -26,6 +26,8 @@ class AgentType(str, Enum):
     BIDDING = "bidding"            # 投标Agent
     DOCUMENT = "document"          # 文档Agent
     KNOWLEDGE = "knowledge"        # 知识Agent
+    PROCESS_CONTROL = "process_control"  # 过控Agent — 四控管理（进度/质量/安全/成本）
+    SUPERVISION = "supervision"    # 监理Agent — 监理管理
 
 
 class MessageRole(str, Enum):

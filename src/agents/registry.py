@@ -18,6 +18,8 @@ def create_agent_registry(llm_client: LLMClient) -> dict[AgentType, BaseAgent]:
     from src.agents.legal import LegalAgent
     from src.agents.procurement import ProcurementAgent
     from src.agents.project import ProjectAgent
+    from src.agents.process import ProcessControlAgent
+    from src.agents.supervision import SupervisionAgent
 
     return {
         AgentType.DISPATCH: DispatchAgent(llm_client),
@@ -29,6 +31,8 @@ def create_agent_registry(llm_client: LLMClient) -> dict[AgentType, BaseAgent]:
         AgentType.BIDDING: BiddingAgent(llm_client),
         AgentType.DOCUMENT: DocumentAgent(llm_client),
         AgentType.KNOWLEDGE: KnowledgeAgent(llm_client),
+        AgentType.PROCESS_CONTROL: ProcessControlAgent(llm_client),
+        AgentType.SUPERVISION: SupervisionAgent(llm_client),
     }
 
 
