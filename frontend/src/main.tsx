@@ -3,13 +3,9 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
-// Apply saved theme before first render to prevent flash
-const savedTheme = localStorage.getItem('theme') || 'dark';
-if (savedTheme === 'dark') {
-  document.documentElement.classList.add('dark');
-} else {
-  document.documentElement.classList.remove('dark');
-}
+// Always light mode — ensure no dark class on root
+document.documentElement.classList.remove('dark');
+localStorage.setItem('theme', 'light');
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
