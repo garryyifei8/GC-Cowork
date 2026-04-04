@@ -1,69 +1,147 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { ChevronDown, ChevronRight, Plus, Calendar, User } from 'lucide-react'
+import {
+  Calendar,
+  GripVertical,
+  MoreVertical,
+  Star,
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Check,
+} from 'lucide-react'
 import { EmptyState } from '../atomic'
 import { useTaskWorkbenchStore } from '../../stores/taskWorkbenchStore'
 import {
   TASK_STATUS_COLORS,
   TASK_STATUS_LABELS,
-  PRIORITY_COLORS,
   PRIORITY_LABELS,
 } from '../../utils/constants'
 import type { TaskWithProject } from '../../types'
 
 // ---------------------------------------------------------------------------
-// Grid columns
+// Status dot colors matching Preclinic design spec
 // ---------------------------------------------------------------------------
 
-const GRID_COLS_PROJECT = 'grid-cols-[1fr_80px_160px_110px_140px_140px]'
-const GRID_COLS_NO_PROJECT = 'grid-cols-[1fr_80px_110px_140px_140px]'
+const STATUS_DOT_COLORS: Record<string, string> = {
+  in_progress: '#00C875',
+  todo:        '#C4C4C4',
+  done:        '#919AA3',
+  blocked:     '#E74C3C',
+  review:      '#FFB264',
+}
 
 // ---------------------------------------------------------------------------
-// Status cell (inline editable)
+// All statuses / priorities for dropdowns
 // ---------------------------------------------------------------------------
 
 const ALL_STATUSES = ['todo', 'in_progress', 'review', 'done', 'blocked']
+const ALL_PRIORITIES = ['high', 'medium', 'low']
 
-const StatusCell: React.FC<{
+// ---------------------------------------------------------------------------
+// Priority dot colors (filled for high, outline-style for medium/low via border)
+// ---------------------------------------------------------------------------
+
+const PRIORITY_DOT_COLORS: Record<string, string> = {
+  high:   '#E74C3C',
+  medium: '#FFB264',
+  low:    '#00CAE3',
+}
+
+// ---------------------------------------------------------------------------
+// Project tag pill colors — deterministic by project name hash
+// ---------------------------------------------------------------------------
+
+const TAG_PILL_COLORS = [
+  'bg-[#0086C0]',
+  'bg-[#00C875]',
+  'bg-[#E74C3C]',
+  'bg-[#00CAE3]',
+  'bg-[#FFB264]',
+]
+
+function getTagPillColor(name: string): string {
+  if (!name) return TAG_PILL_COLORS[0]
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0
+  }
+  return TAG_PILL_COLORS[hash % TAG_PILL_COLORS.length]
+}
+
+// ---------------------------------------------------------------------------
+// Assignee avatar helpers
+// ---------------------------------------------------------------------------
+
+function getAvatarUrl(name: string): string {
+  const seed = encodeURIComponent(name)
+  return `https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=6366f1,0ea5e9,10b981,f59e0b,ef4444&backgroundType=gradientLinear`
+}
+
+const AvatarGroup: React.FC<{ assignee: string | null }> = ({ assignee }) => {
+  if (!assignee) return null
+  const names = assignee.split(',').map((n) => n.trim()).filter(Boolean).slice(0, 3)
+  return (
+    <div className="flex items-center -space-x-1.5">
+      {names.map((name, i) => (
+        <img
+          key={i}
+          src={getAvatarUrl(name)}
+          alt={name}
+          title={name}
+          className="w-6 h-6 rounded-full border-2 border-white shrink-0"
+          loading="lazy"
+          style={{ zIndex: names.length - i }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Status dropdown (dot + label inline, popover to change)
+// ---------------------------------------------------------------------------
+
+const StatusDisplay: React.FC<{
   status: string
   onSelect?: (status: string) => void
 }> = ({ status, onSelect }) => {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const color = TASK_STATUS_COLORS[status] ?? '#C4C4C4'
+  const dotColor = STATUS_DOT_COLORS[status] ?? '#C4C4C4'
   const label = TASK_STATUS_LABELS[status] ?? status
 
   useEffect(() => {
     if (!open) return
-    const handleClick = (e: MouseEvent) => {
+    const handle = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
   }, [open])
 
   return (
-    <div className="relative h-full" ref={ref}>
+    <div className="relative shrink-0" ref={ref}>
       <button
-        className="flex items-center justify-center w-full h-full text-[13px] font-semibold text-white whitespace-nowrap transition-opacity hover:opacity-85 cursor-pointer"
-        style={{ backgroundColor: color }}
+        className="flex items-center gap-1.5 text-sm text-light-text hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap"
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }}
         title={`状态: ${label}`}
       >
-        {label}
+        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+        <span>{label}</span>
       </button>
       {open && (
-        <div className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1 min-w-[120px]">
+        <div className="absolute z-50 top-full right-0 mt-1 bg-white border border-[#E8ECF4] rounded-[10px] shadow-lg py-1 min-w-[110px]">
           {ALL_STATUSES.map((s) => {
-            const c = TASK_STATUS_COLORS[s] ?? '#C4C4C4'
+            const c = STATUS_DOT_COLORS[s] ?? '#C4C4C4'
             const l = TASK_STATUS_LABELS[s] ?? s
             return (
               <button
                 key={s}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium hover:bg-[#F4F6FC] transition-colors"
                 onClick={(e) => { e.stopPropagation(); onSelect?.(s); setOpen(false) }}
               >
-                <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: c }} />
-                <span className={s === status ? 'font-bold text-gray-800 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}>{l}</span>
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c }} />
+                <span className={s === status ? 'font-medium text-light-text' : 'text-light-text-secondary'}>{l}</span>
               </button>
             )
           })}
@@ -74,52 +152,50 @@ const StatusCell: React.FC<{
 }
 
 // ---------------------------------------------------------------------------
-// Priority cell (inline editable)
+// Priority dropdown (dot + label inline)
 // ---------------------------------------------------------------------------
 
-const ALL_PRIORITIES = ['high', 'medium', 'low']
-
-const PriorityCell: React.FC<{
+const PriorityDisplay: React.FC<{
   priority: string
   onSelect?: (priority: string) => void
 }> = ({ priority, onSelect }) => {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const color = PRIORITY_COLORS[priority] ?? '#C4C4C4'
+  const dotColor = PRIORITY_DOT_COLORS[priority] ?? '#C4C4C4'
   const label = PRIORITY_LABELS[priority] ?? priority
 
   useEffect(() => {
     if (!open) return
-    const handleClick = (e: MouseEvent) => {
+    const handle = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', handle)
+    return () => document.removeEventListener('mousedown', handle)
   }, [open])
 
   return (
-    <div className="relative h-full" ref={ref}>
+    <div className="relative shrink-0" ref={ref}>
       <button
-        className="flex items-center justify-center w-full h-full text-[13px] font-semibold text-white whitespace-nowrap transition-opacity hover:opacity-85 cursor-pointer"
-        style={{ backgroundColor: color }}
+        className="flex items-center gap-1.5 text-sm text-light-text hover:opacity-80 transition-opacity cursor-pointer whitespace-nowrap"
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }}
         title={`优先级: ${label}`}
       >
-        {label}
+        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+        <span>{label}</span>
       </button>
       {open && (
-        <div className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1 min-w-[100px]">
+        <div className="absolute z-50 top-full right-0 mt-1 bg-white border border-[#E8ECF4] rounded-[10px] shadow-lg py-1 min-w-[90px]">
           {ALL_PRIORITIES.map((p) => {
-            const c = PRIORITY_COLORS[p] ?? '#C4C4C4'
+            const c = PRIORITY_DOT_COLORS[p] ?? '#C4C4C4'
             const l = PRIORITY_LABELS[p] ?? p
             return (
               <button
                 key={p}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium hover:bg-[#F4F6FC] transition-colors"
                 onClick={(e) => { e.stopPropagation(); onSelect?.(p); setOpen(false) }}
               >
-                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: c }} />
-                <span className={p === priority ? 'font-bold text-gray-800 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}>{l}</span>
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c }} />
+                <span className={p === priority ? 'font-medium text-light-text' : 'text-light-text-secondary'}>{l}</span>
               </button>
             )
           })}
@@ -130,56 +206,25 @@ const PriorityCell: React.FC<{
 }
 
 // ---------------------------------------------------------------------------
-// Assignee avatar
+// Task row — Preclinic Todo style, 44px height
 // ---------------------------------------------------------------------------
 
-const AssigneeAvatar: React.FC<{ assignee: string | null }> = ({ assignee }) => {
-  if (!assignee) {
-    return (
-      <div className="w-[26px] h-[26px] rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center" title="未分配">
-        <User size={13} className="text-gray-500 dark:text-gray-400" />
-      </div>
-    )
-  }
-  const seed = encodeURIComponent(assignee)
-  const url = `https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=6366f1,0ea5e9,10b981,f59e0b,ef4444&backgroundType=gradientLinear`
-  return (
-    <img src={url} alt={assignee} title={assignee} className="w-[26px] h-[26px] rounded-full bg-gray-200 dark:bg-gray-700 shrink-0" loading="lazy" />
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Column header row
-// ---------------------------------------------------------------------------
-
-const ColumnHeader: React.FC<{ showProject: boolean }> = ({ showProject }) => (
-  <div className={`grid items-center border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ${showProject ? GRID_COLS_PROJECT : GRID_COLS_NO_PROJECT}`}>
-    <div className="px-3 py-1.5 text-[12px] font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">任务</div>
-    <div className="px-2 py-1.5 text-[12px] font-medium text-gray-500 dark:text-gray-400 text-center border-r border-gray-200 dark:border-gray-700">负责人</div>
-    {showProject && <div className="px-2 py-1.5 text-[12px] font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">所属项目</div>}
-    <div className="px-2 py-1.5 text-[12px] font-medium text-gray-500 dark:text-gray-400 text-center border-r border-gray-200 dark:border-gray-700">截止日期</div>
-    <div className="px-2 py-1.5 text-[12px] font-medium text-gray-500 dark:text-gray-400 text-center border-r border-gray-200 dark:border-gray-700">状态</div>
-    <div className="px-2 py-1.5 text-[12px] font-medium text-gray-500 dark:text-gray-400 text-center">优先级</div>
-  </div>
-)
-
-// ---------------------------------------------------------------------------
-// Table row
-// ---------------------------------------------------------------------------
-
-const TableRow: React.FC<{
+const TaskRow: React.FC<{
   task: TaskWithProject
   showProject: boolean
   onStatusChange: (taskId: string, status: string) => void
   onPriorityChange: (taskId: string, priority: string) => void
   onTaskClick?: (task: TaskWithProject) => void
-}> = ({ task, showProject, onStatusChange, onPriorityChange, onTaskClick }) => {
+  isLast?: boolean
+  isSelected?: boolean
+  onToggleSelect?: (taskId: string) => void
+}> = ({ task, showProject, onStatusChange, onPriorityChange, onTaskClick, isLast, isSelected, onToggleSelect }) => {
   const today = new Date().toISOString().slice(0, 10)
-  const isOverdue = !!task.due_date && task.due_date < today && task.status !== 'done'
   const isDone = task.status === 'done'
+  const isOverdue = !!task.due_date && task.due_date < today && !isDone
 
   const dueDateDisplay = (() => {
-    if (!task.due_date) return '\u2014'
+    if (!task.due_date) return null
     const diff = Math.ceil((new Date(task.due_date).getTime() - new Date(today).getTime()) / 86400000)
     if (isDone) return task.due_date
     if (diff < 0) return `逾期 ${Math.abs(diff)} 天`
@@ -188,48 +233,124 @@ const TableRow: React.FC<{
     return task.due_date
   })()
 
+  const tagPillColor = getTagPillColor(task.project_name ?? '')
+
   return (
     <div
-      className={`grid items-stretch border-b border-gray-200/60 dark:border-gray-700/60 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors ${
-        onTaskClick ? 'cursor-pointer' : ''
-      } ${isDone ? 'opacity-60' : ''} ${showProject ? GRID_COLS_PROJECT : GRID_COLS_NO_PROJECT}`}
-      style={{ height: '36px' }}
+      className={`flex items-center h-[44px] px-3 gap-3 hover:bg-[#F4F6FC] transition-colors${
+        !isLast ? ' border-b border-[#E8ECF4]' : ''
+      }${onTaskClick ? ' cursor-pointer' : ''}`}
       onClick={() => onTaskClick?.(task)}
       role={onTaskClick ? 'button' : undefined}
       tabIndex={onTaskClick ? 0 : undefined}
       onKeyDown={onTaskClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onTaskClick(task) } : undefined}
     >
-      <div className="flex items-center gap-2 px-3 py-1 min-w-0 border-r border-gray-200/60 dark:border-gray-700/60">
-        <span className={`text-[14px] font-medium truncate ${isDone ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}>
-          {task.name}
-        </span>
-      </div>
-      <div className="flex items-center justify-center px-2 py-1 border-r border-gray-200/60 dark:border-gray-700/60">
-        <AssigneeAvatar assignee={task.assignee} />
-      </div>
-      {showProject && (
-        <div className="flex items-center px-2 py-1 min-w-0 border-r border-gray-200/60 dark:border-gray-700/60">
-          <span className="text-[13px] text-gray-500 dark:text-gray-400 truncate">{task.project_name}</span>
-        </div>
+      {/* Select checkbox / drag handle */}
+      {onToggleSelect ? (
+        <input
+          type="checkbox"
+          checked={!!isSelected}
+          onChange={(e) => { e.stopPropagation(); onToggleSelect(task.id) }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-4 h-4 shrink-0 accent-[#0F79F3] cursor-pointer"
+        />
+      ) : (
+        <GripVertical size={14} className="text-[#E8ECF4] shrink-0 cursor-grab" />
       )}
-      <div className="flex items-center justify-center px-2 py-1 border-r border-gray-200/60 dark:border-gray-700/60">
-        <span className={`inline-flex items-center gap-1 text-[12px] font-medium ${isOverdue && !isDone ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
-          {task.due_date && <Calendar size={11} />}
+
+      {/* Checkbox */}
+      <div
+        className={`w-4 h-4 rounded border-[1.5px] shrink-0 flex items-center justify-center transition-colors${
+          isDone
+            ? ' bg-[#0F79F3] border-[#0F79F3]'
+            : ' bg-white border-[#E8ECF4] hover:border-[#0F79F3]'
+        }`}
+        onClick={(e) => {
+          e.stopPropagation()
+          onStatusChange(task.id, isDone ? 'todo' : 'done')
+        }}
+        role="checkbox"
+        aria-checked={isDone}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.stopPropagation()
+            onStatusChange(task.id, isDone ? 'todo' : 'done')
+          }
+        }}
+        title={isDone ? '标记为未完成' : '标记为完成'}
+      >
+        {isDone && <Check size={10} className="text-white" strokeWidth={2.5} />}
+      </div>
+
+      {/* Star */}
+      <Star size={14} className="text-[#FFB264] shrink-0 fill-[#FFB264]" />
+
+      {/* Task name */}
+      <h4
+        className={`text-[15px] font-medium truncate flex-1 min-w-0${
+          isDone ? ' line-through opacity-50 text-light-text-secondary' : ' text-light-text'
+        }`}
+      >
+        {task.name}
+      </h4>
+
+      {/* Due date */}
+      {dueDateDisplay && (
+        <span
+          className={`flex items-center gap-1 text-sm shrink-0${
+            isOverdue ? ' text-[#E74C3C]' : ' text-[#00C875]'
+          }`}
+        >
+          <Calendar size={13} />
           {dueDateDisplay}
         </span>
-      </div>
-      <div className="border-r border-gray-200/60 dark:border-gray-700/60">
-        <StatusCell status={task.status} onSelect={(s) => onStatusChange(task.id, s)} />
-      </div>
-      <div>
-        <PriorityCell priority={task.priority} onSelect={(p) => onPriorityChange(task.id, p)} />
+      )}
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Right side cluster */}
+      <div className="flex items-center gap-3 shrink-0">
+        {/* Project tag pill */}
+        {showProject && task.project_name && (
+          <span
+            className={`${tagPillColor} text-white text-xs font-medium px-2.5 py-1 rounded-[10px] shrink-0 max-w-[140px] truncate`}
+          >
+            {task.project_name}
+          </span>
+        )}
+
+        {/* Status: dot + label (dropdown) */}
+        <StatusDisplay
+          status={task.status}
+          onSelect={(s) => onStatusChange(task.id, s)}
+        />
+
+        {/* Priority: dot + label (dropdown) */}
+        <PriorityDisplay
+          priority={task.priority}
+          onSelect={(p) => onPriorityChange(task.id, p)}
+        />
+
+        {/* Avatar group */}
+        <AvatarGroup assignee={task.assignee} />
+
+        {/* More button */}
+        <button
+          className="p-0.5 rounded hover:bg-[#E8ECF4] transition-colors text-[#919AA3] shrink-0"
+          onClick={(e) => e.stopPropagation()}
+          title="更多操作"
+        >
+          <MoreVertical size={16} />
+        </button>
       </div>
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Add-task inline
+// Add-task inline row
 // ---------------------------------------------------------------------------
 
 const AddTaskRow: React.FC<{ onAdd: (name: string) => void }> = ({ onAdd }) => {
@@ -248,7 +369,7 @@ const AddTaskRow: React.FC<{ onAdd: (name: string) => void }> = ({ onAdd }) => {
   if (!editing) {
     return (
       <button
-        className="flex items-center gap-1.5 w-full px-3 py-2 text-[12px] text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        className="flex items-center gap-1.5 w-full px-3 py-2 text-xs text-light-text-secondary hover:text-[#0086C0] hover:bg-[#F4F6FC] transition-colors border-t border-[#E8ECF4]"
         onClick={() => setEditing(true)}
       >
         <Plus size={13} />
@@ -258,11 +379,11 @@ const AddTaskRow: React.FC<{ onAdd: (name: string) => void }> = ({ onAdd }) => {
   }
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5">
-      <Plus size={13} className="text-blue-600 dark:text-blue-400 shrink-0" />
+    <div className="flex items-center gap-2 px-3 py-2 border-t border-[#E8ECF4]">
+      <Plus size={13} className="text-[#0086C0] shrink-0" />
       <input
         ref={inputRef}
-        className="flex-1 bg-transparent text-sm text-gray-800 dark:text-gray-200 outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
+        className="flex-1 bg-transparent text-sm text-light-text outline-none placeholder:text-[#919AA3]"
         placeholder="输入任务名称，按回车创建"
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -277,13 +398,14 @@ const AddTaskRow: React.FC<{ onAdd: (name: string) => void }> = ({ onAdd }) => {
 }
 
 // ---------------------------------------------------------------------------
-// Group section
+// Group section — Preclinic collapsible header + left-accent card
 // ---------------------------------------------------------------------------
 
 interface GroupSectionProps {
   label: string
   count: number
   accentColor: string
+  dotFilled?: boolean
   tasks: TaskWithProject[]
   showProject: boolean
   onStatusChange: (taskId: string, status: string) => void
@@ -291,49 +413,88 @@ interface GroupSectionProps {
   onTaskClick?: (task: TaskWithProject) => void
   onQuickAdd?: (name: string) => void
   defaultCollapsed?: boolean
+  selectedTaskIds?: Set<string>
+  onToggleSelect?: (taskId: string) => void
 }
 
 const GroupSection: React.FC<GroupSectionProps> = ({
-  label, count, accentColor, tasks, showProject,
+  label, count, accentColor, dotFilled = true, tasks, showProject,
   onStatusChange, onPriorityChange, onTaskClick, onQuickAdd,
-  defaultCollapsed = false,
+  defaultCollapsed = false, selectedTaskIds, onToggleSelect,
 }) => {
   const [collapsed, setCollapsed] = useState(defaultCollapsed)
 
   return (
-    <div className="mb-4">
-      <button
-        className="flex items-center gap-1.5 px-0.5 py-1 text-left transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50 rounded-sm w-full"
-        onClick={() => setCollapsed((c) => !c)}
-        aria-expanded={!collapsed}
-      >
-        <span style={{ color: accentColor }}>
-          {collapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
-        </span>
-        <span className="text-[18px] font-medium leading-6" style={{ color: accentColor }}>
-          {label}
-        </span>
-        <span className="text-[13px] text-gray-500 dark:text-gray-400 ml-1">{count} 个任务</span>
-      </button>
+    <div className="mb-5">
+      {/* Section header */}
+      <div className="flex items-center justify-between py-3">
+        {/* Left cluster */}
+        <div className="flex items-center gap-2">
+          <button
+            className="flex items-center text-light-text-secondary hover:text-light-text transition-colors shrink-0"
+            onClick={() => setCollapsed((c) => !c)}
+            aria-expanded={!collapsed}
+          >
+            {collapsed
+              ? <ChevronRight size={20} />
+              : <ChevronDown size={20} />
+            }
+          </button>
 
+          {/* Priority dot: filled circle for primary, outlined for others */}
+          {dotFilled ? (
+            <span
+              className="w-3 h-3 rounded-full shrink-0"
+              style={{ backgroundColor: accentColor }}
+            />
+          ) : (
+            <span
+              className="w-3 h-3 rounded-full shrink-0 border-2"
+              style={{ borderColor: accentColor }}
+            />
+          )}
+
+          <h5 className="text-[18px] font-medium text-light-text leading-none">
+            {label}
+          </h5>
+
+          <span className="text-sm font-medium bg-[#F4F6FC] text-light-text rounded px-2 py-0.5 leading-none">
+            {String(count).padStart(2, '0')}
+          </span>
+        </div>
+
+        {/* Right: See All */}
+        <button
+          className="flex items-center gap-1 text-sm font-medium text-[#00C875] hover:underline transition-colors"
+          onClick={() => {}}
+        >
+          查看全部
+          <ChevronRight size={14} />
+        </button>
+      </div>
+
+      {/* Task card with left-accent border */}
       {!collapsed && (
         <div
-          className="border border-gray-200 dark:border-gray-700 overflow-hidden"
-          style={{ borderLeftWidth: '4px', borderLeftColor: accentColor, borderRadius: '0 4px 4px 0' }}
+          className="border border-[#E8ECF4] rounded-[10px] overflow-hidden"
+          style={{ borderLeftWidth: '3px', borderLeftColor: accentColor }}
         >
-          <ColumnHeader showProject={showProject} />
-          {tasks.map((task) => (
-            <TableRow
-              key={task.id}
-              task={task}
-              showProject={showProject}
-              onStatusChange={onStatusChange}
-              onPriorityChange={onPriorityChange}
-              onTaskClick={onTaskClick}
-            />
-          ))}
-          {tasks.length === 0 && (
-            <div className="text-center text-[12px] text-gray-500 dark:text-gray-400 py-4">暂无任务</div>
+          {tasks.length === 0 ? (
+            <div className="text-center text-xs text-light-text-secondary py-5">暂无任务</div>
+          ) : (
+            tasks.map((task, idx) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                showProject={showProject}
+                onStatusChange={onStatusChange}
+                onPriorityChange={onPriorityChange}
+                onTaskClick={onTaskClick}
+                isLast={idx === tasks.length - 1 && !onQuickAdd}
+                isSelected={selectedTaskIds?.has(task.id)}
+                onToggleSelect={onToggleSelect}
+              />
+            ))
           )}
           {onQuickAdd && <AddTaskRow onAdd={onQuickAdd} />}
         </div>
@@ -363,18 +524,35 @@ function getDateBucket(dueDate: string | null, todayStr: string): DateBucket {
 }
 
 const DATE_BUCKET_ORDER: DateBucket[] = ['已过期', '今天', '本周', '下周', '以后', '无日期']
+
 const DATE_BUCKET_COLORS: Record<DateBucket, string> = {
-  '已过期': '#7f5347',
-  '今天': '#037f4c',
-  '本周': '#007eb5',
-  '下周': '#4eccc6',
-  '以后': '#9b51e0',
-  '无日期': '#676879',
+  '已过期': '#E74C3C',
+  '今天':   '#00C875',
+  '本周':   '#00CAE3',
+  '下周':   '#00CAE3',
+  '以后':   '#796DF6',
+  '无日期': '#919AA3',
 }
 
+// ---------------------------------------------------------------------------
+// Priority group colors and config
+// ---------------------------------------------------------------------------
+
+const PRIORITY_ORDER = ['high', 'medium', 'low']
+
+const PRIORITY_GROUP_CONFIG: Record<string, { color: string; filled: boolean }> = {
+  high:   { color: '#E74C3C', filled: true },
+  medium: { color: '#FFB264', filled: false },
+  low:    { color: '#00CAE3', filled: false },
+}
+
+// ---------------------------------------------------------------------------
+// Project group accent colors
+// ---------------------------------------------------------------------------
+
 const GROUP_ACCENT_COLORS = [
-  '#0086C0', '#6BBF59', '#9B51E0', '#FDAB3D', '#E2445C',
-  '#00C875', '#FF7A59', '#37B4E3', '#676879', '#34C759',
+  '#0086C0', '#6BBF59', '#796DF6', '#FFB264', '#E74C3C',
+  '#00C875', '#FF7A59', '#37B4E3', '#919AA3', '#34C759',
 ]
 
 // ---------------------------------------------------------------------------
@@ -399,6 +577,10 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
   const storeGroupBy = useTaskWorkbenchStore((s) => s.groupBy)
   const updateTaskStatus = useTaskWorkbenchStore((s) => s.updateTaskStatus)
   const updateTaskPriority = useTaskWorkbenchStore((s) => s.updateTaskPriority)
+  const selectedTaskIds = useTaskWorkbenchStore((s) => s.selectedTaskIds)
+  const toggleTaskSelection = useTaskWorkbenchStore((s) => s.toggleTaskSelection)
+  const selectAllTasks = useTaskWorkbenchStore((s) => s.selectAllTasks)
+  const clearSelection = useTaskWorkbenchStore((s) => s.clearSelection)
 
   const tasks: TaskWithProject[] = data?.tasks ?? storeTasks
   const groupBy = data?.groupBy ?? storeGroupBy
@@ -411,7 +593,9 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
     return <EmptyState icon="clipboard" title="暂无符合条件的任务" description="调整筛选条件或创建新任务" />
   }
 
+  // -------------------------------------------------------------------------
   // Date grouping
+  // -------------------------------------------------------------------------
   if (groupBy === 'date') {
     const bucketMap = new Map<DateBucket, TaskWithProject[]>()
     for (const bucket of DATE_BUCKET_ORDER) bucketMap.set(bucket, [])
@@ -428,6 +612,7 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
               label={bucket}
               count={bucketTasks.length}
               accentColor={DATE_BUCKET_COLORS[bucket]}
+              dotFilled={true}
               tasks={bucketTasks}
               showProject={true}
               onStatusChange={onStatusChange}
@@ -435,6 +620,8 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
               onTaskClick={onTaskClick}
               onQuickAdd={onQuickAdd ? (name) => onQuickAdd(name, bucket) : undefined}
               defaultCollapsed={bucket === '已过期' && bucketTasks.length > 5}
+              selectedTaskIds={selectedTaskIds}
+              onToggleSelect={toggleTaskSelection}
             />
           )
         })}
@@ -442,22 +629,26 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
     )
   }
 
-  // No grouping
+  // -------------------------------------------------------------------------
+  // No grouping — single flat card
+  // -------------------------------------------------------------------------
   if (groupBy === 'none') {
     return (
       <div
-        className="border border-gray-200 dark:border-gray-700 overflow-hidden"
-        style={{ borderLeftWidth: '4px', borderLeftColor: '#0086C0', borderRadius: '0 4px 4px 0' }}
+        className="border border-[#E8ECF4] rounded-[10px] overflow-hidden"
+        style={{ borderLeftWidth: '3px', borderLeftColor: '#0086C0' }}
       >
-        <ColumnHeader showProject={true} />
-        {tasks.map((task) => (
-          <TableRow
+        {tasks.map((task, idx) => (
+          <TaskRow
             key={task.id}
             task={task}
             showProject={true}
             onStatusChange={onStatusChange}
             onPriorityChange={onPriorityChange}
             onTaskClick={onTaskClick}
+            isLast={idx === tasks.length - 1}
+            isSelected={selectedTaskIds.has(task.id)}
+            onToggleSelect={toggleTaskSelection}
           />
         ))}
         {onQuickAdd && <AddTaskRow onAdd={(name) => onQuickAdd(name, 'none')} />}
@@ -465,7 +656,9 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
     )
   }
 
+  // -------------------------------------------------------------------------
   // Project grouping
+  // -------------------------------------------------------------------------
   if (groupBy === 'project') {
     const projectMap = new Map<string, TaskWithProject[]>()
     for (const task of tasks) {
@@ -484,12 +677,15 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
               label={projectName}
               count={groupTasks.length}
               accentColor={GROUP_ACCENT_COLORS[idx % GROUP_ACCENT_COLORS.length]}
+              dotFilled={true}
               tasks={groupTasks}
               showProject={false}
               onStatusChange={onStatusChange}
               onPriorityChange={onPriorityChange}
               onTaskClick={onTaskClick}
               onQuickAdd={onQuickAdd ? (name) => onQuickAdd(name, projectName) : undefined}
+              selectedTaskIds={selectedTaskIds}
+              onToggleSelect={toggleTaskSelection}
             />
           )
         })}
@@ -497,9 +693,9 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
     )
   }
 
-  // Priority grouping
-  const PRIORITY_ORDER = ['high', 'medium', 'low']
-  const PRIORITY_GROUP_COLORS: Record<string, string> = { high: '#E2445C', medium: '#FDAB3D', low: '#579BFC' }
+  // -------------------------------------------------------------------------
+  // Priority grouping (default fallback)
+  // -------------------------------------------------------------------------
   const priorityMap = new Map<string, TaskWithProject[]>()
   for (const task of tasks) {
     const existing = priorityMap.get(task.priority) ?? []
@@ -511,18 +707,22 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
       {PRIORITY_ORDER.map((priority) => {
         const groupTasks = priorityMap.get(priority)
         if (!groupTasks || groupTasks.length === 0) return null
+        const config = PRIORITY_GROUP_CONFIG[priority] ?? { color: '#C4C4C4', filled: false }
         return (
           <GroupSection
             key={priority}
-            label={`${PRIORITY_LABELS[priority] ?? priority}优先级`}
+            label={PRIORITY_LABELS[priority] ?? priority}
             count={groupTasks.length}
-            accentColor={PRIORITY_GROUP_COLORS[priority]}
+            accentColor={config.color}
+            dotFilled={config.filled}
             tasks={groupTasks}
             showProject={true}
             onStatusChange={onStatusChange}
             onPriorityChange={onPriorityChange}
             onTaskClick={onTaskClick}
             onQuickAdd={onQuickAdd ? (name) => onQuickAdd(name, priority) : undefined}
+            selectedTaskIds={selectedTaskIds}
+            onToggleSelect={toggleTaskSelection}
           />
         )
       })}
