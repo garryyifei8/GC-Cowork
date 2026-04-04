@@ -24,7 +24,7 @@ function getProjectIcon(projectType: string): { icon: React.ReactNode; color: st
   if (projectType.includes('EPC') || projectType.includes('展馆'))
     return { icon: <Map size={16} />, color: '#00C875' }
   if (projectType.includes('信息化'))
-    return { icon: <MonitorPlay size={16} />, color: '#E2445C' }
+    return { icon: <MonitorPlay size={16} />, color: '#E74C3C' }
   return { icon: <Building2 size={16} />, color: '#0086C0' }
 }
 
@@ -53,7 +53,7 @@ const ProjectRow: React.FC<{ project: Project; onClick?: (p: Project) => void }>
 
   return (
     <tr
-      className="border-t border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors"
+      className="border-t border-[#E8ECF4]/50 /50 hover:bg-[#EFF3F9]  cursor-pointer transition-colors"
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -65,23 +65,23 @@ const ProjectRow: React.FC<{ project: Project; onClick?: (p: Project) => void }>
           <span className="w-7 h-7 rounded-md flex items-center justify-center shrink-0" style={{ background: color + '1A', color }}>
             {icon}
           </span>
-          <span className="font-medium truncate text-gray-800 dark:text-gray-100">{project.name}</span>
+          <span className="font-medium truncate text-light-text ">{project.name}</span>
         </div>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{project.project_type}</td>
+      <td className="px-4 py-3 text-sm text-light-text-secondary ">{project.project_type}</td>
       <td className="px-4 py-3 text-sm">
         <StatusBadge status={getStatusVariant(project.status)} label={project.status_label} size="sm" />
       </td>
       <td className="px-4 py-3 text-sm">
         <ProgressBar value={project.progress_pct} size="sm" showLabel />
       </td>
-      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{project.due_date || '-'}</td>
-      <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">{project.budget || '-'}</td>
+      <td className="px-4 py-3 text-sm text-light-text-secondary ">{project.due_date || '-'}</td>
+      <td className="px-4 py-3 text-sm text-light-text ">{project.budget || '-'}</td>
       <td className="px-4 py-3 text-sm">
         {avatars.length > 0 ? (
           <AvatarGroup avatars={avatars} max={3} size="sm" />
         ) : (
-          <span className="text-xs text-gray-500 dark:text-gray-400">{project.team_size}人</span>
+          <span className="text-xs text-light-text-secondary ">{project.team_size}人</span>
         )}
       </td>
     </tr>
@@ -103,13 +103,13 @@ const GroupSection: React.FC<{
     <tr>
       <td
         colSpan={7}
-        className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase"
+        className="px-4 py-2 text-xs font-semibold text-light-text-secondary  uppercase"
         style={{ background: bgTint, borderLeft: `4px solid ${color}` }}
       >
         <div className="flex items-center gap-1.5">
           <ChevronDown size={14} style={{ color }} />
           <span style={{ color }}>{label}</span>
-          <span className="text-gray-500 dark:text-gray-400 font-normal normal-case ml-1">({projects.length})</span>
+          <span className="text-light-text-secondary  font-normal normal-case ml-1">({projects.length})</span>
         </div>
       </td>
     </tr>
@@ -141,12 +141,12 @@ const ProjectTable: React.FC<ProjectTableProps> = ({ data, onProjectClick }) => 
   const completedProjects = projects.filter((p) => p.status === 'completed')
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl transition-colors duration-200 overflow-hidden p-0">
+    <div className="bg-white  border border-[#E8ECF4]  rounded-[10px] transition-colors duration-200 overflow-hidden p-0">
       <table className="w-full">
         <thead>
-          <tr className="bg-gray-50 dark:bg-gray-900/50">
+          <tr className="bg-[#E6FAF0] ">
             {['项目名称', '类型', '状态', '进度', '截止日期', '预算', '团队'].map((heading) => (
-              <th key={heading} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <th key={heading} className="px-5 py-[18px] text-left text-xs font-medium text-light-text-secondary  uppercase tracking-wider">
                 {heading}
               </th>
             ))}
@@ -160,7 +160,7 @@ const ProjectTable: React.FC<ProjectTableProps> = ({ data, onProjectClick }) => 
             <GroupSection label="规划中" color="#0086C0" bgTint="rgba(0, 134, 192, 0.06)" projects={planningProjects} onProjectClick={onProjectClick} />
           )}
           {completedProjects.length > 0 && (
-            <GroupSection label="已完成" color="#676879" bgTint="rgba(103, 104, 121, 0.06)" projects={completedProjects} onProjectClick={onProjectClick} />
+            <GroupSection label="已完成" color="#919AA3" bgTint="rgba(145, 154, 163, 0.06)" projects={completedProjects} onProjectClick={onProjectClick} />
           )}
         </tbody>
       </table>

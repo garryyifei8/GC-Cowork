@@ -11,9 +11,9 @@ import type { Project } from '../../types'
 
 const COLUMNS = [
   { key: 'active' as const, label: '进行中', color: '#00C875' },
-  { key: 'risk' as const, label: '有风险', color: '#E2445C' },
+  { key: 'risk' as const, label: '有风险', color: '#E74C3C' },
   { key: 'planning' as const, label: '规划中', color: '#0086C0' },
-  { key: 'completed' as const, label: '已完成', color: '#676879' },
+  { key: 'completed' as const, label: '已完成', color: '#919AA3' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -91,10 +91,10 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ data, onProjectClick }) =
           <div
             key={col.key}
             className={[
-              'flex flex-col gap-3 min-h-[100px] rounded-xl p-3 border transition-colors duration-200',
+              'flex flex-col gap-3 min-h-[100px] rounded-[10px] p-3 border transition-colors duration-200',
               dragOverCol === col.key
                 ? 'border-dashed border-blue-400 bg-blue-50/50 dark:bg-blue-900/20'
-                : 'border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/60',
+                : 'border-[#E8ECF4]  bg-[#F4F6FC] /60',
             ].join(' ')}
             style={{ borderTopWidth: 4, borderTopColor: col.color, borderTopStyle: 'solid' }}
             onDragOver={(e) => handleDragOver(e, col.key)}
@@ -103,8 +103,8 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ data, onProjectClick }) =
           >
             {/* Column header */}
             <div className="flex items-center justify-between px-1">
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{col.label}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">
+              <span className="text-sm font-semibold text-light-text ">{col.label}</span>
+              <span className="text-xs text-light-text-secondary  bg-[#E8ECF4]  px-2 py-0.5 rounded-full">
                 {colProjects.length}
               </span>
             </div>
@@ -126,7 +126,7 @@ const ProjectKanban: React.FC<ProjectKanbanProps> = ({ data, onProjectClick }) =
             ))}
 
             {colProjects.length === 0 && (
-              <div className="flex items-center justify-center py-8 text-xs text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+              <div className="flex items-center justify-center py-8 text-xs text-[#919AA3]  border-2 border-dashed border-[#E8ECF4]  rounded-[10px]">
                 暂无项目
               </div>
             )}

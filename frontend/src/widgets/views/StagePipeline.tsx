@@ -13,14 +13,14 @@ const PIPELINE_STAGES = [
 
 const STAGE_COLORS: Record<string, string> = {
   '立项': '#0086C0',
-  '投标': '#6BBF59',
-  '签约': '#9B51E0',
+  '投标': '#2ED47E',
+  '签约': '#796DF6',
   '设计': '#00C875',
-  '采购': '#FDAB3D',
-  '施工/实施': '#E2445C',
+  '采购': '#FFB264',
+  '施工/实施': '#E74C3C',
   '验收': '#FF7A59',
-  '结算': '#37B4E3',
-  '归档': '#676879',
+  '结算': '#00CAE3',
+  '归档': '#919AA3',
 }
 
 const StagePipeline: React.FC<StagePipelineProps> = ({ data }) => {
@@ -29,11 +29,11 @@ const StagePipeline: React.FC<StagePipelineProps> = ({ data }) => {
 
   return (
     <div
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 transition-colors duration-200 overflow-x-auto"
+      className="bg-white  border border-[#E8ECF4]  rounded-[10px] p-5 transition-colors duration-200 overflow-x-auto"
       role="region"
       aria-label="项目阶段分布管线图"
     >
-      <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">
+      <h2 className="text-base font-semibold text-light-text  mb-4">
         阶段管线
       </h2>
 
@@ -41,7 +41,7 @@ const StagePipeline: React.FC<StagePipelineProps> = ({ data }) => {
         {PIPELINE_STAGES.map((stage, idx) => {
           const count = stageDistribution[stage] ?? 0
           const isEmpty = count === 0
-          const color = STAGE_COLORS[stage] ?? '#94a3b8'
+          const color = STAGE_COLORS[stage] ?? '#919AA3'
           const isLast = idx === PIPELINE_STAGES.length - 1
 
           return (
@@ -50,7 +50,7 @@ const StagePipeline: React.FC<StagePipelineProps> = ({ data }) => {
                 className={[
                   'flex flex-col items-center gap-1 px-3.5 py-2.5 border-[1.5px] rounded-[10px] min-w-[84px] flex-shrink-0 cursor-default transition-all duration-150',
                   isEmpty
-                    ? 'border-gray-300 dark:border-gray-600 bg-transparent opacity-50'
+                    ? 'border-[#E8ECF4]  bg-transparent opacity-50'
                     : 'hover:-translate-y-0.5 hover:shadow-md',
                 ].join(' ')}
                 style={
@@ -62,20 +62,20 @@ const StagePipeline: React.FC<StagePipelineProps> = ({ data }) => {
               >
                 <span
                   className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: isEmpty ? '#94a3b8' : color }}
+                  style={{ backgroundColor: isEmpty ? '#919AA3' : color }}
                   aria-hidden="true"
                 />
                 <span
                   className={[
                     'text-xs font-semibold text-center whitespace-nowrap leading-tight',
-                    isEmpty ? 'text-gray-500 dark:text-gray-400' : 'text-gray-800 dark:text-gray-100',
+                    isEmpty ? 'text-light-text-secondary ' : 'text-light-text ',
                   ].join(' ')}
                 >
                   {stage}
                 </span>
                 <span
                   className="text-xl font-bold leading-none"
-                  style={{ color: isEmpty ? '#94a3b8' : color }}
+                  style={{ color: isEmpty ? '#919AA3' : color }}
                 >
                   {count}
                 </span>
@@ -84,8 +84,8 @@ const StagePipeline: React.FC<StagePipelineProps> = ({ data }) => {
               {!isLast && (
                 <div className="flex items-center flex-shrink-0 px-0.5" aria-hidden="true">
                   <svg width="24" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="0" y1="8" x2="16" y2="8" stroke="#cbd5e1" strokeWidth="1.5" />
-                    <path d="M14 4L20 8L14 12" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    <line x1="0" y1="8" x2="16" y2="8" stroke="#E8ECF4" strokeWidth="1.5" />
+                    <path d="M14 4L20 8L14 12" stroke="#E8ECF4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                   </svg>
                 </div>
               )}
