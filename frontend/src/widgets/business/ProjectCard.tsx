@@ -37,7 +37,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
   return (
     <div
       className={[
-        'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3.5',
+        'bg-white border border-[#E8E8E8] rounded-lg p-3.5',
         'transition-all duration-200 hover:shadow-md',
         onClick ? 'cursor-pointer' : '',
       ].join(' ')}
@@ -48,7 +48,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
     >
       {/* Title + status */}
       <div className="flex items-start justify-between gap-1.5 mb-1.5">
-        <h4 className="text-[13px] font-semibold flex-1 min-w-0 text-gray-800 dark:text-gray-100 truncate">
+        <h4 className="text-[13px] font-semibold flex-1 min-w-0 text-[#333] truncate">
           {project.name}
         </h4>
         <StatusBadge
@@ -58,7 +58,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
         />
       </div>
 
-      <span className="block text-xs text-gray-500 dark:text-gray-400 mb-2.5">
+      <span className="block text-xs text-[#6C7688] mb-2.5">
         {project.project_type}
       </span>
 
@@ -68,7 +68,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
       </div>
 
       {/* Footer: due date + team avatars */}
-      <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex justify-between items-center text-xs text-[#6C7688]">
         {project.due_date && (
           <span className="flex items-center gap-1">
             <Clock size={12} />

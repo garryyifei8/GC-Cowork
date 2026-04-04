@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import { Search, FolderOpen } from 'lucide-react'
+import React, { useMemo, useState, useRef, useCallback } from 'react'
+import { Search, FolderOpen, UploadCloud, Loader2 } from 'lucide-react'
 import { DocumentItem } from '../business'
 import { EmptyState } from '../atomic'
 import type { KnowledgeDoc } from '../../types'
@@ -7,6 +7,7 @@ import type { KnowledgeDoc } from '../../types'
 export interface DocumentListProps {
   data?: { docs?: KnowledgeDoc[] }
   onDocClick?: (doc: KnowledgeDoc) => void
+  onUpload?: (file: File) => Promise<void>
 }
 
 const CATEGORIES = [
@@ -24,10 +25,30 @@ const DEFAULT_DOCS: KnowledgeDoc[] = [
   { id: 4, title: '博物馆展陈设计标准合同模板(2026版)', author: '赵法务', date: '3天前', type: 'doc', likes: 56 },
 ]
 
-const DocumentList: React.FC<DocumentListProps> = ({ data, onDocClick }) => {
+const DocumentList: React.FC<DocumentListProps> = ({ data, onDocClick, onUpload }) => {
   const docs = data?.docs ?? DEFAULT_DOCS
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [uploading, setUploading] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileSelect = useCallback(async (file: File) => {
+    if (!onUpload) return
+    setUploading(true)
+    try {
+      await onUpload(file)
+    } finally {
+      setUploading(false)
+    }
+  }, [onUpload])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer.files[0]
+    if (file) handleFileSelect(file)
+  }, [handleFileSelect])
 
   const filtered = useMemo(() => {
     return docs.filter((doc) => {
@@ -37,7 +58,6 @@ const DocumentList: React.FC<DocumentListProps> = ({ data, onDocClick }) => {
           return false
         }
       }
-      // Category filter would require doc.category but KnowledgeDoc doesn't have it — show all
       return true
     })
   }, [docs, search])
@@ -48,6 +68,40 @@ const DocumentList: React.FC<DocumentListProps> = ({ data, onDocClick }) => {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Upload area */}
+      {onUpload && (
+        <div
+          className={`flex items-center justify-center gap-3 rounded-xl border-2 border-dashed px-4 py-4 transition-colors cursor-pointer ${
+            dragOver
+              ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+              : 'border-gray-300 dark:border-gray-600 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+          }`}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {uploading ? (
+            <Loader2 size={20} className="animate-spin text-blue-500" />
+          ) : (
+            <UploadCloud size={20} className="text-gray-400" />
+          )}
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {uploading ? '上传中...' : '点击或拖拽文件到此处上传'}
+          </span>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) handleFileSelect(file)
+              e.target.value = ''
+            }}
+          />
+        </div>
+      )}
+
       {/* Search bar */}
       <div className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3">
         <Search size={18} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />

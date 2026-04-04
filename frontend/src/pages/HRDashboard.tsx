@@ -26,9 +26,9 @@ const attendanceCols: Column<AttendanceRecord>[] = [
     sortable: true,
     render: (v) => {
       const colors: Record<string, string> = {
-        normal: 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/30',
-        late: 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-900/30',
-        absent: 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/30',
+        normal: 'text-emerald-600 bg-emerald-50',
+        late: 'text-amber-600 bg-amber-50',
+        absent: 'text-red-600 bg-red-50',
       }
       const labels: Record<string, string> = { normal: '正常', late: '迟到', absent: '缺勤' }
       return (
@@ -52,9 +52,9 @@ const leaveCols = (onApprove: (id: string, approved: boolean) => void): Column<L
     label: '状态',
     render: (v) => {
       const colors: Record<string, string> = {
-        pending: 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/30',
-        approved: 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/30',
-        rejected: 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/30',
+        pending: 'text-blue-600 bg-blue-50',
+        approved: 'text-emerald-600 bg-emerald-50',
+        rejected: 'text-red-600 bg-red-50',
       }
       const labels: Record<string, string> = { pending: '待审批', approved: '已通过', rejected: '已驳回' }
       return (
@@ -99,7 +99,7 @@ const salaryCols: Column<SalaryRecord>[] = [
   { key: 'social_insurance', label: '社保', render: (v) => `¥${Number(v).toLocaleString()}` },
   { key: 'tax', label: '个税', render: (v) => `¥${Number(v).toLocaleString()}` },
   { key: 'net_salary', label: '实发', sortable: true, render: (v) => (
-    <span className="font-semibold text-blue-600 dark:text-blue-400">¥{Number(v).toLocaleString()}</span>
+    <span className="font-medium text-[#00C875]">¥{Number(v).toLocaleString()}</span>
   )},
 ]
 
@@ -123,12 +123,12 @@ export const HRDashboard = () => {
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* Header */}
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">人力资源</h1>
+      <h1 className="text-[18px] font-medium text-light-text">人力资源</h1>
 
       {/* Error banner */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center justify-between">
-          <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
+        <div className="bg-[#FFEBEE] border border-[#E74C3C]/20 rounded-[10px] p-3 flex items-center justify-between">
+          <span className="text-sm text-red-700">{error}</span>
           <button onClick={clearError} className="text-red-500 hover:text-red-700 text-sm font-medium">关闭</button>
         </div>
       )}
@@ -139,30 +139,30 @@ export const HRDashboard = () => {
           label="总员工"
           value={summary?.total_employees ?? '-'}
           icon={<Users size={20} />}
-          iconColor="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+          iconColor="bg-[#00CAE3] text-white"
         />
         <StatCard
           label="在职"
           value={summary?.active_count ?? '-'}
           icon={<UserCheck size={20} />}
-          iconColor="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+          iconColor="bg-[#00C875] text-white"
         />
         <StatCard
           label="休假中"
           value={summary?.on_leave_count ?? '-'}
           icon={<CalendarOff size={20} />}
-          iconColor="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+          iconColor="bg-[#FFB264] text-white"
         />
         <StatCard
           label="出勤率"
           value={summary ? `${(summary.attendance_rate * 100).toFixed(1)}%` : '-'}
           icon={<Clock size={20} />}
-          iconColor="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
+          iconColor="bg-[#2E37A4] text-white"
         />
       </div>
 
       {/* Tab navigation */}
-      <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700/50 rounded-lg p-1 self-start" role="tablist">
+      <div className="flex items-center gap-1 bg-[#EFF3F9] rounded-[10px] p-1 self-start" role="tablist">
         {TABS.map(({ key, label }) => (
           <button
             key={key}
@@ -170,8 +170,8 @@ export const HRDashboard = () => {
             aria-selected={activeTab === key}
             className={
               activeTab === key
-                ? 'px-4 py-2 rounded-md text-sm font-medium bg-white dark:bg-gray-800 shadow-sm text-blue-600 dark:text-blue-400 transition-colors'
-                : 'px-4 py-2 rounded-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors'
+                ? 'px-4 py-2 rounded-md text-sm font-medium bg-white text-[#00C875] transition-colors'
+                : 'px-4 py-2 rounded-md text-sm font-medium text-light-text-secondary hover:text-light-text transition-colors'
             }
             onClick={() => setActiveTab(key)}
             type="button"

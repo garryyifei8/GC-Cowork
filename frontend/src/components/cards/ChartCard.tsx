@@ -12,7 +12,7 @@ interface ChartItem {
   color?: string;
 }
 
-const CHART_COLORS = ['#0073ea', '#00C875', '#FDAB3D', '#E2445C', '#A25DDC', '#579BFC', '#FF642E', '#66CCFF'];
+const CHART_COLORS = ['#00CAE3', '#00C875', '#FFB264', '#E74C3C', '#796DF6', '#0F79F3', '#FF7A59', '#66CCFF'];
 
 function parseChartItems(data: Record<string, any>): ChartItem[] {
   if (data.items && Array.isArray(data.items)) {
@@ -46,15 +46,15 @@ function BarChart({ items }: { items: ChartItem[] }) {
       {items.map((item, idx) => (
         <div key={idx}>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] text-[#323338] font-medium truncate mr-2">{item.label}</span>
-            <span className="text-[11px] font-semibold text-[#323338] shrink-0">{item.value.toLocaleString()}</span>
+            <span className="text-xs text-light-text font-medium truncate mr-2">{item.label}</span>
+            <span className="text-xs font-medium text-light-text shrink-0">{item.value.toLocaleString()}</span>
           </div>
-          <div className="h-[6px] rounded-full bg-[#e6e9ef] overflow-hidden">
+          <div className="h-[6px] rounded-full border-light-border bg-light-border overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${(item.value / maxVal) * 100}%`,
-                backgroundColor: item.color || '#0073ea',
+                backgroundColor: item.color || '#00CAE3',
               }}
             />
           </div>
@@ -87,17 +87,17 @@ function DonutChart({ items }: { items: ChartItem[] }) {
         }}
       >
         <div className="absolute inset-2.5 rounded-full bg-white flex items-center justify-center">
-          <span className="text-[13px] font-bold text-[#323338]">{total.toLocaleString()}</span>
+          <span className="text-[13px] font-medium text-light-text">{total.toLocaleString()}</span>
         </div>
       </div>
 
       {/* Legend */}
       <div className="flex flex-col gap-1.5 min-w-0">
         {items.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-2 text-[11px]">
+          <div key={idx} className="flex items-center gap-2 text-xs">
             <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: item.color }} />
-            <span className="text-[#676879] truncate">{item.label}</span>
-            <span className="ml-auto font-semibold text-[#323338] shrink-0">{item.value.toLocaleString()}</span>
+            <span className="text-light-text-secondary truncate">{item.label}</span>
+            <span className="ml-auto font-medium text-light-text shrink-0">{item.value.toLocaleString()}</span>
           </div>
         ))}
       </div>
@@ -111,10 +111,10 @@ export const ChartCard: React.FC<ChartCardProps> = ({ card, compact = true }) =>
   const displayItems = compact ? items.slice(0, 8) : items;
 
   return (
-    <div className="bg-white border border-[#d0d4e4] border-l-4 border-l-[#FF642E] rounded-xl overflow-hidden">
+    <div className="bg-white border border-light-border border-l-4 border-l-[#FF7A59] rounded-[10px] overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 bg-[#f6f7fb]">
-        <span className="text-[13px] font-semibold text-[#323338]">{card.title}</span>
+      <div className="px-4 py-3 bg-light-bg">
+        <span className="text-[13px] font-medium text-light-text">{card.title}</span>
       </div>
 
       {/* Chart */}
@@ -127,7 +127,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({ card, compact = true }) =>
       </div>
 
       {card.content && (
-        <div className="px-4 py-2.5 text-[12px] text-[#676879] border-t border-[#e6e9ef] bg-[#f6f7fb]">
+        <div className="px-4 py-2.5 text-xs text-light-text-secondary border-t border-light-border bg-light-bg">
           {card.content}
         </div>
       )}

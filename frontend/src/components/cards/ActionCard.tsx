@@ -116,9 +116,9 @@ export const ActionCard: React.FC<ActionCardProps> = ({ card }) => {
   };
 
   return (
-    <div className="bg-light-surface border border-light-border border-l-4 border-l-primary rounded-xl p-4 transition-colors duration-200 hover:-translate-y-px hover:shadow-sm">
+    <div className="bg-light-surface border border-light-border border-l-4 border-l-primary rounded-[10px] p-4 transition-colors duration-200 hover:-translate-y-px">
       <div className="flex items-center gap-2 mb-2">
-        <p className="text-sm font-semibold m-0 leading-snug">{card.title}</p>
+        <p className="text-sm font-medium m-0 leading-snug">{card.title}</p>
       </div>
       {card.content && (
         <p className="text-[0.8125rem] text-light-text-secondary leading-relaxed m-0">
@@ -137,7 +137,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({ card }) => {
                 <span className="text-light-text-secondary font-medium flex-shrink-0 mr-4">
                   {key}
                 </span>
-                <span className="font-semibold text-right">{String(value)}</span>
+                <span className="font-medium text-right">{String(value)}</span>
               </div>
             ))}
         </div>
@@ -156,7 +156,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({ card }) => {
                     ? 'bg-[#ecedf5] text-light-text-secondary border-light-border'
                     : btn.primary
                     ? 'bg-primary text-white border-primary hover:bg-primary/90'
-                    : 'bg-transparent text-light-text border-light-border hover:bg-[#f6f7fb]'
+                    : 'bg-transparent text-light-text border-light-border hover:bg-light-bg'
                 }`}
                 onClick={() => handleAction(btn.action, index)}
                 type="button"

@@ -25,10 +25,10 @@ function formatCNY(amount: number): string {
 
 function statusBadge(value: string, labelsMap: Record<string, string>, colorsMap: Record<string, string>) {
   const label = labelsMap[value] ?? value
-  const color = colorsMap[value] ?? '#676879'
+  const color = colorsMap[value] ?? '#919AA3'
   return (
     <span
-      className="px-2 py-0.5 rounded text-xs font-semibold"
+      className="px-2 py-0.5 rounded text-xs font-medium"
       style={{ color, backgroundColor: `${color}1A` }}
     >
       {label}
@@ -37,7 +37,7 @@ function statusBadge(value: string, labelsMap: Record<string, string>, colorsMap
 }
 
 const INVOICE_STATUS_LABELS: Record<string, string> = { pending: '待付', paid: '已付', overdue: '逾期' }
-const INVOICE_STATUS_COLORS: Record<string, string> = { pending: '#0086C0', paid: '#00C875', overdue: '#E2445C' }
+const INVOICE_STATUS_COLORS: Record<string, string> = { pending: '#0086C0', paid: '#00C875', overdue: '#E74C3C' }
 
 export const FinanceDashboard = () => {
   const {
@@ -102,7 +102,7 @@ export const FinanceDashboard = () => {
       sortable: true,
       render: (v, row) => {
         const rate = row.planned_amount > 0 ? (row.actual_amount / row.planned_amount) * 100 : 0
-        const color = rate > 100 ? 'text-red-600 dark:text-red-400' : rate > 80 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+        const color = rate > 100 ? 'text-red-600' : rate > 80 ? 'text-amber-600' : 'text-emerald-600'
         return (
           <span>
             {formatCNY(v)} <span className={`ml-1 font-medium ${color}`}>({rate.toFixed(1)}%)</span>
@@ -130,12 +130,12 @@ export const FinanceDashboard = () => {
   return (
     <div className="flex flex-col gap-6 p-6">
       {/* Header */}
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">财务管理</h1>
+      <h1 className="text-[18px] font-medium text-light-text">财务管理</h1>
 
       {/* Error banner */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center justify-between">
-          <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
+        <div className="bg-[#FFEBEE] border border-[#E74C3C]/20 rounded-[10px] p-3 flex items-center justify-between">
+          <span className="text-sm text-red-700">{error}</span>
         </div>
       )}
 
@@ -145,30 +145,30 @@ export const FinanceDashboard = () => {
           label="总报销"
           value={summary ? formatCNY(summary.total_expenses) : '-'}
           icon={<DollarSign size={20} />}
-          iconColor="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+          iconColor="bg-[#00C875] text-white"
         />
         <StatCard
           label="待审批"
           value={summary?.pending_approvals ?? '-'}
           icon={<Clock size={20} />}
-          iconColor="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+          iconColor="bg-[#FFB264] text-white"
         />
         <StatCard
           label="预算使用率"
           value={summary ? `${(summary.budget_utilization_rate * 100).toFixed(1)}%` : '-'}
           icon={<PieChart size={20} />}
-          iconColor="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
+          iconColor="bg-[#2E37A4] text-white"
         />
         <StatCard
           label="逾期发票"
           value={summary?.overdue_invoices ?? '-'}
           icon={<AlertTriangle size={20} />}
-          iconColor="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+          iconColor="bg-[#E74C3C] text-white"
         />
       </div>
 
       {/* Tab navigation */}
-      <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700/50 rounded-lg p-1 self-start" role="tablist">
+      <div className="flex items-center gap-1 bg-[#EFF3F9] rounded-[10px] p-1 self-start" role="tablist">
         {TABS.map(({ key, label }) => (
           <button
             key={key}
@@ -176,8 +176,8 @@ export const FinanceDashboard = () => {
             aria-selected={activeTab === key}
             className={
               activeTab === key
-                ? 'px-4 py-2 rounded-md text-sm font-medium bg-white dark:bg-gray-800 shadow-sm text-blue-600 dark:text-blue-400 transition-colors'
-                : 'px-4 py-2 rounded-md text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors'
+                ? 'px-4 py-2 rounded-md text-sm font-medium bg-white text-[#00C875] transition-colors'
+                : 'px-4 py-2 rounded-md text-sm font-medium text-light-text-secondary hover:text-light-text transition-colors'
             }
             onClick={() => setActiveTab(key)}
             type="button"

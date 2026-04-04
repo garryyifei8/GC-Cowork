@@ -64,7 +64,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
     <div
       className={`group flex items-start gap-2.5 px-4 py-3 border-b border-light-border/50 last:border-b-0 transition-colors duration-150 cursor-pointer relative ${
         notification.read
-          ? 'hover:bg-[#f6f7fb]'
+          ? 'hover:bg-[#F4F6FC]'
           : 'bg-primary/[0.03] hover:bg-primary/[0.06]'
       }`}
       onClick={handleClick}
@@ -82,7 +82,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
 
       {/* Content */}
       <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-        <span className="text-[0.8125rem] font-semibold truncate">{notification.title}</span>
+        <span className="text-[0.8125rem] font-medium truncate">{notification.title}</span>
         <span className="text-xs text-light-text-secondary leading-snug line-clamp-2">
           {notification.message}
         </span>
@@ -132,14 +132,14 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
 
   return (
     <div
-      className="absolute right-0 top-12 w-80 max-h-96 bg-light-surface border border-light-border rounded-xl shadow-xl z-50 flex flex-col overflow-hidden"
+      className="absolute right-0 top-12 w-80 max-h-96 bg-light-surface border border-light-border rounded-[10px] z-50 flex flex-col overflow-hidden"
       role="dialog"
       aria-modal="false"
       aria-label="通知面板"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-light-border flex-shrink-0">
-        <h2 className="text-[0.9375rem] font-semibold m-0">
+        <h2 className="text-[0.9375rem] font-medium m-0">
           通知{unreadCount > 0 ? `（${unreadCount}）` : ''}
         </h2>
         {unreadCount > 0 && (

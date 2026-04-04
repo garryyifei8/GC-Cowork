@@ -149,9 +149,9 @@ export const DataCard: React.FC<DataCardProps> = ({ card }) => {
   };
 
   return (
-    <div className="bg-light-surface border border-light-border border-l-4 border-l-info rounded-xl p-4 transition-colors duration-200 hover:-translate-y-px hover:shadow-sm">
+    <div className="bg-light-surface border border-light-border border-l-4 border-l-info rounded-[10px] p-4 transition-colors duration-200 hover:-translate-y-px">
       <div className="flex items-center gap-2 mb-2">
-        <p className="text-sm font-semibold m-0 leading-snug">{card.title}</p>
+        <p className="text-sm font-medium m-0 leading-snug">{card.title}</p>
       </div>
       {entries.length > 0 && (
         <div className="flex flex-col my-2.5">
@@ -163,7 +163,7 @@ export const DataCard: React.FC<DataCardProps> = ({ card }) => {
               <span className="text-light-text-secondary font-medium flex-shrink-0 mr-4">
                 {key}
               </span>
-              <span className="font-semibold text-right">{String(value)}</span>
+              <span className="font-medium text-right">{String(value)}</span>
             </div>
           ))}
         </div>
@@ -187,7 +187,7 @@ export const DataCard: React.FC<DataCardProps> = ({ card }) => {
                     ? 'bg-[#ecedf5] text-light-text-secondary border-light-border'
                     : btn.primary
                     ? 'bg-primary text-white border-primary hover:bg-primary/90'
-                    : 'bg-transparent text-light-text border-light-border hover:bg-[#f6f7fb]'
+                    : 'bg-transparent text-light-text border-light-border hover:bg-light-bg'
                 }`}
                 onClick={() => handleAction(btn.action, i)}
                 type="button"

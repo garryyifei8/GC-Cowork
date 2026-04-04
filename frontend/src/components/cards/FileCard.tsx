@@ -8,21 +8,21 @@ interface FileCardProps {
 }
 
 const FILE_ICONS: Record<string, React.ReactNode> = {
-  doc: <FileText size={20} className="text-[#0073ea]" />,
-  docx: <FileText size={20} className="text-[#0073ea]" />,
-  pdf: <FileText size={20} className="text-[#E2445C]" />,
+  doc: <FileText size={20} className="text-[#00CAE3]" />,
+  docx: <FileText size={20} className="text-[#00CAE3]" />,
+  pdf: <FileText size={20} className="text-[#E74C3C]" />,
   xls: <FileSpreadsheet size={20} className="text-[#00C875]" />,
   xlsx: <FileSpreadsheet size={20} className="text-[#00C875]" />,
   csv: <FileSpreadsheet size={20} className="text-[#00C875]" />,
-  png: <FileImage size={20} className="text-[#A25DDC]" />,
-  jpg: <FileImage size={20} className="text-[#A25DDC]" />,
-  ppt: <File size={20} className="text-[#FF642E]" />,
-  pptx: <File size={20} className="text-[#FF642E]" />,
+  png: <FileImage size={20} className="text-[#796DF6]" />,
+  jpg: <FileImage size={20} className="text-[#796DF6]" />,
+  ppt: <File size={20} className="text-[#FF7A59]" />,
+  pptx: <File size={20} className="text-[#FF7A59]" />,
 };
 
 function getFileIcon(filename: string): React.ReactNode {
   const ext = filename.split('.').pop()?.toLowerCase() || '';
-  return FILE_ICONS[ext] || <File size={20} className="text-[#676879]" />;
+  return FILE_ICONS[ext] || <File size={20} className="text-light-text-secondary" />;
 }
 
 export const FileCard: React.FC<FileCardProps> = ({ card }) => {
@@ -88,28 +88,28 @@ export const FileCard: React.FC<FileCardProps> = ({ card }) => {
   };
 
   return (
-    <div className="bg-white border border-[#d0d4e4] border-l-4 border-l-[#A25DDC] rounded-xl overflow-hidden">
+    <div className="bg-white border border-light-border border-l-4 border-l-[#796DF6] rounded-[10px] overflow-hidden">
       <div className="flex items-start gap-3 px-4 py-3">
         {/* File icon */}
-        <div className="w-10 h-10 rounded-lg bg-[#f6f7fb] flex items-center justify-center shrink-0 mt-0.5">
+        <div className="w-10 h-10 rounded-lg bg-light-bg flex items-center justify-center shrink-0 mt-0.5">
           {getFileIcon(filename)}
         </div>
 
         {/* File info */}
         <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-semibold text-[#323338] truncate">{filename}</div>
+          <div className="text-[13px] font-medium text-light-text truncate">{filename}</div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#edf1fc] text-[#676879] font-medium">
+            <span className="text-xs px-1.5 py-0.5 rounded bg-[#edf1fc] text-light-text-secondary font-medium">
               {fileType}
             </span>
             {size && (
-              <span className="text-[10px] text-[#676879]">{size}</span>
+              <span className="text-xs text-light-text-secondary">{size}</span>
             )}
             {version && (
-              <span className="text-[10px] text-[#676879]">v{version}</span>
+              <span className="text-xs text-light-text-secondary">v{version}</span>
             )}
             {author && (
-              <span className="text-[10px] text-[#676879]">{author}</span>
+              <span className="text-xs text-light-text-secondary">{author}</span>
             )}
           </div>
         </div>
@@ -120,7 +120,7 @@ export const FileCard: React.FC<FileCardProps> = ({ card }) => {
             type="button"
             onClick={handleDownload}
             disabled={downloading || downloaded}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-[#676879] hover:bg-[#dcdfec] hover:text-[#0073ea] transition-colors disabled:opacity-50"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-light-text-secondary hover:bg-[#dcdfec] hover:text-[#00CAE3] transition-colors disabled:opacity-50"
             title="下载"
           >
             {downloading ? (
@@ -134,7 +134,7 @@ export const FileCard: React.FC<FileCardProps> = ({ card }) => {
           <button
             type="button"
             onClick={handleOpen}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-[#676879] hover:bg-[#dcdfec] hover:text-[#0073ea] transition-colors"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-light-text-secondary hover:bg-[#dcdfec] hover:text-[#00CAE3] transition-colors"
             title="打开"
           >
             <ExternalLink size={14} />
@@ -144,7 +144,7 @@ export const FileCard: React.FC<FileCardProps> = ({ card }) => {
 
       {/* Summary preview */}
       {summary && (
-        <div className="px-4 py-2.5 text-[12px] text-[#676879] border-t border-[#e6e9ef] bg-[#f6f7fb] line-clamp-2">
+        <div className="px-4 py-2.5 text-xs text-light-text-secondary border-t border-light-border bg-light-bg line-clamp-2">
           {summary}
         </div>
       )}

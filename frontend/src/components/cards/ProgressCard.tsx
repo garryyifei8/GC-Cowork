@@ -17,9 +17,9 @@ interface ProgressItem {
 
 function getProgressColor(pct: number): string {
   if (pct >= 80) return '#00C875';
-  if (pct >= 50) return '#0073ea';
-  if (pct >= 30) return '#FDAB3D';
-  return '#E2445C';
+  if (pct >= 50) return '#00CAE3';
+  if (pct >= 30) return '#FFB264';
+  return '#E74C3C';
 }
 
 function parseProgressItems(data: Record<string, any>): ProgressItem[] {
@@ -59,20 +59,20 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({ card, compact = true
   const displayItems = compact ? items.slice(0, 4) : items;
 
   return (
-    <div className="bg-white border border-[#d0d4e4] border-l-4 border-l-[#00C875] rounded-xl overflow-hidden">
+    <div className="bg-white border border-light-border border-l-4 border-l-[#00C875] rounded-[10px] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#f6f7fb]">
-        <span className="text-[13px] font-semibold text-[#323338]">{card.title}</span>
+      <div className="flex items-center justify-between px-4 py-3 bg-light-bg">
+        <span className="text-[13px] font-medium text-light-text">{card.title}</span>
         {overall !== null && (
           <div className="flex items-center gap-1.5">
             {overall >= 50 ? (
               <TrendingUp size={13} className="text-[#00C875]" />
             ) : overall >= 30 ? (
-              <Minus size={13} className="text-[#FDAB3D]" />
+              <Minus size={13} className="text-[#FFB264]" />
             ) : (
-              <TrendingDown size={13} className="text-[#E2445C]" />
+              <TrendingDown size={13} className="text-[#E74C3C]" />
             )}
-            <span className="text-[15px] font-bold" style={{ color: getProgressColor(overall) }}>
+            <span className="text-[15px] font-medium" style={{ color: getProgressColor(overall) }}>
               {overall}%
             </span>
           </div>
@@ -86,19 +86,19 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({ card, compact = true
           return (
             <div key={idx}>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[12px] text-[#323338] font-medium truncate mr-2">{item.label}</span>
-                <span className="text-[12px] font-semibold shrink-0" style={{ color }}>
+                <span className="text-xs text-light-text font-medium truncate mr-2">{item.label}</span>
+                <span className="text-xs font-medium shrink-0" style={{ color }}>
                   {item.value}%
                 </span>
               </div>
-              <div className="h-2 rounded-full bg-[#e6e9ef] overflow-hidden">
+              <div className="h-2 rounded-full bg-light-border overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{ width: `${Math.min(item.value, 100)}%`, backgroundColor: color }}
                 />
               </div>
               {item.status && (
-                <span className="text-[10px] text-[#676879] mt-0.5 block">{item.status}</span>
+                <span className="text-xs text-light-text-secondary mt-0.5 block">{item.status}</span>
               )}
             </div>
           );
@@ -107,22 +107,22 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({ card, compact = true
 
       {/* Content */}
       {card.content && (
-        <div className="px-4 py-2.5 text-[12px] text-[#676879] border-t border-[#e6e9ef] bg-[#f6f7fb]">
+        <div className="px-4 py-2.5 text-xs text-light-text-secondary border-t border-light-border bg-light-bg">
           {card.content}
         </div>
       )}
 
       {/* Actions */}
       {card.actions && card.actions.length > 0 && (
-        <div className="flex gap-2 px-4 py-2.5 border-t border-[#e6e9ef]">
+        <div className="flex gap-2 px-4 py-2.5 border-t border-light-border">
           {card.actions.map((action, idx) => (
             <button
               key={idx}
               type="button"
-              className={`px-3 py-1 rounded-md text-[12px] font-medium transition-colors ${
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 action.primary
-                  ? 'bg-[#0073ea] text-white hover:bg-[#0060c2]'
-                  : 'bg-[#f6f7fb] text-[#323338] border border-[#d0d4e4] hover:bg-[#dcdfec]'
+                  ? 'bg-[#00CAE3] text-white hover:bg-[#00b5cc]'
+                  : 'bg-light-bg text-light-text border border-light-border hover:bg-[#dcdfec]'
               }`}
             >
               {action.label}

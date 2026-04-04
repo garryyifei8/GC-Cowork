@@ -32,7 +32,7 @@ const BudgetRow: React.FC<BudgetRowProps> = ({ item }) => {
       {/* Header: name + percentage */}
       <div className="flex items-center justify-between gap-2">
         <span
-          className="text-[0.8125rem] font-medium text-gray-800 dark:text-gray-100 flex-1 truncate"
+          className="text-[0.8125rem] font-medium text-[#333] flex-1 truncate"
           title={item.project_name}
         >
           {item.project_name}
@@ -50,7 +50,7 @@ const BudgetRow: React.FC<BudgetRowProps> = ({ item }) => {
       <ProgressBar value={usagePct} color={color} showLabel={false} size="sm" />
 
       {/* Amount row */}
-      <div className="flex items-center gap-1 text-[0.6875rem] text-gray-500 dark:text-gray-400">
+      <div className="flex items-center gap-1 text-[0.6875rem] text-[#6C7688]">
         <span>已用 ¥{formatCurrency(spend)}</span>
         <span>/ ¥{formatCurrency(budget)}</span>
       </div>

@@ -33,7 +33,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({ invoice, onClick }) => {
   return (
     <article
       className={[
-        'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3.5',
+        'bg-white border border-[#E8E8E8] rounded-lg p-3.5',
         'hover:shadow-md transition-all duration-200',
         isOverdue ? 'border-l-4 border-l-red-500' : '',
         onClick ? 'cursor-pointer' : '',
@@ -44,10 +44,10 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({ invoice, onClick }) => {
       {/* Header: vendor + status */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="min-w-0">
-          <div className="font-semibold text-sm leading-snug truncate text-gray-800 dark:text-gray-100">
+          <div className="font-semibold text-sm leading-snug truncate text-[#333]">
             {invoice.vendor}
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+          <div className="text-xs text-[#6C7688] mt-0.5 truncate">
             {invoice.project_id ?? '无项目'}
           </div>
         </div>
@@ -55,26 +55,26 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({ invoice, onClick }) => {
       </div>
 
       {/* Amount */}
-      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-3 tracking-tight">
+      <div className="text-2xl font-bold text-blue-600 mb-3 tracking-tight">
         {formatCNY(invoice.amount)}
       </div>
 
       {/* Category */}
       <div className="flex items-center gap-2 flex-wrap mb-2">
-        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-[#6C7688]">
           {CATEGORY_LABELS[invoice.category] ?? invoice.category}
         </span>
       </div>
 
       {/* Dates */}
-      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
+      <div className="flex items-center justify-between text-xs text-[#6C7688] pt-2 border-t border-[#E8E8E8]/50">
         <div>
           <div className="mb-0.5">开票日期</div>
-          <div className="font-medium text-gray-800 dark:text-gray-100">{invoice.invoice_date}</div>
+          <div className="font-medium text-[#333]">{invoice.invoice_date}</div>
         </div>
         <div className="text-right">
-          <div className={`mb-0.5 ${isOverdue ? 'text-red-500 dark:text-red-400' : ''}`}>到期日期</div>
-          <div className={`font-medium ${isOverdue ? 'text-red-500 dark:text-red-400' : 'text-gray-800 dark:text-gray-100'}`}>
+          <div className={`mb-0.5 ${isOverdue ? 'text-red-500' : ''}`}>到期日期</div>
+          <div className={`font-medium ${isOverdue ? 'text-red-500' : 'text-[#333]'}`}>
             {invoice.due_date}
           </div>
         </div>

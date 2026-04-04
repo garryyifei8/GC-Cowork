@@ -1,11 +1,7 @@
 import React, { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  FolderKanban,
-  Activity,
-  AlertTriangle,
-  Clock,
-  Sparkles,
+  FolderKanban, Activity, AlertTriangle, Clock, Sparkles, TrendingUp, DollarSign,
 } from 'lucide-react'
 import { useDashboardStore } from '../stores/dashboardStore'
 import { useProjectStore } from '../stores/projectStore'
@@ -15,40 +11,59 @@ import ProjectProgress from '../widgets/views/ProjectProgress'
 import BudgetOverview from '../widgets/views/BudgetOverview'
 import RiskHeatmap from '../widgets/views/RiskHeatmap'
 import ActivityFeed from '../widgets/views/ActivityFeed'
+import ProjectHealthMatrix from '../widgets/views/ProjectHealthMatrix'
+import ResourceHeatmap from '../widgets/views/ResourceHeatmap'
 
 function getGreeting(): string {
-  const hour = new Date().getHours()
-  if (hour < 12) return '早上好'
-  if (hour < 18) return '下午好'
-  return '晚上好'
+  const h = new Date().getHours()
+  return h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好'
 }
 
 function getChineseDate(): string {
   const now = new Date()
-  const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
-  return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 · ${weekdays[now.getDay()]}`
+  const wd = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+  return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 · ${wd[now.getDay()]}`
 }
 
-interface MetricCardProps {
+/* Preclinic-style KPI card */
+interface KPICardProps {
   label: string
   value: number | string
   icon: React.ReactNode
-  iconColor: string
+  iconBg: string
+  trend?: string
   onClick?: () => void
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ label, value, icon, iconColor, onClick }) => (
+const KPICard: React.FC<KPICardProps> = ({ label, value, icon, iconBg, trend, onClick }) => (
   <div
     onClick={onClick}
-    className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 transition-all ${onClick ? 'cursor-pointer hover:shadow-md hover:border-primary/30' : ''}`}
+    className={`bg-white border border-[#E8ECF4] rounded-[10px] p-5 transition-all ${onClick ? 'cursor-pointer' : ''}`}
   >
-    <div className="flex items-center justify-between mb-3">
-      <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconColor}`}>
+    <div className="flex items-center gap-4">
+      <div className={`w-12 h-12 rounded-[10px] flex items-center justify-center shrink-0 ${iconBg}`}>
         {icon}
       </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[22px] font-medium text-light-text leading-none">{value}</div>
+        <div className="text-[13px] text-light-text-secondary mt-1">{label}</div>
+      </div>
+      {trend && (
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+          trend.startsWith('+') || trend.startsWith('↑') ? 'bg-[#E8F5E9] text-[#27AE60]' : 'bg-[#FFEBEE] text-[#E74C3C]'
+        }`}>
+          {trend}
+        </span>
+      )}
     </div>
-    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</div>
+  </div>
+)
+
+/* Card wrapper — Preclinic style */
+const Card: React.FC<{ children: React.ReactNode; title?: string; className?: string }> = ({ children, title, className = '' }) => (
+  <div className={`bg-white border border-[#E8ECF4] rounded-[10px] p-5 ${className}`}>
+    {title && <h3 className="text-[16px] font-medium text-light-text mb-4">{title}</h3>}
+    {children}
   </div>
 )
 
@@ -67,64 +82,36 @@ export const Overview: React.FC = () => {
 
   return (
     <div className="p-6 animate-fade-in">
-      {/* Header */}
+      {/* Greeting */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          {getGreeting()}，用户 👋
-        </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{getChineseDate()}</p>
+        <h1 className="text-[18px] font-bold text-light-text">{getGreeting()}，用户</h1>
+        <p className="text-[13px] text-light-text-secondary mt-0.5">{getChineseDate()}</p>
       </div>
 
-      {/* AI Insights Banner */}
+      {/* AI Insights */}
       {aiInsights.length > 0 && (
-        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-violet-500/5 border border-primary/20">
+        <div className="mb-6 p-4 rounded-[10px] bg-gradient-to-r from-[#00C875]/5 to-[#2E37A4]/5 border border-[#00C875]/20">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles size={16} className="text-primary" />
-            <span className="text-sm font-semibold text-primary">AI 洞察</span>
+            <span className="text-[13px] font-semibold text-primary">AI 洞察</span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {aiInsights.slice(0, 3).map((insight, i) => (
-              <div key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
-                <AlertTriangle size={14} className={`mt-0.5 flex-shrink-0 ${insight.severity === 'critical' ? 'text-red-500' : insight.severity === 'warning' ? 'text-amber-500' : 'text-blue-500'}`} />
-                <div>
-                  <span className="font-medium">{insight.title}</span>
-                  <span className="text-gray-500 dark:text-gray-400"> — {insight.description}</span>
-                </div>
+              <div key={i} className="flex items-start gap-2 text-[13px] text-light-text">
+                <AlertTriangle size={13} className={`mt-0.5 shrink-0 ${insight.severity === 'critical' ? 'text-[#E74C3C]' : insight.severity === 'warning' ? 'text-[#FFB264]' : 'text-[#00CAE3]'}`} />
+                <span><span className="font-medium">{insight.title}</span><span className="text-light-text-secondary"> — {insight.description}</span></span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Metric Cards */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard
-          label="项目总数"
-          value={metrics?.total_projects ?? 0}
-          icon={<FolderKanban size={20} />}
-          iconColor="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-          onClick={() => navigate('/projects')}
-        />
-        <MetricCard
-          label="活跃项目"
-          value={metrics?.active_projects ?? 0}
-          icon={<Activity size={20} />}
-          iconColor="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
-          onClick={() => navigate('/projects')}
-        />
-        <MetricCard
-          label="风险项目"
-          value={metrics?.at_risk_projects ?? 0}
-          icon={<AlertTriangle size={20} />}
-          iconColor="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-        />
-        <MetricCard
-          label="逾期任务"
-          value={metrics?.overdue_tasks ?? 0}
-          icon={<Clock size={20} />}
-          iconColor="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
-          onClick={() => navigate('/tasks')}
-        />
+        <KPICard label="项目总数" value={metrics?.total_projects ?? 0} icon={<FolderKanban size={22} className="text-[#00C875]" />} iconBg="bg-[#E6FAF0]" onClick={() => navigate('/projects')} />
+        <KPICard label="活跃项目" value={metrics?.active_projects ?? 0} icon={<Activity size={22} className="text-[#0F79F3]" />} iconBg="bg-[#F4F9FE]" onClick={() => navigate('/projects')} />
+        <KPICard label="风险项目" value={metrics?.at_risk_projects ?? 0} icon={<AlertTriangle size={22} className="text-[#E74C3C]" />} iconBg="bg-[#FEF4F4]" />
+        <KPICard label="逾期任务" value={metrics?.overdue_tasks ?? 0} icon={<Clock size={22} className="text-[#FFB264]" />} iconBg="bg-[#FEFBF5]" onClick={() => navigate('/tasks')} />
       </div>
 
       {/* Stage Pipeline */}
@@ -133,27 +120,22 @@ export const Overview: React.FC = () => {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-          <TaskDonut />
-        </div>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-          <ProjectProgress />
-        </div>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-          <BudgetOverview />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+        <Card><TaskDonut /></Card>
+        <Card><ProjectProgress /></Card>
+        <Card><BudgetOverview /></Card>
+      </div>
+
+      {/* Management Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+        <Card><ProjectHealthMatrix /></Card>
+        <Card><ResourceHeatmap /></Card>
       </div>
 
       {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-          <RiskHeatmap />
-        </div>
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">活动动态</h3>
-          <ActivityFeed />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <RiskHeatmap />
+        <Card title="活动动态"><ActivityFeed /></Card>
       </div>
     </div>
   )

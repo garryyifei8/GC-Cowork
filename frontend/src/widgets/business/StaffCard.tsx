@@ -26,7 +26,7 @@ const StaffCard: React.FC<StaffCardProps> = ({ employee, onClick }) => {
   return (
     <article
       className={[
-        'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3.5',
+        'bg-white border border-[#E8E8E8] rounded-lg p-3.5',
         'hover:shadow-md transition-all duration-200',
         onClick ? 'cursor-pointer' : '',
       ].join(' ')}
@@ -38,14 +38,14 @@ const StaffCard: React.FC<StaffCardProps> = ({ employee, onClick }) => {
         <img
           src={avatarUrl}
           alt={employee.name}
-          className="w-10 h-10 rounded-full flex-shrink-0 bg-gray-200 dark:bg-gray-700"
+          className="w-10 h-10 rounded-full flex-shrink-0 bg-gray-200"
           loading="lazy"
         />
         <div className="min-w-0">
-          <p className="font-bold text-sm leading-tight truncate text-gray-800 dark:text-gray-100">
+          <p className="font-bold text-sm leading-tight truncate text-[#333]">
             {employee.name}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+          <p className="text-xs text-[#6C7688] truncate mt-0.5">
             {employee.position}
           </p>
         </div>
@@ -53,19 +53,19 @@ const StaffCard: React.FC<StaffCardProps> = ({ employee, onClick }) => {
 
       {/* Department badge */}
       <div className="mb-3">
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-600">
           {employee.department}
         </span>
       </div>
 
       {/* Footer */}
-      <div className="border-t border-gray-200/60 dark:border-gray-700/60 pt-3">
+      <div className="border-t border-[#E8E8E8]/60 pt-3">
         <div className="flex items-center justify-between gap-2">
           <div className="space-y-1">
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <p className="text-[11px] text-[#6C7688]">
               入职 {employee.hire_date}
             </p>
-            <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+            <p className="text-sm font-semibold text-blue-600">
               {formatCurrency(employee.salary)}
             </p>
           </div>

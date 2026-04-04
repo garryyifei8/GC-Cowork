@@ -25,17 +25,17 @@ const SEVERITY_LABELS: Record<string, string> = {
 const RiskItem: React.FC<RiskItemProps> = ({ risk }) => {
   const isHigh = risk.severity === 'high' || risk.severity === 'critical'
   const iconColorClass = isHigh
-    ? 'text-red-500 dark:text-red-400'
+    ? 'text-red-500'
     : risk.severity === 'medium'
-      ? 'text-amber-500 dark:text-amber-400'
-      : 'text-blue-500 dark:text-blue-400'
+      ? 'text-amber-500'
+      : 'text-blue-500'
 
   return (
-    <div className="flex items-start gap-2 py-2.5 border-b border-gray-200 dark:border-gray-700 last:border-b-0 last:pb-0">
+    <div className="flex items-start gap-2 py-2.5 border-b border-[#E8E8E8] last:border-b-0 last:pb-0">
       <AlertTriangle size={14} className={`flex-shrink-0 mt-0.5 ${iconColorClass}`} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[0.8125rem] font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap overflow-hidden text-ellipsis">
+          <span className="text-[0.8125rem] font-semibold text-[#333] whitespace-nowrap overflow-hidden text-ellipsis">
             {risk.title}
           </span>
           <StatusBadge
@@ -44,11 +44,11 @@ const RiskItem: React.FC<RiskItemProps> = ({ risk }) => {
             size="sm"
           />
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 leading-[1.45] mt-0.5 line-clamp-2">
+        <p className="text-xs text-[#6C7688] leading-[1.45] mt-0.5 line-clamp-2">
           {risk.description}
         </p>
         {risk.owner && (
-          <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <span className="block text-xs text-[#6C7688] mt-0.5">
             负责人: {risk.owner}
           </span>
         )}

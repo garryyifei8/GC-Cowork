@@ -13,6 +13,7 @@ import {
   Send,
 } from 'lucide-react';
 import type { TaskWithProject } from '../../types';
+import { taskService, type TaskComment } from '../../services/api';
 import {
   TASK_STATUS_COLORS,
   TASK_STATUS_LABELS,
@@ -52,22 +53,22 @@ const StatusSelector: React.FC<{
   return (
     <div className="relative" ref={ref}>
       <button
-        className="w-full rounded-lg py-2 text-sm font-semibold text-white text-center cursor-pointer transition-opacity hover:opacity-90"
-        style={{ backgroundColor: color }}
+        className="w-full rounded-[3px] py-2 text-sm font-medium text-center cursor-pointer transition-opacity hover:opacity-90"
+        style={{ backgroundColor: `${color}15`, color: color, border: `1px solid ${color}30` }}
         onClick={() => setOpen((v) => !v)}
       >
         {label}
       </button>
       {open && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-light-surface border border-light-border rounded-lg shadow-xl py-1 overflow-hidden">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-light-surface border border-light-border rounded-[10px] shadow-xl py-1 overflow-hidden">
           {ALL_STATUSES.map((s) => {
             const c = TASK_STATUS_COLORS[s] ?? '#C4C4C4';
             const l = TASK_STATUS_LABELS[s] ?? s;
             return (
               <button
                 key={s}
-                className="w-full py-1.5 text-xs font-semibold text-white text-center transition-opacity hover:opacity-80"
-                style={{ backgroundColor: c }}
+                className="w-full py-1.5 text-xs font-medium text-center transition-opacity hover:opacity-80"
+                style={{ backgroundColor: `${c}15`, color: c, border: `1px solid ${c}30` }}
                 onClick={() => { onChange(s); setOpen(false); }}
               >
                 {l}
@@ -105,22 +106,22 @@ const PrioritySelector: React.FC<{
   return (
     <div className="relative" ref={ref}>
       <button
-        className="w-full rounded-lg py-2 text-sm font-semibold text-white text-center cursor-pointer transition-opacity hover:opacity-90"
-        style={{ backgroundColor: color }}
+        className="w-full rounded-[3px] py-2 text-sm font-medium text-center cursor-pointer transition-opacity hover:opacity-90"
+        style={{ backgroundColor: `${color}15`, color: color, border: `1px solid ${color}30` }}
         onClick={() => setOpen((v) => !v)}
       >
         {label}
       </button>
       {open && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-light-surface border border-light-border rounded-lg shadow-xl py-1 overflow-hidden">
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-light-surface border border-light-border rounded-[10px] shadow-xl py-1 overflow-hidden">
           {ALL_PRIORITIES.map((p) => {
             const c = PRIORITY_COLORS[p] ?? '#C4C4C4';
             const l = PRIORITY_LABELS[p] ?? p;
             return (
               <button
                 key={p}
-                className="w-full py-1.5 text-xs font-semibold text-white text-center transition-opacity hover:opacity-80"
-                style={{ backgroundColor: c }}
+                className="w-full py-1.5 text-xs font-medium text-center transition-opacity hover:opacity-80"
+                style={{ backgroundColor: `${c}15`, color: c, border: `1px solid ${c}30` }}
                 onClick={() => { onChange(p); setOpen(false); }}
               >
                 {l}
@@ -180,6 +181,8 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [comments, setComments] = useState<TaskComment[]>([]);
+  const [isSendingComment, setIsSendingComment] = useState(false);
 
   // Sync form state when task changes
   useEffect(() => {
@@ -193,6 +196,9 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
       setConfirmDelete(false);
       setDirty(false);
       setUpdateText('');
+      setComments([]);
+      // Fetch comments
+      taskService.listComments(task.id).then(setComments).catch(() => {});
     }
   }, [task]);
 
@@ -257,6 +263,20 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     }
   };
 
+  const handleSendComment = async () => {
+    if (!updateText.trim() || !task) return;
+    setIsSendingComment(true);
+    try {
+      const created = await taskService.createComment(task.id, updateText.trim());
+      setComments((prev) => [...prev, created]);
+      setUpdateText('');
+    } catch {
+      // Error handled silently
+    } finally {
+      setIsSendingComment(false);
+    }
+  };
+
   // Assignee avatar
   const avatarSeed = encodeURIComponent(assignee || 'unassigned');
   const avatarUrl = `https://api.dicebear.com/9.x/initials/svg?seed=${avatarSeed}&backgroundColor=6366f1,0ea5e9,10b981,f59e0b,ef4444&backgroundType=gradientLinear`;
@@ -278,7 +298,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label="任务详情"
-        className="fixed inset-4 sm:inset-8 md:inset-y-12 md:inset-x-16 lg:inset-y-12 lg:inset-x-24 z-50 flex bg-light-surface rounded-xl shadow-2xl border border-light-border overflow-hidden animate-fade-in"
+        className="fixed inset-4 sm:inset-8 md:inset-y-12 md:inset-x-16 lg:inset-y-12 lg:inset-x-24 z-50 flex bg-light-surface rounded-[10px] shadow-2xl border border-light-border overflow-hidden animate-fade-in"
       >
         {/* ============ Left: Attributes panel ============ */}
         <div className="w-[340px] lg:w-[380px] flex-shrink-0 flex flex-col border-r border-light-border overflow-y-auto">
@@ -338,13 +358,13 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             {/* Due date */}
             <AttrRow icon={<Calendar size={14} />} label="截止日期">
               <div className="flex items-center gap-2">
-                {isOverdue && <AlertTriangle size={14} className="text-[#E2445C] flex-shrink-0" />}
+                {isOverdue && <AlertTriangle size={14} className="text-[#E74C3C] flex-shrink-0" />}
                 <input
                   type="date"
                   value={dueDate}
                   onChange={(e) => { setDueDate(e.target.value); setDirty(true); }}
                   onBlur={() => handleFieldChange('due_date', dueDate || null)}
-                  className={inlineInputClass + (isOverdue ? ' text-[#E2445C]' : '')}
+                  className={inlineInputClass + (isOverdue ? ' text-[#E74C3C]' : '')}
                 />
               </div>
             </AttrRow>
@@ -378,15 +398,15 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           </div>
 
           {/* Bottom actions */}
-          <div className="flex items-center gap-2 px-5 py-3 border-t border-light-border bg-[#f6f7fb]/50">
+          <div className="flex items-center gap-2 px-5 py-3 border-t border-light-border bg-[#F4F6FC]/50">
             <button
               onClick={handleDelete}
               disabled={isDeleting}
               className={[
                 'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
                 confirmDelete
-                  ? 'bg-[#E2445C] text-white'
-                  : 'text-[#E2445C] hover:bg-[#E2445C]/10',
+                  ? 'bg-[#E74C3C] text-white'
+                  : 'text-[#E74C3C] hover:bg-[#E74C3C]/10',
               ].join(' ')}
             >
               <Trash2 size={13} />
@@ -447,11 +467,11 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           <div className="flex-1 flex flex-col overflow-y-auto">
             {activeTab === 'updates' && (
               <>
-                {/* Update input (rich text area placeholder) */}
+                {/* Update input */}
                 <div className="p-4">
                   <div className="border border-light-border rounded-lg overflow-hidden">
                     {/* Mini toolbar */}
-                    <div className="flex items-center gap-1 px-3 py-1.5 border-b border-light-border/50 bg-[#f6f7fb]">
+                    <div className="flex items-center gap-1 px-3 py-1.5 border-b border-light-border/50 bg-[#F4F6FC]">
                       {['B', 'I', 'U', 'S'].map((f) => (
                         <button key={f} className="w-6 h-6 rounded text-xs font-bold text-light-text-secondary hover:bg-[#d0d4e4] transition-colors">
                           {f}
@@ -465,40 +485,70 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                       rows={3}
                       className="w-full px-3 py-2.5 text-sm text-light-text bg-transparent outline-none resize-none placeholder:text-light-text-secondary"
                       placeholder="撰写动态更新..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && updateText.trim()) {
+                          e.preventDefault();
+                          handleSendComment();
+                        }
+                      }}
                     />
                     {/* Bottom bar */}
                     <div className="flex items-center justify-between px-3 py-2 border-t border-light-border/50">
                       <div className="flex items-center gap-2 text-light-text-secondary">
                         <button className="hover:text-primary transition-colors" title="提及">@</button>
                         <button className="hover:text-primary transition-colors" title="附件">📎</button>
-                        <button className="hover:text-primary transition-colors" title="表情">😊</button>
+                        <span className="text-xs text-light-text-secondary/60">Ctrl+Enter 发送</span>
                       </div>
                       <button
-                        disabled={!updateText.trim()}
-                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        disabled={!updateText.trim() || isSendingComment}
+                        onClick={handleSendComment}
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                       >
-                        更新
+                        {isSendingComment ? '发送中...' : '更新'}
                         <Send size={12} />
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Empty state */}
-                <div className="flex-1 flex flex-col items-center justify-center text-center px-8 pb-8">
-                  <div className="text-6xl mb-4">💬</div>
-                  <p className="text-sm font-semibold text-light-text mb-1">暂无动态更新</p>
-                  <p className="text-xs text-light-text-secondary leading-relaxed">
-                    在此分享进度、提及团队成员或上传文件以推动工作进展
-                  </p>
-                </div>
+                {/* Comments list */}
+                {comments.length > 0 ? (
+                  <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3">
+                    {comments.map((c) => {
+                      const seed = encodeURIComponent(c.actor);
+                      const avatar = `https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=6366f1,0ea5e9,10b981,f59e0b,ef4444&backgroundType=gradientLinear`;
+                      const time = new Date(c.created_at);
+                      const timeStr = `${time.getMonth() + 1}/${time.getDate()} ${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+                      return (
+                        <div key={c.id} className="flex gap-3">
+                          <img src={avatar} alt={c.actor} className="w-8 h-8 rounded-full shrink-0 mt-0.5" loading="lazy" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-sm font-medium text-light-text">{c.actor}</span>
+                              <span className="text-xs text-light-text-secondary">{timeStr}</span>
+                            </div>
+                            <p className="text-sm text-light-text mt-1 whitespace-pre-wrap break-words">{c.summary}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center px-8 pb-8">
+                    <div className="text-5xl mb-3 opacity-60">💬</div>
+                    <p className="text-sm font-medium text-light-text mb-1">暂无动态更新</p>
+                    <p className="text-xs text-light-text-secondary leading-relaxed">
+                      在此分享进度、提及团队成员或上传文件以推动工作进展
+                    </p>
+                  </div>
+                )}
               </>
             )}
 
             {activeTab === 'files' && (
               <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
                 <div className="text-6xl mb-4">📁</div>
-                <p className="text-sm font-semibold text-light-text mb-1">暂无文件</p>
+                <p className="text-sm font-medium text-light-text mb-1">暂无文件</p>
                 <p className="text-xs text-light-text-secondary">
                   拖拽文件至此处或点击上传
                 </p>
@@ -508,7 +558,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             {activeTab === 'activity' && (
               <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
                 <div className="text-6xl mb-4">📋</div>
-                <p className="text-sm font-semibold text-light-text mb-1">操作日志</p>
+                <p className="text-sm font-medium text-light-text mb-1">操作日志</p>
                 <p className="text-xs text-light-text-secondary">
                   此处将显示任务的所有变更记录
                 </p>

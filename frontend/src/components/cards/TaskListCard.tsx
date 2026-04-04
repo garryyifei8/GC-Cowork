@@ -19,26 +19,26 @@ interface TaskItem {
 }
 
 const STATUS_ICON: Record<string, React.ReactNode> = {
-  completed: <CheckCircle2 size={14} className="text-[#00C875]" />,
-  done: <CheckCircle2 size={14} className="text-[#00C875]" />,
-  '已完成': <CheckCircle2 size={14} className="text-[#00C875]" />,
-  in_progress: <Clock size={14} className="text-[#FDAB3D]" />,
-  '进行中': <Clock size={14} className="text-[#FDAB3D]" />,
-  blocked: <AlertCircle size={14} className="text-[#E2445C]" />,
-  '已阻塞': <AlertCircle size={14} className="text-[#E2445C]" />,
-  overdue: <AlertCircle size={14} className="text-[#E2445C]" />,
-  '已逾期': <AlertCircle size={14} className="text-[#E2445C]" />,
+  completed: <CheckCircle2 size={14} className="text-[#2ED47E]" />,
+  done: <CheckCircle2 size={14} className="text-[#2ED47E]" />,
+  '已完成': <CheckCircle2 size={14} className="text-[#2ED47E]" />,
+  in_progress: <Clock size={14} className="text-[#FFB264]" />,
+  '进行中': <Clock size={14} className="text-[#FFB264]" />,
+  blocked: <AlertCircle size={14} className="text-[#E74C3C]" />,
+  '已阻塞': <AlertCircle size={14} className="text-[#E74C3C]" />,
+  overdue: <AlertCircle size={14} className="text-[#E74C3C]" />,
+  '已逾期': <AlertCircle size={14} className="text-[#E74C3C]" />,
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  high: '#E2445C',
-  '高': '#E2445C',
-  critical: '#E2445C',
-  '紧急': '#E2445C',
-  medium: '#FDAB3D',
-  '中': '#FDAB3D',
-  low: '#00C875',
-  '低': '#00C875',
+  high: '#E74C3C',
+  '高': '#E74C3C',
+  critical: '#E74C3C',
+  '紧急': '#E74C3C',
+  medium: '#FFB264',
+  '中': '#FFB264',
+  low: '#2ED47E',
+  '低': '#2ED47E',
 };
 
 const STATUS_OPTIONS = [
@@ -93,19 +93,19 @@ export const TaskListCard: React.FC<TaskListCardProps> = ({ card, compact = true
   };
 
   return (
-    <div className="bg-white border border-[#d0d4e4] border-l-4 border-l-[#0073ea] rounded-xl overflow-hidden">
+    <div className="bg-white border border-light-border border-l-4 border-l-[#00CAE3] rounded-[10px] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#f6f7fb]">
-        <span className="text-[13px] font-semibold text-[#323338]">{card.title}</span>
-        <span className="text-[11px] text-[#676879] bg-white px-2 py-0.5 rounded-full border border-[#d0d4e4]">
+      <div className="flex items-center justify-between px-4 py-3 bg-light-bg">
+        <span className="text-[13px] font-medium text-light-text">{card.title}</span>
+        <span className="text-xs text-light-text-secondary bg-white px-2 py-0.5 rounded-full border border-light-border">
           {tasks.length} 项
         </span>
       </div>
 
       {/* Task list */}
-      <div className="divide-y divide-[#e6e9ef]">
+      <div className="divide-y divide-light-border">
         {displayTasks.map((task, idx) => (
-          <div key={idx} className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#f6f7fb] transition-colors group">
+          <div key={idx} className="flex items-center gap-3 px-4 py-2.5 hover:bg-light-bg transition-colors group">
             {/* Status icon — clickable to cycle */}
             <button
               type="button"
@@ -119,7 +119,7 @@ export const TaskListCard: React.FC<TaskListCardProps> = ({ card, compact = true
               }}
             >
               {updatingIdx === idx ? (
-                <Loader2 size={14} className="animate-spin text-[#0073ea]" />
+                <Loader2 size={14} className="animate-spin text-[#00CAE3]" />
               ) : (
                 STATUS_ICON[task.status] || <Circle size={14} className="text-[#c3c6d4]" />
               )}
@@ -129,7 +129,7 @@ export const TaskListCard: React.FC<TaskListCardProps> = ({ card, compact = true
             <span className={`flex-1 text-[13px] truncate min-w-0 ${
               task.status === 'completed' || task.status === 'done' || task.status === '已完成'
                 ? 'text-[#c3c6d4] line-through'
-                : 'text-[#323338]'
+                : 'text-light-text'
             }`}>{task.name}</span>
 
             {/* Status dropdown — visible on hover */}
@@ -137,7 +137,7 @@ export const TaskListCard: React.FC<TaskListCardProps> = ({ card, compact = true
               value={task.status}
               onChange={(e) => handleStatusChange(task, idx, e.target.value)}
               disabled={updatingIdx === idx}
-              className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-[10px] bg-white border border-[#d0d4e4] rounded px-1 py-0.5 cursor-pointer focus:opacity-100"
+              className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-xs bg-white border border-light-border rounded px-1 py-0.5 cursor-pointer focus:opacity-100"
             >
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -147,7 +147,7 @@ export const TaskListCard: React.FC<TaskListCardProps> = ({ card, compact = true
             {/* Priority badge */}
             {task.priority && (
               <span
-                className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded text-white"
+                className="shrink-0 text-xs font-medium px-1.5 py-0.5 rounded text-white"
                 style={{ backgroundColor: PRIORITY_COLORS[task.priority] || '#c3c6d4' }}
               >
                 {task.priority}
@@ -156,7 +156,7 @@ export const TaskListCard: React.FC<TaskListCardProps> = ({ card, compact = true
 
             {/* Assignee */}
             {task.assignee && (
-              <span className="shrink-0 flex items-center gap-1 text-[11px] text-[#676879]">
+              <span className="shrink-0 flex items-center gap-1 text-xs text-light-text-secondary">
                 <User size={11} />
                 {task.assignee}
               </span>
@@ -164,7 +164,7 @@ export const TaskListCard: React.FC<TaskListCardProps> = ({ card, compact = true
 
             {/* Due date */}
             {task.due_date && (
-              <span className="shrink-0 flex items-center gap-1 text-[11px] text-[#676879]">
+              <span className="shrink-0 flex items-center gap-1 text-xs text-light-text-secondary">
                 <Calendar size={11} />
                 {task.due_date}
               </span>
@@ -175,14 +175,14 @@ export const TaskListCard: React.FC<TaskListCardProps> = ({ card, compact = true
 
       {/* Remaining count */}
       {remaining > 0 && compact && (
-        <div className="px-4 py-2 text-center text-[11px] text-[#0073ea] bg-[#f6f7fb] border-t border-[#e6e9ef]">
+        <div className="px-4 py-2 text-center text-xs text-[#00CAE3] bg-light-bg border-t border-light-border">
           还有 {remaining} 项，点击展开查看全部
         </div>
       )}
 
       {/* Content / summary */}
       {card.content && (
-        <div className="px-4 py-2.5 text-[12px] text-[#676879] border-t border-[#e6e9ef] bg-[#f6f7fb]">
+        <div className="px-4 py-2.5 text-xs text-light-text-secondary border-t border-light-border bg-light-bg">
           {card.content}
         </div>
       )}

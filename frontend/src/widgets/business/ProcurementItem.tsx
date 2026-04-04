@@ -31,7 +31,7 @@ const ProcurementItem: React.FC<ProcurementItemProps> = ({ pkg, onClick }) => {
   return (
     <div
       className={[
-        'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3.5',
+        'bg-white border border-[#E8E8E8] rounded-lg p-3.5',
         'hover:shadow-md transition-all duration-200',
         onClick ? 'cursor-pointer' : '',
       ].join(' ')}
@@ -40,10 +40,10 @@ const ProcurementItem: React.FC<ProcurementItemProps> = ({ pkg, onClick }) => {
       {/* Header: name + status */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="min-w-0">
-          <div className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+          <div className="text-sm font-medium text-[#333] truncate">
             {pkg.name}
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <div className="text-xs text-[#6C7688] mt-0.5">
             {pkg.category || '—'} · {pkg.supplier ?? '无供应商'}
           </div>
         </div>
@@ -53,19 +53,19 @@ const ProcurementItem: React.FC<ProcurementItemProps> = ({ pkg, onClick }) => {
       {/* Budget + actual */}
       <div className="flex items-center gap-4 text-sm mb-2">
         <div>
-          <span className="text-xs text-gray-500 dark:text-gray-400">预算</span>
-          <span className="ml-1 font-mono text-gray-800 dark:text-gray-100">{formatWan(pkg.budget_amount)}</span>
+          <span className="text-xs text-[#6C7688]">预算</span>
+          <span className="ml-1 font-mono text-[#333]">{formatWan(pkg.budget_amount)}</span>
         </div>
         <div>
-          <span className="text-xs text-gray-500 dark:text-gray-400">实际</span>
-          <span className={`ml-1 font-mono ${overBudget ? 'text-red-500 dark:text-red-400 font-semibold' : 'text-emerald-600 dark:text-emerald-400'}`}>
+          <span className="text-xs text-[#6C7688]">实际</span>
+          <span className={`ml-1 font-mono ${overBudget ? 'text-red-500 font-semibold' : 'text-emerald-600'}`}>
             {pkg.actual_amount != null ? formatWan(pkg.actual_amount) : '—'}
           </span>
         </div>
       </div>
 
       {/* Footer: responsible + dates */}
-      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
+      <div className="flex items-center justify-between text-xs text-[#6C7688] pt-2 border-t border-[#E8E8E8]/50">
         <span>{pkg.responsible ?? '未分配'}</span>
         {pkg.plan_date && <span>计划: {pkg.plan_date}</span>}
       </div>

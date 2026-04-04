@@ -35,7 +35,7 @@ const QUICK_ACTIONS: QuickAction[] = [
   },
   {
     icon: <Receipt size={20} />,
-    iconBg: '#FDAB3D',
+    iconBg: '#FFB264',
     title: '报销查询',
     description: '报销单状态',
     message: '列出所有待审批的报销单',
@@ -49,7 +49,7 @@ const QUICK_ACTIONS: QuickAction[] = [
   },
   {
     icon: <AlertTriangle size={20} />,
-    iconBg: '#E2445C',
+    iconBg: '#E74C3C',
     title: '风险分析',
     description: '分析项目风险',
     message: '分析当前项目存在哪些风险点',
@@ -103,8 +103,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onAction, disabled
           <img src={randomMascot} alt="AI小助理" className="w-[120%] h-[120%] object-contain object-center drop-shadow-md" />
         </div>
         <div className="text-center">
-          <h2 className="text-xl font-bold text-[#323338] mb-1">AI小助理</h2>
-          <p className="text-sm text-[#676879]">你的智能工作伙伴，试试下面的快捷操作吧</p>
+          <h2 className="text-xl font-bold text-light-text mb-1">AI小助理</h2>
+          <p className="text-sm text-light-text-secondary">你的智能工作伙伴，试试下面的快捷操作吧</p>
         </div>
       </div>
 
@@ -116,19 +116,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onAction, disabled
             type="button"
             onClick={() => onAction(action.message)}
             disabled={disabled}
-            className="group flex flex-col items-center gap-2.5 p-4 rounded-xl bg-white border border-[#d0d4e4] text-center
+            className="group flex flex-col items-center gap-2.5 p-4 rounded-[10px] bg-white border border-[#d0d4e4] text-center
               transition-all duration-150 hover:border-[#0073ea]/40 hover:bg-[#cce5ff]/20 hover:shadow-sm
               disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 transition-transform group-hover:scale-110"
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-white shrink-0 transition-transform group-hover:scale-110"
               style={{ backgroundColor: action.iconBg }}
             >
               {action.icon}
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-[13px] font-semibold text-[#323338]">{action.title}</span>
-              <span className="text-[11px] text-[#676879]">{action.description}</span>
+              <span className="text-[13px] font-medium text-light-text">{action.title}</span>
+              <span className="text-[11px] text-light-text-secondary">{action.description}</span>
             </div>
           </button>
         ))}

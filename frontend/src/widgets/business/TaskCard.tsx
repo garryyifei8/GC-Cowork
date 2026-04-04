@@ -18,9 +18,9 @@ const STATUS_MAP: Record<string, { variant: StatusVariant; label: string }> = {
 }
 
 const PRIORITY_STYLES: Record<string, string> = {
-  high: 'bg-red-500/10 text-red-600 dark:text-red-400',
-  medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  low: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+  high: 'bg-[#FEF4F4] text-[#EF1E1E] border border-[#EF1E1E]/20',
+  medium: 'bg-[#FEFBF5] text-[#E2B93B] border border-[#E2B93B]/20',
+  low: 'bg-[#F4F9FE] text-[#2F80ED] border border-[#2F80ED]/20',
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -54,10 +54,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
   return (
     <div
       className={[
-        'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3',
+        'bg-white border border-[#E7E8EB] rounded-[5px] p-3',
         'flex flex-col gap-2 transition-all duration-150 group',
         onClick ? 'cursor-pointer' : 'cursor-default',
-        'hover:shadow-md hover:-translate-y-px',
+        'hover:shadow-[0_0_35px_0_rgba(104,134,177,0.15)]',
         isOverdue ? 'border-l-[3px] border-l-red-500' : isDone ? 'border-l-[3px] border-l-emerald-500 opacity-80' : '',
       ].join(' ')}
       onClick={() => onClick?.(task)}
@@ -67,10 +67,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
     >
       {/* Task name */}
       <p
-        className={`text-sm font-semibold leading-snug ${
+        className={`text-[14px] font-semibold leading-snug ${
           isDone
-            ? 'line-through text-gray-400 dark:text-gray-500'
-            : 'text-gray-800 dark:text-gray-100'
+            ? 'line-through text-[#9CA3AF]'
+            : 'text-[#0A1B39]'
         }`}
       >
         {task.name}
@@ -82,10 +82,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
 
         {dueDateDisplay && (
           <span
-            className={`inline-flex items-center gap-0.5 text-[11px] font-medium ${
+            className={`inline-flex items-center gap-0.5 text-[13px] font-medium ${
               isOverdue
-                ? 'text-red-500 dark:text-red-400'
-                : 'text-gray-500 dark:text-gray-400'
+                ? 'text-red-500'
+                : 'text-[#6C7688]'
             }`}
           >
             <Calendar size={10} />
@@ -98,7 +98,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
       <div>
         <span
           className={`inline-block text-[11px] font-medium px-2 py-0.5 rounded ${
-            PRIORITY_STYLES[task.priority] ?? 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+            PRIORITY_STYLES[task.priority] ?? 'bg-gray-200 text-[#6C7688]'
           }`}
         >
           {PRIORITY_LABELS[task.priority] ?? task.priority}
@@ -106,21 +106,21 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
       </div>
 
       {/* Footer: assignee */}
-      <div className="flex items-center pt-1.5 border-t border-gray-200/60 dark:border-gray-700/60">
+      <div className="flex items-center pt-1.5 border-t border-[#E8E8E8]/60">
         {task.assignee ? (
           <div className="flex items-center gap-1" title={task.assignee}>
             <img
               src={avatarUrl}
               alt={task.assignee}
-              className="w-5 h-5 rounded-full flex-shrink-0 bg-gray-200 dark:bg-gray-700"
+              className="w-5 h-5 rounded-full flex-shrink-0 bg-gray-200"
               loading="lazy"
             />
-            <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium truncate max-w-[80px]">
+            <span className="text-[13px] text-[#6C7688] font-medium truncate max-w-[80px]">
               {task.assignee}
             </span>
           </div>
         ) : (
-          <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+          <div className="flex items-center gap-1 text-[#9CA3AF]">
             <User size={12} />
             <span className="text-[11px]">未分配</span>
           </div>

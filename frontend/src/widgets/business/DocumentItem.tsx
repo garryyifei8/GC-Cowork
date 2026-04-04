@@ -19,7 +19,7 @@ const DocumentItem: React.FC<DocumentItemProps> = ({ doc, onClick }) => {
   return (
     <div
       className={[
-        'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5',
+        'bg-white border border-[#E8E8E8] rounded-lg p-5',
         'transition-all duration-200 hover:shadow-md cursor-pointer border-l-4',
         config.borderClass,
       ].join(' ')}
@@ -33,10 +33,10 @@ const DocumentItem: React.FC<DocumentItemProps> = ({ doc, onClick }) => {
           <FileText size={18} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold mb-1 line-clamp-2 leading-snug text-gray-800 dark:text-gray-100">
+          <h4 className="text-sm font-semibold mb-1 line-clamp-2 leading-snug text-[#333]">
             {doc.title}
           </h4>
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-xs text-[#6C7688]">
             <span className="truncate">{doc.author}</span>
             <span className="flex-shrink-0">·</span>
             <span className="flex-shrink-0">{doc.date}</span>
@@ -45,11 +45,11 @@ const DocumentItem: React.FC<DocumentItemProps> = ({ doc, onClick }) => {
       </div>
 
       <div className="flex items-center justify-between mt-2">
-        <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-1.5 text-xs text-[#6C7688]">
           <BookMarked size={13} />
           <span>知识库</span>
         </div>
-        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-1 text-xs text-[#6C7688]">
           <ThumbsUp size={13} />
           <span>{doc.likes}</span>
         </div>

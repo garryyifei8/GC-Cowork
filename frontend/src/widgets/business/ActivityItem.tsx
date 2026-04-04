@@ -31,7 +31,7 @@ function getDotColorClass(eventType: string): string {
     case 'task_updated': return 'bg-sky-500'
     case 'stage_transition': return 'bg-emerald-500'
     case 'status_changed': return 'bg-amber-500'
-    default: return 'bg-gray-400 dark:bg-gray-500'
+    default: return 'bg-gray-400'
   }
 }
 
@@ -47,7 +47,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
     <div className="flex gap-3 relative">
       {/* Timeline connector line */}
       {showConnector && (
-        <div className="absolute left-[7px] top-5 bottom-0 w-px bg-gray-300 dark:bg-gray-600" aria-hidden="true" />
+        <div className="absolute left-[7px] top-5 bottom-0 w-px bg-gray-300" aria-hidden="true" />
       )}
       {/* Dot */}
       <div
@@ -56,15 +56,15 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
       />
       {/* Content */}
       <div className="flex-1 flex flex-col gap-0.5 pb-4">
-        <span className="text-sm leading-snug flex items-baseline flex-wrap gap-1 text-gray-800 dark:text-gray-100">
+        <span className="text-sm leading-snug flex items-baseline flex-wrap gap-1 text-[#333]">
           {projectName && (
-            <span className="inline-flex items-center text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-px rounded-full whitespace-nowrap flex-shrink-0">
+            <span className="inline-flex items-center text-[11px] font-semibold text-blue-600 bg-blue-500/10 px-1.5 py-px rounded-full whitespace-nowrap flex-shrink-0">
               {projectName}
             </span>
           )}
           {activity.summary}
         </span>
-        <span className="text-xs text-gray-500 dark:text-gray-400">
+        <span className="text-xs text-[#6C7688]">
           {relTime}
         </span>
       </div>

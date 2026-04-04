@@ -97,6 +97,13 @@ const viewWidgets: Array<{ type: string; component: any; title: string }> = [
   // Documents
   { type: 'document_list', component: lazy(() => import('./views/DocumentList')), title: '文档列表' },
   { type: 'document_viewer', component: lazy(() => import('./views/DocumentViewer')), title: '文档查看器' },
+  // Phase 3 — Management dashboards
+  { type: 'project_health_matrix', component: lazy(() => import('./views/ProjectHealthMatrix')), title: '项目健康矩阵' },
+  { type: 'resource_heatmap', component: lazy(() => import('./views/ResourceHeatmap')), title: '资源热力图' },
+  // Phase 4 — Multi-view
+  { type: 'calendar_view', component: lazy(() => import('./views/CalendarView')), title: '日历视图' },
+  { type: 'workload_view', component: lazy(() => import('./views/WorkloadView')), title: '工作负荷视图' },
+  { type: 'file_view', component: lazy(() => import('./views/FileView')), title: '文件视图' },
 ]
 
 for (const w of viewWidgets) {

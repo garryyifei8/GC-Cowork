@@ -29,6 +29,18 @@ export { default as ProcessTimeline } from './ProcessTimeline'
 export { default as DocumentList } from './DocumentList'
 export { default as DocumentViewer } from './DocumentViewer'
 
+// Part 2 — Project Documents
+export { default as ProjectDocuments } from './ProjectDocuments'
+
+// Part 3 — Calendar, Workload, File
+export { default as CalendarView } from './CalendarView'
+export { default as WorkloadView } from './WorkloadView'
+export { default as FileView } from './FileView'
+
+// Part 4 — Data Visualization Widgets
+export { default as ProjectHealthMatrix } from './ProjectHealthMatrix'
+export { default as ResourceHeatmap } from './ResourceHeatmap'
+
 // Re-export prop types
 export type { TaskKanbanProps } from './TaskKanban'
 export type { ProjectTableProps } from './ProjectTable'
@@ -44,3 +56,8 @@ export type { ProcurementTableProps } from './ProcurementTable'
 export type { ProcessTimelineProps } from './ProcessTimeline'
 export type { DocumentListProps } from './DocumentList'
 export type { DocumentViewerProps } from './DocumentViewer'
+export type { CalendarViewProps } from './CalendarView'
+export type { WorkloadViewProps } from './WorkloadView'
+export type { FileViewProps } from './FileView'
+export type { ProjectHealthMatrixProps } from './ProjectHealthMatrix'
+export type { ResourceHeatmapProps } from './ResourceHeatmap'

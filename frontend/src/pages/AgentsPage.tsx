@@ -190,7 +190,7 @@ const AgentsPage: React.FC = () => {
         {filteredAgents.map(agent => (
           <div
             key={agent.id}
-            className="bg-white rounded-xl p-5 border border-[#d0d4e4] hover:shadow-lg hover:border-[#0073ea] transition-all duration-200 cursor-pointer group"
+            className="bg-white rounded-lg p-5 border border-[#d0d4e4] hover:shadow-lg hover:border-[#0073ea] transition-all duration-200 cursor-pointer group"
           >
             <div className="flex items-start gap-4">
               <div 
@@ -230,7 +230,7 @@ const AgentsPage: React.FC = () => {
           {SKILLS.map(skill => (
             <div
               key={skill.id}
-              className="bg-white rounded-xl p-4 border border-[#d0d4e4] hover:shadow-md hover:border-[#00D2D3] transition-all duration-200 cursor-pointer"
+              className="bg-white rounded-lg p-4 border border-[#d0d4e4] hover:shadow-md hover:border-[#00D2D3] transition-all duration-200 cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-[#edf1fc] flex items-center justify-center text-[#00D2D3]">
@@ -247,7 +247,7 @@ const AgentsPage: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="mt-12 bg-gradient-to-r from-[#0073ea] to-[#00D2D3] rounded-xl p-6 text-white">
+      <div className="mt-12 bg-gradient-to-r from-[#0073ea] to-[#00D2D3] rounded-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold">共 {AGENTS.length} 个专业Agent</h3>
