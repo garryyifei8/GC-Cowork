@@ -22,11 +22,11 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ data }) => {
 
   return (
     <div
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 transition-colors duration-200"
+      className="bg-white  border border-[#E8ECF4]  rounded-[10px] p-5 transition-colors duration-200"
       role="region"
       aria-label="最近活动"
     >
-      <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">
+      <h2 className="text-base font-medium text-light-text  mb-4">
         最近活动
       </h2>
 

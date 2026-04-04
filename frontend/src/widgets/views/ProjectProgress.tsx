@@ -18,8 +18,8 @@ export interface ProjectProgressProps {
 
 function getProgressColor(pct: number): string {
   if (pct >= 80) return '#00C875'
-  if (pct >= 40) return '#FDAB3D'
-  return '#E2445C'
+  if (pct >= 40) return '#FFB264'
+  return '#E74C3C'
 }
 
 function truncate(str: string, maxLen = 8): string {
@@ -35,9 +35,9 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
   if (!active || !payload?.length) return null
   const { value, payload: d } = payload[0]
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-lg text-sm max-w-[200px]">
-      <div className="font-semibold mb-0.5 text-gray-800 dark:text-gray-100">{d.name}</div>
-      <div className="text-gray-600 dark:text-gray-300">
+    <div className="bg-white  border border-[#E8ECF4]  rounded-[10px] p-3 shadow-lg text-sm max-w-[200px]">
+      <div className="font-medium mb-0.5 text-light-text ">{d.name}</div>
+      <div className="text-gray-600 ">
         进度: <strong>{Math.round(value)}%</strong>
       </div>
     </div>
@@ -63,11 +63,11 @@ const ProjectProgress: React.FC<ProjectProgressProps> = ({ data }) => {
 
   return (
     <div
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 transition-colors duration-200 flex flex-col gap-3.5 min-h-[220px]"
+      className="bg-white  border border-[#E8ECF4]  rounded-[10px] p-5 transition-colors duration-200 flex flex-col gap-3.5 min-h-[220px]"
       role="region"
       aria-label="项目进度对比柱状图"
     >
-      <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 flex-shrink-0">
+      <h2 className="text-base font-medium text-light-text  flex-shrink-0">
         项目进度对比
       </h2>
 
@@ -81,7 +81,7 @@ const ProjectProgress: React.FC<ProjectProgressProps> = ({ data }) => {
             type="number"
             domain={[0, 100]}
             tickFormatter={(v: number) => `${v}%`}
-            tick={{ fontSize: 11, fill: 'var(--color-text-muted, #676879)' }}
+            tick={{ fontSize: 11, fill: 'var(--color-text-muted, #919AA3)' }}
             tickLine={false}
             axisLine={false}
           />
@@ -89,7 +89,7 @@ const ProjectProgress: React.FC<ProjectProgressProps> = ({ data }) => {
             type="category"
             dataKey="shortName"
             width={72}
-            tick={{ fontSize: 11, fill: 'var(--color-text-muted, #676879)' }}
+            tick={{ fontSize: 11, fill: 'var(--color-text-muted, #919AA3)' }}
             tickLine={false}
             axisLine={false}
           />

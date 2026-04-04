@@ -49,17 +49,17 @@ const StaffDirectory: React.FC<StaffDirectoryProps> = ({ data, onEmployeeClick }
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-[320px]">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#919AA3] " />
           <input
             type="text"
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-[#E8ECF4]  bg-white  text-light-text  focus:outline-none focus:ring-2 focus:ring-blue-500/30"
             placeholder="搜索姓名、职位..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <select
-          className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          className="rounded-lg border border-[#E8ECF4]  bg-white  px-3 py-2 text-sm text-light-text  focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           value={deptFilter}
           onChange={(e) => setDeptFilter(e.target.value)}
           aria-label="按部门筛选"
@@ -70,7 +70,7 @@ const StaffDirectory: React.FC<StaffDirectoryProps> = ({ data, onEmployeeClick }
           ))}
         </select>
         <select
-          className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          className="rounded-lg border border-[#E8ECF4]  bg-white  px-3 py-2 text-sm text-light-text  focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           aria-label="按状态筛选"
@@ -80,7 +80,7 @@ const StaffDirectory: React.FC<StaffDirectoryProps> = ({ data, onEmployeeClick }
           <option value="on_leave">休假中</option>
           <option value="resigned">已离职</option>
         </select>
-        <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+        <span className="ml-auto text-xs text-light-text-secondary ">
           共 {filtered.length} 人
         </span>
       </div>

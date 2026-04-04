@@ -21,11 +21,11 @@ const BudgetOverview: React.FC<BudgetOverviewProps> = ({ data }) => {
 
   return (
     <div
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 transition-colors duration-200 flex flex-col gap-3.5 min-h-[220px]"
+      className="bg-white  border border-[#E8ECF4]  rounded-[10px] p-5 transition-colors duration-200 flex flex-col gap-3.5 min-h-[220px]"
       role="region"
       aria-label="预算概览"
     >
-      <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 flex-shrink-0">
+      <h2 className="text-base font-medium text-light-text  flex-shrink-0">
         预算概览
       </h2>
 
