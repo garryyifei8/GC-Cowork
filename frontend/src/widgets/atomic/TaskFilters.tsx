@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { TASK_STATUS_LABELS, PRIORITY_LABELS } from '../../utils/constants'
 import { useTaskWorkbenchStore } from '../../stores/taskWorkbenchStore'
+import type { SortField } from '../../stores/taskWorkbenchStore'
 
 export interface TaskFiltersProps {
   /** Chat injection data */
@@ -110,6 +111,10 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({ onNewTask }) => {
   const setGroupBy = useTaskWorkbenchStore((s) => s.setGroupBy)
   const setSearchQuery = useTaskWorkbenchStore((s) => s.setSearchQuery)
   const fetchTasks = useTaskWorkbenchStore((s) => s.fetchTasks)
+  const sortBy = useTaskWorkbenchStore((s) => s.sortBy)
+  const sortDir = useTaskWorkbenchStore((s) => s.sortDir)
+  const setSortBy = useTaskWorkbenchStore((s) => s.setSortBy)
+  const toggleSortDir = useTaskWorkbenchStore((s) => s.toggleSortDir)
 
   React.useEffect(() => {
     fetchTasks()
@@ -139,17 +144,10 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({ onNewTask }) => {
       {/* New task */}
       <div className="flex items-center">
         <button
-          className="flex items-center gap-1.5 h-8 px-3.5 rounded-l bg-primary text-white text-[14px] font-medium hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-1.5 h-8 px-3.5 rounded-[5px] bg-primary text-white text-[14px] font-medium hover:bg-primary/90 transition-colors"
           onClick={handleNewTask}
         >
           新建任务
-        </button>
-        <button
-          className="flex items-center h-8 px-1.5 rounded-r bg-primary text-white hover:bg-primary/90 transition-colors border-l border-white/30"
-          onClick={handleNewTask}
-          aria-label="新建选项"
-        >
-          <ChevronDown size={14} />
         </button>
       </div>
 
@@ -254,8 +252,35 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({ onNewTask }) => {
         ))}
       </ToolbarBtn>
 
-      {/* Sort placeholder */}
-      <ToolbarBtn icon={<ArrowUpDown size={15} />} label="排序" />
+      {/* Sort */}
+      <ToolbarBtn
+        icon={<ArrowUpDown size={15} />}
+        label={sortBy ? `排序: ${({ name: '名称', status: '状态', priority: '优先级', due_date: '截止日期', assignee: '负责人' } as Record<string, string>)[sortBy]}${sortDir === 'desc' ? ' ↓' : ' ↑'}` : '排序'}
+        hasDropdown
+        active={!!sortBy}
+      >
+        <DropdownItem
+          label="默认排序"
+          active={!sortBy}
+          onClick={() => setSortBy(null)}
+        />
+        {([
+          ['name', '按名称'],
+          ['status', '按状态'],
+          ['priority', '按优先级'],
+          ['due_date', '按截止日期'],
+          ['assignee', '按负责人'],
+        ] as [SortField, string][]).map(([key, label]) => (
+          <DropdownItem
+            key={key}
+            label={label + (sortBy === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '')}
+            active={sortBy === key}
+            onClick={() => {
+              if (sortBy === key) { toggleSortDir() } else { setSortBy(key) }
+            }}
+          />
+        ))}
+      </ToolbarBtn>
 
       {/* Hide placeholder */}
       <ToolbarBtn icon={<EyeOff size={15} />} label="隐藏" />

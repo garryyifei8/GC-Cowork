@@ -1,6 +1,6 @@
 import React from 'react'
 
-export type StatusVariant = 'success' | 'warning' | 'danger' | 'info' | 'default'
+export type StatusVariant = 'success' | 'warning' | 'danger' | 'info' | 'default' | 'primary' | 'secondary' | 'indigo' | 'orange' | 'pink' | 'purple' | 'teal'
 
 export interface StatusBadgeProps {
   status: StatusVariant
@@ -10,17 +10,20 @@ export interface StatusBadgeProps {
   data?: { status?: StatusVariant; label?: string }
 }
 
-const variantClasses: Record<StatusVariant, string> = {
-  success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-  warning: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-  danger: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
-  info: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-  default: 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600',
-}
-
-const sizeClasses: Record<string, string> = {
-  sm: 'px-2 py-0.5 text-xs',
-  md: 'px-2.5 py-1 text-xs',
+/* Fila badge style: bg tint + text color, no border */
+const VARIANTS: Record<string, string> = {
+  success:   'bg-[#2ED47E1A] text-[#2ED47E]',
+  warning:   'bg-[#FFB2641A] text-[#FFB264]',
+  danger:    'bg-[#E74C3C1A] text-[#E74C3C]',
+  info:      'bg-[#00CAE31A] text-[#00CAE3]',
+  primary:   'bg-[#00C8751A] text-[#00C875]',
+  secondary: 'bg-[#796DF61A] text-[#796DF6]',
+  indigo:    'bg-[#3538CD1A] text-[#3538CD]',
+  orange:    'bg-[#FF7A591A] text-[#FF7A59]',
+  pink:      'bg-[#DD25901A] text-[#DD2590]',
+  purple:    'bg-[#9B51E01A] text-[#9B51E0]',
+  teal:      'bg-[#0E93841A] text-[#0E9384]',
+  default:   'bg-[#F4F6FC] text-[#919AA3]',
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = (props) => {
@@ -29,9 +32,15 @@ const StatusBadge: React.FC<StatusBadgeProps> = (props) => {
   const label = d?.label ?? props.label
   const size = props.size ?? 'md'
 
+  const variantClass = VARIANTS[status] ?? VARIANTS.default
+  const sizeClass = size === 'sm'
+    ? 'px-2.5 py-[3px] text-[15px]'
+    : 'px-3 py-[3px] text-[15px]'
+
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full font-semibold border whitespace-nowrap ${variantClasses[status]} ${sizeClasses[size]}`}
+      className={`inline-flex items-center rounded-[3px] font-medium ${variantClass} ${sizeClass}`}
+      role="status"
       aria-label={`Status: ${label}`}
     >
       {label}

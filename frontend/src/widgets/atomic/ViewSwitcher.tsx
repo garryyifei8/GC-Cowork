@@ -10,9 +10,9 @@ export interface ViewSwitcherProps {
 }
 
 const VIEWS: { key: ViewType; label: string; icon: React.ReactNode }[] = [
-  { key: 'table', label: '表格视图', icon: <LayoutGrid size={16} /> },
-  { key: 'kanban', label: '看板视图', icon: <Columns3 size={16} /> },
-  { key: 'gantt', label: '甘特图', icon: <GanttChart size={16} /> },
+  { key: 'table',  label: '表格视图', icon: <LayoutGrid size={15} /> },
+  { key: 'kanban', label: '看板视图', icon: <Columns3 size={15} /> },
+  { key: 'gantt',  label: '甘特图',   icon: <GanttChart size={15} /> },
 ]
 
 const ViewSwitcher: React.FC<ViewSwitcherProps> = (props) => {
@@ -21,14 +21,14 @@ const ViewSwitcher: React.FC<ViewSwitcherProps> = (props) => {
   const { onChange } = props
 
   return (
-    <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+    <div className="inline-flex items-center gap-0.5 bg-[#EFF3F9] rounded-lg p-1">
       {VIEWS.map((v) => (
         <button
           key={v.key}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[15px] font-medium transition-all ${
             active === v.key
-              ? 'bg-white dark:bg-gray-800 shadow-sm text-primary'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+              ? 'bg-white shadow-sm text-primary'
+              : 'text-light-text-secondary hover:text-light-text'
           }`}
           onClick={() => onChange(v.key)}
         >

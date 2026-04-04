@@ -8,10 +8,10 @@ export interface AvatarGroupProps {
   data?: { avatars?: { src: string; alt: string }[] }
 }
 
-const sizeClasses = {
-  sm: 'w-7 h-7 text-xs',
-  md: 'w-9 h-9 text-sm',
-  lg: 'w-11 h-11 text-base',
+const sizeClasses: Record<'sm' | 'md' | 'lg', string> = {
+  sm: 'w-8 h-8 text-[11px]',
+  md: 'w-10 h-10 text-[11px]',
+  lg: 'w-12 h-12 text-[13px]',
 }
 
 const AvatarGroup: React.FC<AvatarGroupProps> = (props) => {
@@ -30,14 +30,12 @@ const AvatarGroup: React.FC<AvatarGroupProps> = (props) => {
           key={i}
           src={avatar.src}
           alt={avatar.alt}
-          className={`${sizeClasses[size]} rounded-full border-2 border-white dark:border-gray-800 object-cover`}
+          className={`${sizeClasses[size]} rounded-full border-2 border-white object-cover`}
         />
       ))}
       {overflow > 0 && (
         <div
-          className={`${sizeClasses[size]} rounded-full border-2 border-white dark:border-gray-800
-            bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300
-            flex items-center justify-center font-medium`}
+          className={`${sizeClasses[size]} rounded-full border-2 border-white bg-primary text-white flex items-center justify-center font-bold`}
         >
           +{overflow}
         </div>

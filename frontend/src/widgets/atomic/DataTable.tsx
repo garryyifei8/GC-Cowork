@@ -1,5 +1,5 @@
 import React from 'react'
-import { ChevronUp, ChevronDown } from 'lucide-react'
+import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 
 export interface Column<T = any> {
   key: string
@@ -54,30 +54,42 @@ function DataTable<T extends Record<string, any> = Record<string, any>>(
 
   if (rows.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      <div className="bg-white border border-[#E8ECF4] rounded-[10px] p-8 text-center text-base text-light-text-secondary">
         {emptyMessage}
       </div>
     )
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-colors duration-200">
+    <div className="bg-white border border-[#E8ECF4] rounded-[10px] overflow-hidden">
       <table className="w-full">
         <thead>
-          <tr className="bg-gray-50 dark:bg-gray-750">
+          <tr className="bg-[#E6FAF0]">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
-                  col.sortable ? 'cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200' : ''
+                className={`px-5 py-[18px] text-left text-base font-medium text-light-text border-b border-[#E8ECF4] ${
+                  col.sortable
+                    ? 'cursor-pointer select-none hover:text-light-text transition-colors'
+                    : ''
                 }`}
                 style={col.width ? { width: col.width } : undefined}
                 onClick={col.sortable ? () => handleSort(col.key) : undefined}
               >
                 <div className="flex items-center gap-1">
                   {col.label}
-                  {col.sortable && sortKey === col.key && (
-                    sortDir === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                  {col.sortable && (
+                    <span className="inline-flex flex-col">
+                      {sortKey === col.key ? (
+                        sortDir === 'asc' ? (
+                          <ChevronUp size={13} className="text-primary" />
+                        ) : (
+                          <ChevronDown size={13} className="text-primary" />
+                        )
+                      ) : (
+                        <ChevronsUpDown size={13} className="text-[#919AA3]" />
+                      )}
+                    </span>
                   )}
                 </div>
               </th>
@@ -88,17 +100,17 @@ function DataTable<T extends Record<string, any> = Record<string, any>>(
           {sortedRows.map((row, idx) => (
             <tr
               key={idx}
-              className={`border-t border-gray-200/50 dark:border-gray-700/50 transition-colors ${
+              className={`transition-colors ${
                 onRowClick
-                  ? 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer'
-                  : ''
+                  ? 'hover:bg-[#F4F6FC] cursor-pointer'
+                  : 'hover:bg-[#F4F6FC]'
               }`}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
               {columns.map((col) => (
                 <td
                   key={col.key}
-                  className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100"
+                  className="px-5 py-[19px] text-base text-light-text-secondary border-b border-[#E8ECF4]"
                 >
                   {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '-')}
                 </td>

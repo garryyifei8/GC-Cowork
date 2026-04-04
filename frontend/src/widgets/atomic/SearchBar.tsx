@@ -36,40 +36,42 @@ const SearchBar: React.FC<SearchBarProps> = (props) => {
 
   return (
     <div className="relative flex items-center gap-2" ref={ref}>
-      <div className="relative flex-1">
+      {/* Search input */}
+      <div className="relative flex-1 flex items-center bg-[#EFF3F9] rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
         <Search
           size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
+          className="text-[#919AA3] pointer-events-none flex-shrink-0"
         />
         <input
           type="search"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+          className="flex-1 ml-2 text-[15px] text-light-text bg-transparent outline-none border-0 placeholder:text-[#919AA3]"
           aria-label={placeholder}
         />
       </div>
 
+      {/* Filter dropdown */}
       {filterOptions && filterOptions.length > 0 && (
         <div className="relative">
           <button
             type="button"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-[#E8ECF4] bg-white text-[15px] text-light-text hover:border-primary/40 transition-colors"
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
             {filterOptions.find((o) => o.value === filterValue)?.label ?? '全部'}
-            <ChevronDown size={14} />
+            <ChevronDown size={14} className="text-[#919AA3]" />
           </button>
           {dropdownOpen && (
-            <div className="absolute z-50 top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl py-1 min-w-[140px]">
+            <div className="absolute z-50 top-full right-0 mt-1 bg-white border border-[#E8ECF4] rounded-lg shadow-lg py-1 min-w-[140px]">
               {filterOptions.map((opt) => (
                 <button
                   key={opt.value}
-                  className={`w-full text-left px-3 py-1.5 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  className={`w-full text-left px-3 py-1.5 text-[15px] transition-colors hover:bg-[#F4F6FC] ${
                     filterValue === opt.value
-                      ? 'text-primary font-medium'
-                      : 'text-gray-700 dark:text-gray-300'
+                      ? 'text-primary font-semibold'
+                      : 'text-light-text'
                   }`}
                   onClick={() => {
                     onFilterChange?.(opt.value)

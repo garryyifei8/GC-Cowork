@@ -10,6 +10,7 @@ export interface StatCardProps {
   trend?: number
   icon?: React.ReactNode | string
   iconColor?: string
+  iconBg?: string
   metric?: string
   /** Chat injection data */
   data?: { label?: string; value?: string | number; trend?: number }
@@ -20,28 +21,23 @@ const StatCard: React.FC<StatCardProps> = (props) => {
   const label = d?.label ?? props.label
   const trend = d?.trend ?? props.trend
   const icon = props.icon
-  const iconColor = props.iconColor ?? 'bg-primary/10 text-primary'
+  const iconColor = props.iconColor ?? 'text-white'
+  const iconBg = props.iconBg
   const metric = props.metric
 
   const metrics = useDashboardStore((s) => s.metrics)
   const fetchMetrics = useDashboardStore((s) => s.fetchMetrics)
 
   React.useEffect(() => {
-    if (metric && !metrics) {
-      fetchMetrics()
-    }
+    if (metric && !metrics) fetchMetrics()
   }, [metric, metrics, fetchMetrics])
 
-  // Resolve value: from data prop, explicit value prop, or metric lookup
   let value: string | number = d?.value ?? props.value ?? ''
   if (metric && metrics) {
-    const metricValue = metrics[metric as keyof DashboardMetrics]
-    if (typeof metricValue === 'number') {
-      value = metricValue
-    }
+    const mv = metrics[metric as keyof DashboardMetrics]
+    if (typeof mv === 'number') value = mv
   }
 
-  // Resolve icon: string -> Lucide component, ReactNode -> pass through
   const resolvedIcon = typeof icon === 'string'
     ? (LucideIcons[icon as keyof typeof LucideIcons] as React.FC<any>)
     : null
@@ -49,32 +45,37 @@ const StatCard: React.FC<StatCardProps> = (props) => {
   const isPositive = trend !== undefined && trend >= 0
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 transition-colors duration-200">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
-        {typeof icon === 'string' && resolvedIcon ? (
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconColor}`}>
-            {React.createElement(resolvedIcon, { size: 20 })}
-          </div>
-        ) : icon ? (
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconColor}`}>
-            {icon}
+    <div className="relative overflow-hidden bg-white border border-[#E8ECF4] rounded-[10px] p-5">
+      <div className="flex items-start justify-between mb-3">
+        {/* Left: Label + Value */}
+        <div className="flex-1 min-w-0">
+          <p className="text-[15px] text-light-text-secondary mb-1 leading-snug truncate">{label}</p>
+          <h3 className="text-[26px] font-medium text-light-text leading-none">{value}</h3>
+        </div>
+
+        {/* Right: Icon */}
+        {((typeof icon === 'string' && resolvedIcon) || (icon && typeof icon !== 'string')) ? (
+          <div
+            className="w-[50px] h-[50px] rounded-full flex items-center justify-center shrink-0 ml-3"
+            style={{ backgroundColor: `${iconBg || '#00C875'}1A` }}
+          >
+            <span style={{ color: iconBg || '#00C875' }}>
+              {typeof icon === 'string' && resolvedIcon
+                ? React.createElement(resolvedIcon, { size: 22 })
+                : icon}
+            </span>
           </div>
         ) : null}
       </div>
-      <div className="text-2xl font-bold font-heading text-gray-900 dark:text-gray-100">
-        {value}
-      </div>
+
+      {/* Trend badge */}
       {trend !== undefined && (
-        <div
-          className={`flex items-center gap-1 mt-2 text-sm font-medium ${
-            isPositive ? 'text-emerald-500' : 'text-red-500'
-          }`}
-        >
-          {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-          <span>
-            {isPositive ? '+' : ''}
-            {trend}%
+        <div>
+          <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-xs font-medium ${
+            isPositive ? 'bg-[#2ED47E1A] text-[#2ED47E]' : 'bg-[#E74C3C1A] text-[#E74C3C]'
+          }`}>
+            {isPositive ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+            {isPositive ? '+' : ''}{trend}%
           </span>
         </div>
       )}

@@ -21,29 +21,29 @@ const EmptyState: React.FC<EmptyStateProps> = (props) => {
 
   return (
     <div
-      className="flex flex-col items-center justify-center text-center gap-3 py-12 px-6"
+      className="flex flex-col items-center justify-center text-center gap-3 py-8 px-6"
       role="status"
     >
       {props.icon && (
         <div
-          className="flex items-center justify-center w-18 h-18 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 mb-1"
+          className="w-16 h-16 rounded-full bg-[#F5F6FA] flex items-center justify-center text-[#6C7688] mb-1"
           aria-hidden="true"
         >
           {props.icon}
         </div>
       )}
-      <h3 className="font-heading text-lg font-semibold m-0 leading-snug text-gray-900 dark:text-gray-100">
+      <h3 className="text-[15px] font-semibold text-[#333333] m-0 leading-snug">
         {title}
       </h3>
       {description && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 m-0 leading-relaxed max-w-sm">
+        <p className="text-[13px] text-[#6C7688] m-0 leading-relaxed max-w-xs text-center">
           {description}
         </p>
       )}
       {props.action && (
         <button
           type="button"
-          className="mt-2 inline-flex items-center justify-center px-5 py-2 bg-primary text-white border-none rounded-full text-sm font-semibold cursor-pointer transition-colors duration-150 hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="mt-2 inline-flex items-center justify-center px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg text-[13px] font-medium cursor-pointer transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary border-0"
           onClick={props.action.onClick}
         >
           {props.action.label}
