@@ -52,12 +52,25 @@ target/
 
 # Test coverage
 .coverage
+htmlcov/
+coverage/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
 
 # Browser automation debug artifacts
 .playwright-mcp/
 
 # Brainstorm sessions
 .superpowers/
+
+# Claude Code
+.claude/
+
+# Screenshots (dev artifacts)
+*.png
 
 # Marketing videos (too large for git)
 doc/marketing/videos/
