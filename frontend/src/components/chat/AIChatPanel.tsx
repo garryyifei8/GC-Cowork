@@ -6,6 +6,7 @@ import { useProjectStore } from '../../stores/projectStore';
 import { MessageBubble } from './MessageBubble';
 import { TypingIndicator } from './TypingIndicator';
 import { ChatInput } from './ChatInput';
+import { ErrorBanner } from './ErrorBanner';
 
 interface QuickSuggestion {
   label: string;
@@ -192,33 +193,78 @@ export const AIChatPanel: React.FC = () => {
               </defs>
 
               {/* Body */}
-              <path d="M50 15 C30 15, 20 45, 20 68 C20 88, 38 98, 50 98 C62 98, 80 88, 80 68 C80 45, 70 15, 50 15 Z" fill="url(#avo-body)" />
-              <path d="M50 20 C35 20, 27 46, 27 68 C27 82, 40 92, 50 92 C60 92, 73 82, 73 68 C73 46, 65 20, 50 20 Z" fill="#D9F99D" />
+              <path
+                d="M50 15 C30 15, 20 45, 20 68 C20 88, 38 98, 50 98 C62 98, 80 88, 80 68 C80 45, 70 15, 50 15 Z"
+                fill="url(#avo-body)"
+              />
+              <path
+                d="M50 20 C35 20, 27 46, 27 68 C27 82, 40 92, 50 92 C60 92, 73 82, 73 68 C73 46, 65 20, 50 20 Z"
+                fill="#D9F99D"
+              />
 
               {/* Pit */}
               <circle cx="50" cy="70" r="15" fill="url(#avo-pit)" />
-              <path d="M42 63 C46 58, 54 58, 58 63" fill="none" stroke="#FBBF24" strokeWidth="2.5" strokeLinecap="round" opacity="0.4" />
+              <path
+                d="M42 63 C46 58, 54 58, 58 63"
+                fill="none"
+                stroke="#FBBF24"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                opacity="0.4"
+              />
 
               {/* Face */}
               <circle cx="40" cy="42" r="4.5" fill="#1F2937" />
               <circle cx="60" cy="42" r="4.5" fill="#1F2937" />
               <circle cx="41.5" cy="40.5" r="1.5" fill="white" />
               <circle cx="61.5" cy="40.5" r="1.5" fill="white" />
-              <path d="M45 49 Q50 54 55 49" fill="none" stroke="#1F2937" strokeWidth="3" strokeLinecap="round" />
+              <path
+                d="M45 49 Q50 54 55 49"
+                fill="none"
+                stroke="#1F2937"
+                strokeWidth="3"
+                strokeLinecap="round"
+              />
               <ellipse cx="33" cy="48" rx="4" ry="2.5" fill="#FCA5A5" opacity="0.7" />
               <ellipse cx="67" cy="48" rx="4" ry="2.5" fill="#FCA5A5" opacity="0.7" />
 
               {/* Right Arm (Static) */}
-              <path d="M76 60 C85 64, 90 70, 88 80" fill="none" stroke="#65A30D" strokeWidth="4.5" strokeLinecap="round" />
+              <path
+                d="M76 60 C85 64, 90 70, 88 80"
+                fill="none"
+                stroke="#65A30D"
+                strokeWidth="4.5"
+                strokeLinecap="round"
+              />
               <circle cx="88" cy="80" r="3.5" fill="#65A30D" />
 
               {/* Left Arm (Waving Loop) */}
               <g className="animate-avocado-wave">
-                <path d="M24 60 C15 55, 8 45, 12 30" fill="none" stroke="#65A30D" strokeWidth="4.5" strokeLinecap="round" />
+                <path
+                  d="M24 60 C15 55, 8 45, 12 30"
+                  fill="none"
+                  stroke="#65A30D"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                />
                 <circle cx="12" cy="30" r="3.5" fill="#65A30D" />
                 {/* Tiny motion lines */}
-                <path d="M4 25 Q8 18 14 22" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" className="animate-avocado-fade" />
-                <path d="M1 35 Q5 27 10 35" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" className="animate-avocado-fade-delayed" />
+                <path
+                  d="M4 25 Q8 18 14 22"
+                  fill="none"
+                  stroke="#10B981"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="animate-avocado-fade"
+                />
+                <path
+                  d="M1 35 Q5 27 10 35"
+                  fill="none"
+                  stroke="#10B981"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="animate-avocado-fade-delayed"
+                />
               </g>
             </svg>
           </div>
@@ -269,6 +315,9 @@ export const AIChatPanel: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Error banner — shown when LLM is unavailable */}
+      <ErrorBanner />
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 flex flex-col gap-0 min-w-[380px] scroll-smooth [scrollbar-width:thin]">

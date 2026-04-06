@@ -1,4 +1,13 @@
-export type AgentType = 'dispatch' | 'project' | 'finance' | 'legal' | 'procurement' | 'hr' | 'bidding' | 'document' | 'knowledge';
+export type AgentType =
+  | 'dispatch'
+  | 'project'
+  | 'finance'
+  | 'legal'
+  | 'procurement'
+  | 'hr'
+  | 'bidding'
+  | 'document'
+  | 'knowledge';
 
 export interface ChatMessage {
   id: string;
@@ -10,10 +19,25 @@ export interface ChatMessage {
   cards?: InteractiveCard[];
   /** True while SSE tokens are still streaming in. */
   isStreaming?: boolean;
+  /** True when the message represents a failed AI response. */
+  error?: boolean;
+  /** Human-readable error detail shown in the bubble. */
+  errorMessage?: string;
 }
 
 export interface InteractiveCard {
-  type: 'action' | 'data' | 'alert' | 'form' | 'task_list' | 'progress' | 'table' | 'kanban' | 'file' | 'chart' | 'report';
+  type:
+    | 'action'
+    | 'data'
+    | 'alert'
+    | 'form'
+    | 'task_list'
+    | 'progress'
+    | 'table'
+    | 'kanban'
+    | 'file'
+    | 'chart'
+    | 'report';
   title: string;
   content?: string;
   data?: Record<string, any>;
@@ -206,6 +230,7 @@ export interface DocumentItem {
   version: string;
   author: string;
   status: string;
+  category: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -393,4 +418,61 @@ export interface ProcessRecord {
   status: string;
   attachments: string[];
   related_stage: string;
+}
+
+// ---------------------------------------------------------------------------
+// Legal / Contract Management
+// ---------------------------------------------------------------------------
+
+export interface LegalContract {
+  id: string;
+  title: string;
+  contract_type: string;
+  party_a: string;
+  party_b: string;
+  project_id: string | null;
+  amount: number;
+  sign_date: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  risk_level: string;
+  key_terms: string;
+  responsible: string;
+}
+
+// ---------------------------------------------------------------------------
+// Audit Management
+// ---------------------------------------------------------------------------
+
+export interface AuditReport {
+  id: string;
+  title: string;
+  audit_type: string;
+  project_id: string | null;
+  auditor: string;
+  start_date: string;
+  end_date: string | null;
+  status: string;
+  findings_count: number;
+  risk_level: string;
+  summary: string;
+}
+
+// ---------------------------------------------------------------------------
+// Supervision Management
+// ---------------------------------------------------------------------------
+
+export interface SupervisionRecord {
+  id: string;
+  project_id: string;
+  record_type: string;
+  title: string;
+  date: string;
+  inspector: string;
+  location: string;
+  content: string;
+  status: string;
+  issues_found: number;
+  photos: string[];
 }

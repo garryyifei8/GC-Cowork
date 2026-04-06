@@ -33,12 +33,12 @@ interface NewRecordForm {
 // ---------------------------------------------------------------------------
 
 const RECORD_TYPE_ACCENT_COLORS: Record<string, string> = {
-  daily_log:     '#579BFC',
+  daily_log: '#579BFC',
   quality_check: '#00C875',
-  inspection:    '#FDAB3D',
-  material_entry:'#9B51E0',
-  hidden_work:   '#E2445C',
-  safety_check:  '#FF7A59',
+  inspection: '#FDAB3D',
+  material_entry: '#9B51E0',
+  hidden_work: '#E2445C',
+  safety_check: '#FF7A59',
 };
 
 function formatDate(dateStr: string): string {
@@ -110,13 +110,13 @@ const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
 
       {/* Card */}
       <div
-        className="flex-1 mb-4 bg-white border border-[#d0d4e4] rounded-xl overflow-hidden"
+        className="flex-1 mb-4 bg-white border border-[#d0d4e4] rounded-lg overflow-hidden"
         style={{ borderLeftWidth: 4, borderLeftColor: accentColor }}
       >
         {/* Card header - always visible */}
         <button
           type="button"
-          onClick={() => setExpanded(prev => !prev)}
+          onClick={() => setExpanded((prev) => !prev)}
           className="w-full text-left p-4 hover:bg-[#f6f7fb] transition-colors"
         >
           <div className="flex items-start justify-between gap-3">
@@ -124,7 +124,10 @@ const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <span className="text-base leading-none">{icon}</span>
-                <span className="text-xs font-medium px-1.5 py-0.5 rounded" style={{ backgroundColor: `${accentColor}18`, color: accentColor }}>
+                <span
+                  className="text-xs font-medium px-1.5 py-0.5 rounded"
+                  style={{ backgroundColor: `${accentColor}18`, color: accentColor }}
+                >
                   {typeLabel}
                 </span>
                 <h4 className="text-sm font-semibold text-[#323338] truncate">{record.title}</h4>
@@ -144,9 +147,11 @@ const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
             {/* Right: status + chevron */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <StatusPill status={record.status} />
-              {expanded
-                ? <ChevronDown className="w-4 h-4 text-[#676879]" />
-                : <ChevronRight className="w-4 h-4 text-[#676879]" />}
+              {expanded ? (
+                <ChevronDown className="w-4 h-4 text-[#676879]" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-[#676879]" />
+              )}
             </div>
           </div>
         </button>
@@ -159,9 +164,7 @@ const RecordCard: React.FC<RecordCardProps> = ({ record }) => {
                 {record.content || '暂无内容'}
               </p>
               {record.related_stage && (
-                <p className="text-xs text-[#676879] mt-2">
-                  关联阶段：{record.related_stage}
-                </p>
+                <p className="text-xs text-[#676879] mt-2">关联阶段：{record.related_stage}</p>
               )}
               {record.attachments && record.attachments.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
@@ -197,7 +200,7 @@ const NewRecordModal: React.FC<NewRecordModalProps> = ({ onClose, onSubmit, subm
   const [form, setForm] = useState<NewRecordForm>(DEFAULT_FORM);
 
   const handleChange = (field: keyof NewRecordForm, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -228,7 +231,7 @@ const NewRecordModal: React.FC<NewRecordModalProps> = ({ onClose, onSubmit, subm
             <label className="block text-xs font-medium text-[#676879] mb-1.5">记录类型</label>
             <select
               value={form.record_type}
-              onChange={e => handleChange('record_type', e.target.value)}
+              onChange={(e) => handleChange('record_type', e.target.value)}
               className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] bg-white focus:outline-none focus:ring-2 focus:ring-[#0073ea]/40 focus:border-[#0073ea]"
             >
               {Object.entries(PROCESS_RECORD_TYPE_LABELS).map(([key, label]) => (
@@ -246,7 +249,7 @@ const NewRecordModal: React.FC<NewRecordModalProps> = ({ onClose, onSubmit, subm
               type="text"
               required
               value={form.title}
-              onChange={e => handleChange('title', e.target.value)}
+              onChange={(e) => handleChange('title', e.target.value)}
               placeholder="请输入记录标题"
               className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:ring-2 focus:ring-[#0073ea]/40 focus:border-[#0073ea]"
             />
@@ -259,7 +262,7 @@ const NewRecordModal: React.FC<NewRecordModalProps> = ({ onClose, onSubmit, subm
               <input
                 type="date"
                 value={form.date}
-                onChange={e => handleChange('date', e.target.value)}
+                onChange={(e) => handleChange('date', e.target.value)}
                 className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:ring-2 focus:ring-[#0073ea]/40 focus:border-[#0073ea]"
               />
             </div>
@@ -269,7 +272,7 @@ const NewRecordModal: React.FC<NewRecordModalProps> = ({ onClose, onSubmit, subm
                 type="text"
                 required
                 value={form.author}
-                onChange={e => handleChange('author', e.target.value)}
+                onChange={(e) => handleChange('author', e.target.value)}
                 placeholder="姓名"
                 className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:ring-2 focus:ring-[#0073ea]/40 focus:border-[#0073ea]"
               />
@@ -282,7 +285,7 @@ const NewRecordModal: React.FC<NewRecordModalProps> = ({ onClose, onSubmit, subm
             <textarea
               rows={4}
               value={form.content}
-              onChange={e => handleChange('content', e.target.value)}
+              onChange={(e) => handleChange('content', e.target.value)}
               placeholder="请输入记录详情..."
               className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] resize-none focus:outline-none focus:ring-2 focus:ring-[#0073ea]/40 focus:border-[#0073ea]"
             />
@@ -307,10 +310,7 @@ const NewRecordModal: React.FC<NewRecordModalProps> = ({ onClose, onSubmit, subm
                       color: isActive ? color : '#676879',
                     }}
                   >
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: color }}
-                    />
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
                     {label}
                   </button>
                 );
@@ -358,8 +358,9 @@ const ProcessTab: React.FC<ProcessTabProps> = ({ projectId }) => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    projectService.getProcessRecords(projectId)
-      .then(data => {
+    projectService
+      .getProcessRecords(projectId)
+      .then((data) => {
         if (!cancelled) {
           setRecords(data);
         }
@@ -370,12 +371,14 @@ const ProcessTab: React.FC<ProcessTabProps> = ({ projectId }) => {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [projectId]);
 
   // Filter + sort
   const filteredRecords = records
-    .filter(r => activeFilter === 'all' || r.record_type === activeFilter)
+    .filter((r) => activeFilter === 'all' || r.record_type === activeFilter)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const handleCreateRecord = async (form: NewRecordForm) => {
@@ -389,7 +392,7 @@ const ProcessTab: React.FC<ProcessTabProps> = ({ projectId }) => {
         content: form.content,
         status: form.status,
       });
-      setRecords(prev => [created, ...prev]);
+      setRecords((prev) => [created, ...prev]);
       setShowModal(false);
     } catch {
       // Keep modal open so user can retry
@@ -404,7 +407,7 @@ const ProcessTab: React.FC<ProcessTabProps> = ({ projectId }) => {
       <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
         {/* Filter tabs */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          {FILTER_TABS.map(tab => {
+          {FILTER_TABS.map((tab) => {
             const isActive = activeFilter === tab.key;
             return (
               <button
@@ -422,12 +425,16 @@ const ProcessTab: React.FC<ProcessTabProps> = ({ projectId }) => {
                 )}
                 {tab.label}
                 {tab.key !== 'all' && (
-                  <span className={`ml-1.5 text-[10px] ${isActive ? 'text-white/70' : 'text-[#9699a6]'}`}>
-                    {records.filter(r => r.record_type === tab.key).length}
+                  <span
+                    className={`ml-1.5 text-[10px] ${isActive ? 'text-white/70' : 'text-[#9699a6]'}`}
+                  >
+                    {records.filter((r) => r.record_type === tab.key).length}
                   </span>
                 )}
                 {tab.key === 'all' && (
-                  <span className={`ml-1.5 text-[10px] ${isActive ? 'text-white/70' : 'text-[#9699a6]'}`}>
+                  <span
+                    className={`ml-1.5 text-[10px] ${isActive ? 'text-white/70' : 'text-[#9699a6]'}`}
+                  >
                     {records.length}
                   </span>
                 )}
@@ -467,8 +474,9 @@ const ProcessTab: React.FC<ProcessTabProps> = ({ projectId }) => {
                 onClick={() => {
                   setLoading(true);
                   setError(null);
-                  projectService.getProcessRecords(projectId)
-                    .then(data => setRecords(data))
+                  projectService
+                    .getProcessRecords(projectId)
+                    .then((data) => setRecords(data))
                     .catch(() => setError('加载过程记录失败，请稍后重试'))
                     .finally(() => setLoading(false));
                 }}
@@ -484,7 +492,9 @@ const ProcessTab: React.FC<ProcessTabProps> = ({ projectId }) => {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="text-4xl mb-4">📋</div>
             <p className="text-sm font-medium text-[#323338] mb-1">
-              {activeFilter === 'all' ? '暂无过程记录' : `暂无${PROCESS_RECORD_TYPE_LABELS[activeFilter] ?? ''}记录`}
+              {activeFilter === 'all'
+                ? '暂无过程记录'
+                : `暂无${PROCESS_RECORD_TYPE_LABELS[activeFilter] ?? ''}记录`}
             </p>
             <p className="text-xs text-[#676879]">点击右上角"新增记录"开始添加</p>
           </div>
@@ -492,7 +502,7 @@ const ProcessTab: React.FC<ProcessTabProps> = ({ projectId }) => {
 
         {!loading && !error && filteredRecords.length > 0 && (
           <div className="pr-2">
-            {filteredRecords.map(record => (
+            {filteredRecords.map((record) => (
               <RecordCard key={record.id} record={record} />
             ))}
             {/* Timeline end cap */}

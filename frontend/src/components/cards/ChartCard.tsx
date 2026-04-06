@@ -12,7 +12,16 @@ interface ChartItem {
   color?: string;
 }
 
-const CHART_COLORS = ['#00CAE3', '#00C875', '#FFB264', '#E74C3C', '#796DF6', '#0F79F3', '#FF7A59', '#66CCFF'];
+const CHART_COLORS = [
+  '#00CAE3',
+  '#00C875',
+  '#FFB264',
+  '#E74C3C',
+  '#796DF6',
+  '#0F79F3',
+  '#FF7A59',
+  '#66CCFF',
+];
 
 function parseChartItems(data: Record<string, any>): ChartItem[] {
   if (data.items && Array.isArray(data.items)) {
@@ -47,7 +56,9 @@ function BarChart({ items }: { items: ChartItem[] }) {
         <div key={idx}>
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-light-text font-medium truncate mr-2">{item.label}</span>
-            <span className="text-xs font-medium text-light-text shrink-0">{item.value.toLocaleString()}</span>
+            <span className="text-xs font-medium text-light-text shrink-0">
+              {item.value.toLocaleString()}
+            </span>
           </div>
           <div className="h-[6px] rounded-full border-light-border bg-light-border overflow-hidden">
             <div
@@ -69,13 +80,14 @@ function DonutChart({ items }: { items: ChartItem[] }) {
   const total = items.reduce((s, i) => s + i.value, 0);
   if (total === 0) return null;
 
+  const gradientParts: string[] = [];
   let cumulative = 0;
-  const gradientParts = items.map((item) => {
+  for (const item of items) {
     const start = (cumulative / total) * 100;
-    const end = ((cumulative + item.value) / total) * 100;
     cumulative += item.value;
-    return `${item.color} ${start}% ${end}%`;
-  });
+    const end = (cumulative / total) * 100;
+    gradientParts.push(`${item.color} ${start}% ${end}%`);
+  }
 
   return (
     <div className="flex items-center gap-4">
@@ -95,9 +107,14 @@ function DonutChart({ items }: { items: ChartItem[] }) {
       <div className="flex flex-col gap-1.5 min-w-0">
         {items.map((item, idx) => (
           <div key={idx} className="flex items-center gap-2 text-xs">
-            <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: item.color }} />
+            <span
+              className="w-2.5 h-2.5 rounded-sm shrink-0"
+              style={{ backgroundColor: item.color }}
+            />
             <span className="text-light-text-secondary truncate">{item.label}</span>
-            <span className="ml-auto font-medium text-light-text shrink-0">{item.value.toLocaleString()}</span>
+            <span className="ml-auto font-medium text-light-text shrink-0">
+              {item.value.toLocaleString()}
+            </span>
           </div>
         ))}
       </div>

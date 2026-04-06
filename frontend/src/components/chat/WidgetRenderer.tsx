@@ -72,9 +72,15 @@ function toRisks(data: Record<string, any>): ProjectRiskSummary[] {
   }));
 }
 
-function toTaskDistribution(data: Record<string, any>): { distribution: Record<string, number>; total: number } {
+function toTaskDistribution(data: Record<string, any>): {
+  distribution: Record<string, number>;
+  total: number;
+} {
   if (data.distribution) {
-    const total = Object.values(data.distribution as Record<string, number>).reduce((s, v) => s + v, 0);
+    const total = Object.values(data.distribution as Record<string, number>).reduce(
+      (s, v) => s + v,
+      0
+    );
     return { distribution: data.distribution, total };
   }
   const distribution: Record<string, number> = {};
@@ -152,6 +158,7 @@ export type WidgetType =
   | 'process_timeline'
   | null;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function detectWidgetType(card: InteractiveCard): WidgetType {
   const d = card.data || {};
   const t = card.type;
@@ -165,7 +172,11 @@ export function detectWidgetType(card: InteractiveCard): WidgetType {
 
   if (t === 'progress' && (d.projects || d.items)) {
     const items = d.projects || d.items;
-    if (Array.isArray(items) && items.length > 0 && (items[0].progress !== undefined || items[0].progress_pct !== undefined)) {
+    if (
+      Array.isArray(items) &&
+      items.length > 0 &&
+      (items[0].progress !== undefined || items[0].progress_pct !== undefined)
+    ) {
       return 'project_progress';
     }
   }
@@ -174,23 +185,41 @@ export function detectWidgetType(card: InteractiveCard): WidgetType {
 
   if (t === 'chart' && (d.distribution || d.chart_type === 'donut')) return 'task_donut';
 
-  if ((t === 'chart' || t === 'table' || t === 'data') && (d.budgets || (d.items && d.items[0]?.budget_amount !== undefined))) {
+  if (
+    (t === 'chart' || t === 'table' || t === 'data') &&
+    (d.budgets || (d.items && d.items[0]?.budget_amount !== undefined))
+  ) {
     return 'budget_overview';
   }
 
-  if ((t === 'alert' || t === 'table' || t === 'data') && (d.risks || (d.items && d.items[0]?.risk_score !== undefined))) {
+  if (
+    (t === 'alert' || t === 'table' || t === 'data') &&
+    (d.risks || (d.items && d.items[0]?.risk_score !== undefined))
+  ) {
     return 'risk_heatmap';
   }
 
-  if ((t === 'chart' || t === 'data') && (d.stages || d.stage_distribution)) return 'stage_pipeline';
+  if ((t === 'chart' || t === 'data') && (d.stages || d.stage_distribution))
+    return 'stage_pipeline';
 
   if (t === 'kanban' && d.projects) return 'project_kanban';
 
-  if ((d.packages || d.procurement) || ((t === 'table' || t === 'data') && d.items && d.items[0]?.budget_amount !== undefined && d.items[0]?.category !== undefined)) {
+  if (
+    d.packages ||
+    d.procurement ||
+    ((t === 'table' || t === 'data') &&
+      d.items &&
+      d.items[0]?.budget_amount !== undefined &&
+      d.items[0]?.category !== undefined)
+  ) {
     return 'procurement_table';
   }
 
-  if ((d.records || d.processes) || ((t === 'data' || t === 'table') && d.items && d.items[0]?.record_type !== undefined)) {
+  if (
+    d.records ||
+    d.processes ||
+    ((t === 'data' || t === 'table') && d.items && d.items[0]?.record_type !== undefined)
+  ) {
     return 'process_timeline';
   }
 
@@ -242,11 +271,11 @@ function transformCardData(widgetType: string, data: Record<string, any>): any {
 
 function FallbackCardView({ card }: { card: InteractiveCard }) {
   return (
-    <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-      <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">{card.title}</h4>
-      {card.content && <p className="text-xs text-gray-500 dark:text-gray-400">{card.content}</p>}
+    <div className="p-4 rounded-lg border border-[#E8E8E8]  bg-[#F5F6FA] ">
+      <h4 className="text-sm font-semibold text-[#333]  mb-2">{card.title}</h4>
+      {card.content && <p className="text-xs text-[#6C7688] ">{card.content}</p>}
       {card.data && (
-        <pre className="mt-2 text-[11px] text-gray-500 dark:text-gray-400 overflow-auto max-h-40 bg-gray-100 dark:bg-gray-900 rounded p-2">
+        <pre className="mt-2 text-[11px] text-[#6C7688]  overflow-auto max-h-40 bg-[#F0F2F8]  rounded p-2">
           {JSON.stringify(card.data, null, 2)}
         </pre>
       )}

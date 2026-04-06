@@ -90,9 +90,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onAction, disabled
       '/avocado_builder.png',
       '/avocado_designer.png',
       '/avocado_pm.png',
-      '/avocado_hr.png'
+      '/avocado_hr.png',
     ];
-    return mascots[Math.floor(Math.random() * mascots.length)];
+    return mascots[0];
   }, []);
 
   return (
@@ -100,11 +100,17 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onAction, disabled
       {/* Avatar + greeting */}
       <div className="flex flex-col items-center gap-3 mb-8">
         <div className="w-32 h-32 flex items-center justify-center shrink-0">
-          <img src={randomMascot} alt="AI小助理" className="w-[120%] h-[120%] object-contain object-center drop-shadow-md" />
+          <img
+            src={randomMascot}
+            alt="AI小助理"
+            className="w-[120%] h-[120%] object-contain object-center drop-shadow-md"
+          />
         </div>
         <div className="text-center">
           <h2 className="text-xl font-bold text-light-text mb-1">AI小助理</h2>
-          <p className="text-sm text-light-text-secondary">你的智能工作伙伴，试试下面的快捷操作吧</p>
+          <p className="text-sm text-light-text-secondary">
+            你的智能工作伙伴，试试下面的快捷操作吧
+          </p>
         </div>
       </div>
 

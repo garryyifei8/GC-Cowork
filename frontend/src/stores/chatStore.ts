@@ -18,6 +18,7 @@ interface ChatState {
   selectedArtifact: ArtifactContent | null;
   isPanelOpen: boolean;
   sendMessage: (content: string) => Promise<void>;
+  retryLastMessage: () => void;
   clearError: () => void;
   clearMessages: () => void;
   openArtifact: (card: InteractiveCard) => void;
@@ -30,7 +31,8 @@ interface ChatState {
 const WELCOME_MESSAGE: ChatMessage = {
   id: 'welcome',
   role: 'agent',
-  content: '你好！我是 AI小助理，你的智能工作伙伴。我可以帮你管理项目、分析数据、起草文档、处理报销，或者检索知识库。试试下面的快捷操作，或直接告诉我你需要什么帮助！',
+  content:
+    '你好！我是 AI小助理，你的智能工作伙伴。我可以帮你管理项目、分析数据、起草文档、处理报销，或者检索知识库。试试下面的快捷操作，或直接告诉我你需要什么帮助！',
   agentType: 'dispatch',
   senderName: '通用调度 Agent',
   timestamp: new Date(),
@@ -95,47 +97,89 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }));
 
     // ── 4. Stream tokens from the backend ────────────────────────────────────
+    // Track <think> blocks to filter them out (qwq/reasoning models)
+    let inThinkBlock = false;
+    let tokenBuffer = '';
+
     try {
       await chatService.streamMessage(
         content,
         context,
-        // onToken — append each arriving token to the placeholder message
+        // onToken — append each arriving token, filtering <think> blocks
         (token) => {
-          set((state) => ({
-            messages: state.messages.map((m) =>
-              m.id === agentMsgId ? { ...m, content: m.content + token } : m,
-            ),
-          }));
+          tokenBuffer += token;
+
+          // Detect <think> open tag
+          if (tokenBuffer.includes('<think>')) {
+            inThinkBlock = true;
+            tokenBuffer = tokenBuffer.replace(/<think>/g, '');
+          }
+          // Detect </think> close tag
+          if (tokenBuffer.includes('</think>')) {
+            inThinkBlock = false;
+            tokenBuffer = tokenBuffer.split('</think>').pop() || '';
+          }
+
+          // Only emit visible tokens (skip thinking content)
+          if (!inThinkBlock && tokenBuffer.length > 0) {
+            // Don't emit partial <think or </think tags
+            if (tokenBuffer.includes('<') && !tokenBuffer.includes('>')) return;
+
+            const cleanToken = tokenBuffer;
+            tokenBuffer = '';
+            if (cleanToken.trim()) {
+              set((state) => ({
+                messages: state.messages.map((m) =>
+                  m.id === agentMsgId ? { ...m, content: m.content + cleanToken } : m
+                ),
+              }));
+            }
+          } else if (inThinkBlock) {
+            tokenBuffer = ''; // Discard thinking content
+          }
         },
         // onDone — finalise the agent message with type, name, and cards
         ({ agent_type, cards }) => {
           const normalizedCards = normalizeCards(cards);
+          // Clean up any remaining content
+          set((state) => ({
+            messages: state.messages.map((m) => {
+              if (m.id !== agentMsgId) return m;
+              // Strip any leftover <think> tags and clean whitespace
+              const cleaned = m.content
+                .replace(/<think>[\s\S]*?<\/think>/g, '')
+                .replace(/<think>[\s\S]*/g, '')
+                .trim();
+              return {
+                ...m,
+                content: cleaned,
+                agentType: agent_type as ChatMessage['agentType'],
+                senderName: getAgentName(agent_type),
+                cards: normalizedCards,
+                isStreaming: false,
+              };
+            }),
+            isLoading: false,
+          }));
+        },
+        // onError — convert the placeholder to an error message
+        (errorMessage) => {
           set((state) => ({
             messages: state.messages.map((m) =>
               m.id === agentMsgId
                 ? {
-                  ...m,
-                  agentType: agent_type as ChatMessage['agentType'],
-                  senderName: getAgentName(agent_type),
-                  cards: normalizedCards,
-                  isStreaming: false,
-                }
-                : m,
-            ),
-            isLoading: false,
-          }));
-        },
-        // onError — remove the empty placeholder and surface the error
-        (errorMessage) => {
-          set((state) => ({
-            // Keep the placeholder only if some content already arrived
-            messages: state.messages.filter(
-              (m) => m.id !== agentMsgId || m.content.length > 0,
+                    ...m,
+                    content: '',
+                    isStreaming: false,
+                    error: true,
+                    errorMessage: errorMessage || 'AI 服务暂时不可用，请稍后重试',
+                  }
+                : m
             ),
             isLoading: false,
             error: errorMessage,
           }));
-        },
+        }
       );
     } catch (err) {
       // Network / fetch-level failure: fall back to the non-streaming endpoint
@@ -164,19 +208,51 @@ export const useChatStore = create<ChatState>((set, get) => ({
           isLoading: false,
         }));
       } catch (fallbackErr) {
-        set({
+        const errorText = fallbackErr instanceof Error ? fallbackErr.message : '发送失败，请重试';
+        const errorMsg: ChatMessage = {
+          id: (Date.now() + 2).toString(),
+          role: 'agent',
+          content: '',
+          agentType: 'dispatch',
+          senderName: '智能助手',
+          timestamp: new Date(),
+          error: true,
+          errorMessage: errorText,
+        };
+        set((state) => ({
+          messages: [...state.messages, errorMsg],
           isLoading: false,
-          error:
-            fallbackErr instanceof Error ? fallbackErr.message : '发送失败，请重试',
-        });
+          error: errorText,
+        }));
       }
     }
+  },
+
+  retryLastMessage: () => {
+    const { messages, sendMessage } = get();
+    // Find the last error message
+    const lastError = [...messages].reverse().find((m) => m.error);
+    if (!lastError) return;
+    const lastErrorIndex = messages.indexOf(lastError);
+    // Find the user message right before the error
+    const userMsg = messages
+      .slice(0, lastErrorIndex)
+      .reverse()
+      .find((m) => m.role === 'user');
+    if (!userMsg) return;
+    // Remove the error message and resend
+    set((state) => ({
+      messages: state.messages.filter((m) => m.id !== lastError.id),
+      error: null,
+    }));
+    sendMessage(userMsg.content);
   },
 
   clearError: () => set({ error: null }),
   clearMessages: () => set({ messages: [WELCOME_MESSAGE], selectedArtifact: null }),
   openArtifact: (card: InteractiveCard) => set({ selectedArtifact: { type: 'card', card } }),
-  openTextArtifact: (text: string, title?: string) => set({ selectedArtifact: { type: 'text', text, title: title || '详细内容' } }),
+  openTextArtifact: (text: string, title?: string) =>
+    set({ selectedArtifact: { type: 'text', text, title: title || '详细内容' } }),
   closeArtifact: () => set({ selectedArtifact: null }),
   openPanel: () => set({ isPanelOpen: true }),
   closePanel: () => set({ isPanelOpen: false }),
@@ -193,6 +269,8 @@ function getAgentName(agentType: string): string {
     bidding: '投标 Agent',
     document: '文档 Agent',
     knowledge: '知识库 Agent',
+    process_control: '过控 Agent',
+    supervision: '监理 Agent',
   };
   return names[agentType] || '智能助手';
 }

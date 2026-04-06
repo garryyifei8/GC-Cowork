@@ -31,7 +31,7 @@ export const StagePipelineDetail: React.FC<StagePipelineDetailProps> = ({
 
   return (
     <div
-      className="bg-light-surface border border-light-border rounded-xl transition-colors duration-200 px-7 pt-6 pb-5"
+      className="bg-light-surface border border-light-border rounded-lg transition-colors duration-200 px-7 pt-6 pb-5"
       role="region"
       aria-label="阶段流程"
     >
@@ -49,8 +49,9 @@ export const StagePipelineDetail: React.FC<StagePipelineDetailProps> = ({
                 {/* Connector line before this node (except first) */}
                 {index > 0 && (
                   <div
-                    className={`flex-1 h-0.5 min-w-7 mt-[22px] rounded-sm transition-colors duration-300 ${isCompleted || isCurrent ? 'bg-success' : 'bg-[#c3c6d4]'
-                      }`}
+                    className={`flex-1 h-0.5 min-w-7 mt-[22px] rounded-sm transition-colors duration-300 ${
+                      isCompleted || isCurrent ? 'bg-success' : 'bg-[#c3c6d4]'
+                    }`}
                     aria-hidden="true"
                   />
                 )}
@@ -59,14 +60,16 @@ export const StagePipelineDetail: React.FC<StagePipelineDetailProps> = ({
                 <div className="flex flex-col items-center gap-2 min-w-[68px]">
                   {/* Circle node */}
                   <div
-                    className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ${isCompleted
+                    className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ${
+                      isCompleted
                         ? 'bg-success text-white'
                         : isCurrent
                           ? 'bg-primary text-white ring-4 ring-primary/20 animate-pulse'
                           : 'bg-[#d0d4e4] text-light-text-secondary'
-                      }`}
-                    aria-label={`${stageLabel}${isCompleted ? '（已完成）' : isCurrent ? '（当前阶段）' : '（未开始）'
-                      }`}
+                    }`}
+                    aria-label={`${stageLabel}${
+                      isCompleted ? '（已完成）' : isCurrent ? '（当前阶段）' : '（未开始）'
+                    }`}
                   >
                     {isCompleted ? (
                       // Checkmark SVG for completed stages
@@ -102,12 +105,13 @@ export const StagePipelineDetail: React.FC<StagePipelineDetailProps> = ({
                   {/* Label + milestone date below node */}
                   <div className="flex flex-col items-center gap-0.5 text-center min-w-[60px]">
                     <span
-                      className={`text-xs font-medium whitespace-nowrap transition-colors duration-200 ${isCompleted
+                      className={`text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
+                        isCompleted
                           ? 'text-success font-semibold'
                           : isCurrent
                             ? 'text-primary font-bold'
                             : 'text-light-text-secondary'
-                        }`}
+                      }`}
                     >
                       {stageLabel}
                     </span>

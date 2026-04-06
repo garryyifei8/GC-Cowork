@@ -1,4 +1,29 @@
-import type { ChatResponse, Project, ProjectDetail, ProjectTask, BiddingOpportunity, ActivityEvent, DashboardMetrics, AISuggestion, TaskWithProject, DocumentItem, Employee, AttendanceRecord, LeaveRequest, SalaryRecord, HRSummary, ExpenseReport, BudgetLine, FinanceInvoice, FinanceSummary, ProcurementPackage, ProcessRecord } from '../types';
+import type {
+  ChatResponse,
+  Project,
+  ProjectDetail,
+  ProjectTask,
+  BiddingOpportunity,
+  ActivityEvent,
+  DashboardMetrics,
+  AISuggestion,
+  TaskWithProject,
+  DocumentItem,
+  Employee,
+  AttendanceRecord,
+  LeaveRequest,
+  SalaryRecord,
+  HRSummary,
+  ExpenseReport,
+  BudgetLine,
+  FinanceInvoice,
+  FinanceSummary,
+  ProcurementPackage,
+  ProcessRecord,
+  LegalContract,
+  AuditReport,
+  SupervisionRecord,
+} from '../types';
 
 const API_BASE = '/api';
 
@@ -36,7 +61,7 @@ export const chatService = {
     context: Array<{ role: string; content: string }> | undefined,
     onToken: (token: string) => void,
     onDone: (payload: { agent_type: string; cards: any[] }) => void,
-    onError: (errorMessage: string) => void,
+    onError: (errorMessage: string) => void
   ): Promise<void> => {
     const res = await fetch(`${API_BASE}/chat/stream`, {
       method: 'POST',
@@ -111,6 +136,9 @@ export const chatService = {
       parseAndDispatch(buffer.trim());
     }
   },
+
+  checkHealth: () =>
+    request<{ status: string; message?: string; provider?: string }>('/chat/health'),
 };
 
 export const projectService = {
@@ -119,7 +147,14 @@ export const projectService = {
     return request<Project[]>(`/projects${params}`);
   },
   get: (id: string) => request<ProjectDetail>(`/projects/${id}`),
-  create: (data: { name: string; project_type?: string; budget_display?: string }) =>
+  create: (data: {
+    name: string;
+    project_type?: string;
+    budget_display?: string;
+    due_date?: string;
+    description?: string;
+    manager?: string;
+  }) =>
     request<Project>('/projects', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -134,9 +169,11 @@ export const projectService = {
       method: 'POST',
       body: JSON.stringify({ target_stage: targetStage }),
     }),
-  listTasks: (projectId: string) =>
-    request<ProjectTask[]>(`/projects/${projectId}/tasks`),
-  createTask: (projectId: string, data: { name: string; assignee?: string; priority?: string; due_date?: string }) =>
+  listTasks: (projectId: string) => request<ProjectTask[]>(`/projects/${projectId}/tasks`),
+  createTask: (
+    projectId: string,
+    data: { name: string; assignee?: string; priority?: string; due_date?: string }
+  ) =>
     request<ProjectTask>(`/projects/${projectId}/tasks`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -148,8 +185,7 @@ export const projectService = {
     }),
   getActivities: (projectId: string) =>
     request<ActivityEvent[]>(`/projects/${projectId}/activities`),
-  getDocuments: (projectId: string) =>
-    request<DocumentItem[]>(`/projects/${projectId}/documents`),
+  getDocuments: (projectId: string) => request<DocumentItem[]>(`/projects/${projectId}/documents`),
   delete: async (projectId: string) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}`, {
       method: 'DELETE',
@@ -158,7 +194,10 @@ export const projectService = {
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json().catch(() => ({}));
   },
-  createMilestone: async (projectId: string, data: { name: string; date?: string; status?: string }) => {
+  createMilestone: async (
+    projectId: string,
+    data: { name: string; date?: string; status?: string }
+  ) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/milestones`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -167,7 +206,11 @@ export const projectService = {
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json();
   },
-  updateMilestone: async (projectId: string, milestoneId: string, data: Record<string, unknown>) => {
+  updateMilestone: async (
+    projectId: string,
+    milestoneId: string,
+    data: Record<string, unknown>
+  ) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/milestones/${milestoneId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -184,7 +227,10 @@ export const projectService = {
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json().catch(() => ({}));
   },
-  createRisk: async (projectId: string, data: { description: string; level?: string; mitigation?: string }) => {
+  createRisk: async (
+    projectId: string,
+    data: { description: string; level?: string; mitigation?: string }
+  ) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/risks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -245,7 +291,14 @@ export const projectService = {
     return res.json().catch(() => ({}));
   },
   getProcurements: (projectId: string) =>
-    request<ProcurementPackage[]>(`/projects/${projectId}/procurement`).then((res: any) => res.items ?? res),
+    request<ProcurementPackage[]>(`/projects/${projectId}/procurement`).then(
+      (res: any) => res.items ?? res
+    ),
+  createProcurement: (projectId: string, data: Record<string, any>) =>
+    request<ProcurementPackage>(`/projects/${projectId}/procurement`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   updateProcurement: (projectId: string, pkgId: string, updates: Record<string, any>) =>
     request<ProcurementPackage>(`/projects/${projectId}/procurement/${pkgId}`, {
       method: 'PUT',
@@ -253,7 +306,9 @@ export const projectService = {
     }),
   getProcessRecords: (projectId: string, recordType?: string) => {
     const params = recordType ? `?record_type=${recordType}` : '';
-    return request<ProcessRecord[]>(`/projects/${projectId}/processes${params}`).then((res: any) => res.items ?? res);
+    return request<ProcessRecord[]>(`/projects/${projectId}/processes${params}`).then(
+      (res: any) => res.items ?? res
+    );
   },
   createProcessRecord: (projectId: string, data: Record<string, any>) =>
     request<ProcessRecord>(`/projects/${projectId}/processes`, {
@@ -263,14 +318,23 @@ export const projectService = {
 };
 
 export const activityService = {
-  getRecent: (limit = 10) =>
-    request<ActivityEvent[]>(`/activities/recent?limit=${limit}`),
+  getRecent: (limit = 10) => request<ActivityEvent[]>(`/activities/recent?limit=${limit}`),
 };
 
 export const dashboardService = {
   getMetrics: () => request<DashboardMetrics>('/dashboard/metrics'),
   getSuggestions: () => request<AISuggestion[]>('/dashboard/suggestions'),
 };
+
+export interface TaskComment {
+  id: string;
+  project_id: string;
+  event_type: string;
+  actor: string;
+  summary: string;
+  detail: Record<string, unknown>;
+  created_at: string;
+}
 
 export const taskService = {
   listAll: (params?: { assignee?: string; status?: string; priority?: string }) => {
@@ -281,6 +345,12 @@ export const taskService = {
     const qs = searchParams.toString();
     return request<TaskWithProject[]>(`/tasks${qs ? `?${qs}` : ''}`);
   },
+  listComments: (taskId: string) => request<TaskComment[]>(`/tasks/${taskId}/comments`),
+  createComment: (taskId: string, content: string, author?: string) =>
+    request<TaskComment>(`/tasks/${taskId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content, author: author ?? '当前用户' }),
+    }),
 };
 
 export const biddingService = {
@@ -331,7 +401,10 @@ export const hrService = {
     return request<SalaryRecord[]>(`/hr/salary${qs ? `?${qs}` : ''}`);
   },
   getSummary: () => request<HRSummary>('/hr/summary'),
-  getInsights: () => request<Array<{ title: string; description: string; severity: string; category: string }>>('/hr/insights'),
+  getInsights: () =>
+    request<Array<{ title: string; description: string; severity: string; category: string }>>(
+      '/hr/insights'
+    ),
 };
 
 export const financeService = {
@@ -369,5 +442,124 @@ export const financeService = {
       body: JSON.stringify(data),
     }),
   getSummary: () => request<FinanceSummary>('/finance/summary'),
-  getInsights: () => request<Array<{ title: string; description: string; severity: string; category: string }>>('/finance/insights'),
+  getInsights: () =>
+    request<Array<{ title: string; description: string; severity: string; category: string }>>(
+      '/finance/insights'
+    ),
+};
+
+export const knowledgeService = {
+  listDocuments: (docType?: string, status?: string) => {
+    const sp = new URLSearchParams();
+    if (docType) sp.set('doc_type', docType);
+    if (status) sp.set('status', status);
+    const qs = sp.toString();
+    return request<DocumentItem[]>(`/knowledge/documents${qs ? `?${qs}` : ''}`);
+  },
+  search: (query: string, category?: string, topK = 20) =>
+    request<
+      Array<{
+        id: string;
+        title: string;
+        doc_type: string;
+        content_summary: string;
+        author: string;
+        status: string;
+        score: number;
+      }>
+    >('/knowledge/search', {
+      method: 'POST',
+      body: JSON.stringify({ query, category, top_k: topK }),
+    }),
+};
+
+export const documentService = {
+  list: (params?: { project_id?: string; doc_type?: string; status?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.project_id) sp.set('project_id', params.project_id);
+    if (params?.doc_type) sp.set('doc_type', params.doc_type);
+    if (params?.status) sp.set('status', params.status);
+    const qs = sp.toString();
+    return request<DocumentItem[]>(`/documents${qs ? `?${qs}` : ''}`);
+  },
+  create: (data: {
+    title: string;
+    doc_type?: string;
+    project_id?: string;
+    content_summary?: string;
+    author?: string;
+  }) => request<DocumentItem>('/documents', { method: 'POST', body: JSON.stringify(data) }),
+  upload: async (
+    file: File,
+    meta?: { title?: string; doc_type?: string; project_id?: string; author?: string }
+  ) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (meta?.title) formData.append('title', meta.title);
+    if (meta?.doc_type) formData.append('doc_type', meta.doc_type);
+    if (meta?.project_id) formData.append('project_id', meta.project_id);
+    if (meta?.author) formData.append('author', meta.author);
+    const res = await fetch(`${API_BASE}/documents/upload`, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json() as Promise<DocumentItem>;
+  },
+};
+
+export const legalService = {
+  list: (params?: { status?: string; contract_type?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.status) sp.set('status', params.status);
+    if (params?.contract_type) sp.set('contract_type', params.contract_type);
+    const qs = sp.toString();
+    return request<LegalContract[]>(`/legal/contracts${qs ? `?${qs}` : ''}`);
+  },
+  get: (id: string) => request<LegalContract>(`/legal/contracts/${id}`),
+  create: (data: Record<string, unknown>) =>
+    request<LegalContract>('/legal/contracts', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Record<string, unknown>) =>
+    request<LegalContract>(`/legal/contracts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  getSummary: () =>
+    request<{ total: number; active: number; expiring_soon: number; total_amount: number }>(
+      '/legal/summary'
+    ),
+};
+
+export const auditService = {
+  listReports: (params?: { status?: string; audit_type?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.status) sp.set('status', params.status);
+    if (params?.audit_type) sp.set('audit_type', params.audit_type);
+    const qs = sp.toString();
+    return request<AuditReport[]>(`/audit/reports${qs ? `?${qs}` : ''}`);
+  },
+  get: (id: string) => request<AuditReport>(`/audit/reports/${id}`),
+  getSummary: () =>
+    request<{
+      total: number;
+      in_progress: number;
+      findings_count: number;
+      compliance_rate: number;
+    }>('/audit/summary'),
+};
+
+export const supervisionService = {
+  list: (params?: { project_id?: string; record_type?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.project_id) sp.set('project_id', params.project_id);
+    if (params?.record_type) sp.set('record_type', params.record_type);
+    const qs = sp.toString();
+    return request<SupervisionRecord[]>(`/supervision/records${qs ? `?${qs}` : ''}`);
+  },
+  create: (data: Record<string, unknown>) =>
+    request<SupervisionRecord>('/supervision/records', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  getSummary: () =>
+    request<{ total: number; issues_open: number; inspections_this_month: number }>(
+      '/supervision/summary'
+    ),
 };

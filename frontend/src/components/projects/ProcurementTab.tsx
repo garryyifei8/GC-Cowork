@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Package, ChevronDown, ChevronRight } from 'lucide-react';
+import { Package, ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { projectService } from '../../services/api';
 import {
   PROCUREMENT_STATUS_LABELS,
@@ -116,12 +116,11 @@ const BudgetSummaryRow: React.FC<BudgetSummaryRowProps> = ({ packages }) => {
           <span
             className={[
               'ml-1.5 text-[11px] font-semibold px-1.5 py-0.5 rounded',
-              overBudget
-                ? 'bg-[#E2445C]/10 text-[#E2445C]'
-                : 'bg-[#00C875]/10 text-[#00C875]',
+              overBudget ? 'bg-[#E2445C]/10 text-[#E2445C]' : 'bg-[#00C875]/10 text-[#00C875]',
             ].join(' ')}
           >
-            {overBudget ? '+' : ''}{formatWan(variance)}
+            {overBudget ? '+' : ''}
+            {formatWan(variance)}
           </span>
         )}
       </td>
@@ -146,17 +145,13 @@ const ExpandedDetail: React.FC<ExpandedDetailProps> = ({ pkg }) => (
           <span className="text-xs font-semibold text-[#676879] uppercase tracking-wide mr-2">
             计划日期
           </span>
-          <span className="text-[#323338]">
-            {pkg.plan_date ?? '—'}
-          </span>
+          <span className="text-[#323338]">{pkg.plan_date ?? '—'}</span>
         </div>
         <div>
           <span className="text-xs font-semibold text-[#676879] uppercase tracking-wide mr-2">
             到货日期
           </span>
-          <span className="text-[#323338]">
-            {pkg.arrival_date ?? '—'}
-          </span>
+          <span className="text-[#323338]">{pkg.arrival_date ?? '—'}</span>
         </div>
         {pkg.notes && (
           <div>
@@ -192,10 +187,7 @@ const PackageRow: React.FC<PackageRowProps> = ({ pkg, isExpanded, onToggle }) =>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="text-[#676879] shrink-0">
-            {isExpanded
-              ? <ChevronDown size={14} />
-              : <ChevronRight size={14} />
-            }
+            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </span>
           <span className="text-sm font-medium text-[#323338] truncate max-w-[180px]">
             {pkg.name}
@@ -204,9 +196,7 @@ const PackageRow: React.FC<PackageRowProps> = ({ pkg, isExpanded, onToggle }) =>
       </td>
 
       {/* Category */}
-      <td className="px-4 py-3 text-sm text-[#323338]">
-        {pkg.category || '—'}
-      </td>
+      <td className="px-4 py-3 text-sm text-[#323338]">{pkg.category || '—'}</td>
 
       {/* Supplier */}
       <td className="px-4 py-3 text-sm text-[#676879] truncate max-w-[120px]">
@@ -241,9 +231,7 @@ const PackageRow: React.FC<PackageRowProps> = ({ pkg, isExpanded, onToggle }) =>
       </td>
 
       {/* Responsible */}
-      <td className="px-4 py-3 text-sm text-[#676879]">
-        {pkg.responsible ?? '—'}
-      </td>
+      <td className="px-4 py-3 text-sm text-[#676879]">{pkg.responsible ?? '—'}</td>
     </tr>
 
     {isExpanded && <ExpandedDetail pkg={pkg} />}
@@ -275,6 +263,195 @@ const EmptyState: React.FC = () => (
 );
 
 // ---------------------------------------------------------------------------
+// Create Procurement Drawer
+// ---------------------------------------------------------------------------
+
+interface CreateProcurementDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: {
+    name: string;
+    category: string;
+    supplier?: string;
+    budget_amount?: number;
+    plan_date?: string;
+    responsible?: string;
+    notes?: string;
+  }) => Promise<void>;
+}
+
+const CreateProcurementDrawer: React.FC<CreateProcurementDrawerProps> = ({
+  open,
+  onClose,
+  onSubmit,
+}) => {
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState(PROCUREMENT_CATEGORIES[0]);
+  const [supplier, setSupplier] = useState('');
+  const [budgetAmount, setBudgetAmount] = useState('');
+  const [planDate, setPlanDate] = useState('');
+  const [responsible, setResponsible] = useState('');
+  const [notes, setNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const reset = () => {
+    setName('');
+    setCategory(PROCUREMENT_CATEGORIES[0]);
+    setSupplier('');
+    setBudgetAmount('');
+    setPlanDate('');
+    setResponsible('');
+    setNotes('');
+  };
+
+  const handleSubmit = async () => {
+    if (!name.trim()) return;
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        name: name.trim(),
+        category,
+        supplier: supplier.trim() || undefined,
+        budget_amount: budgetAmount ? Number(budgetAmount) : undefined,
+        plan_date: planDate || undefined,
+        responsible: responsible.trim() || undefined,
+        notes: notes.trim() || undefined,
+      });
+      reset();
+      onClose();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
+      {/* Drawer */}
+      <div className="fixed top-0 right-0 h-full w-[420px] bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e6e9ef]">
+          <h3 className="text-base font-bold text-[#323338]">新建采购包</h3>
+          <button className="p-1 rounded-md hover:bg-[#f6f7fb] text-[#676879]" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Form body */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Name */}
+          <div>
+            <label className="block text-xs font-semibold text-[#676879] mb-1">
+              采购包名称 <span className="text-[#E2445C]">*</span>
+            </label>
+            <input
+              className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:border-[#0086C0] transition-colors"
+              placeholder="输入采购包名称"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-xs font-semibold text-[#676879] mb-1">分类</label>
+            <select
+              className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] bg-white focus:outline-none focus:border-[#0086C0]"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {PROCUREMENT_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Supplier */}
+          <div>
+            <label className="block text-xs font-semibold text-[#676879] mb-1">供应商</label>
+            <input
+              className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:border-[#0086C0] transition-colors"
+              placeholder="输入供应商名称"
+              value={supplier}
+              onChange={(e) => setSupplier(e.target.value)}
+            />
+          </div>
+
+          {/* Budget Amount */}
+          <div>
+            <label className="block text-xs font-semibold text-[#676879] mb-1">预算金额 (元)</label>
+            <input
+              type="number"
+              className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:border-[#0086C0] transition-colors"
+              placeholder="输入预算金额"
+              value={budgetAmount}
+              onChange={(e) => setBudgetAmount(e.target.value)}
+            />
+          </div>
+
+          {/* Plan Date */}
+          <div>
+            <label className="block text-xs font-semibold text-[#676879] mb-1">计划日期</label>
+            <input
+              type="date"
+              className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:border-[#0086C0] transition-colors"
+              value={planDate}
+              onChange={(e) => setPlanDate(e.target.value)}
+            />
+          </div>
+
+          {/* Responsible */}
+          <div>
+            <label className="block text-xs font-semibold text-[#676879] mb-1">负责人</label>
+            <input
+              className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:border-[#0086C0] transition-colors"
+              placeholder="输入负责人"
+              value={responsible}
+              onChange={(e) => setResponsible(e.target.value)}
+            />
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-xs font-semibold text-[#676879] mb-1">备注</label>
+            <textarea
+              className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:border-[#0086C0] transition-colors resize-none"
+              rows={3}
+              placeholder="备注信息"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[#e6e9ef]">
+          <button
+            className="px-4 py-2 text-sm font-medium text-[#676879] rounded-lg hover:bg-[#f6f7fb] transition-colors"
+            onClick={onClose}
+          >
+            取消
+          </button>
+          <button
+            className="px-4 py-2 text-sm font-medium text-white bg-[#0086C0] rounded-lg hover:bg-[#006d9e] transition-colors disabled:opacity-50"
+            disabled={!name.trim() || submitting}
+            onClick={handleSubmit}
+          >
+            {submitting ? '创建中...' : '创建'}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ---------------------------------------------------------------------------
 // Main ProcurementTab Component
 // ---------------------------------------------------------------------------
 
@@ -288,27 +465,24 @@ const ProcurementTab: React.FC<ProcurementTabProps> = ({ projectId }) => {
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORY);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
 
-    projectService
-      .getProcurements(projectId)
-      .then((data) => {
-        if (!cancelled) {
-          setPackages(data);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err?.message ?? '加载失败');
-        }
-      })
-      .finally(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await projectService.getProcurements(projectId);
+        if (!cancelled) setPackages(data);
+      } catch (err: unknown) {
+        if (!cancelled) setError((err as Error)?.message ?? '加载失败');
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    };
+    fetchData();
 
     return () => {
       cancelled = true;
@@ -332,18 +506,38 @@ const ProcurementTab: React.FC<ProcurementTabProps> = ({ projectId }) => {
     });
   };
 
+  const handleCreate = async (data: {
+    name: string;
+    category: string;
+    supplier?: string;
+    budget_amount?: number;
+    plan_date?: string;
+    responsible?: string;
+    notes?: string;
+  }) => {
+    const created = await projectService.createProcurement(projectId, data);
+    setPackages((prev) => [...prev, created]);
+  };
+
   return (
     <div className="flex flex-col gap-4">
-      {/* Header bar: category filter tabs */}
+      {/* Header bar: category filter tabs + create button */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <CategoryTabs active={activeCategory} onChange={setActiveCategory} />
-        <span className="text-xs text-[#676879]">
-          共 {filteredPackages.length} 个采购包
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-[#676879]">共 {filteredPackages.length} 个采购包</span>
+          <button
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-[#0086C0] rounded-lg hover:bg-[#006d9e] transition-colors"
+            onClick={() => setShowCreateDrawer(true)}
+          >
+            <Plus size={14} />
+            新建采购包
+          </button>
+        </div>
       </div>
 
       {/* Table */}
-      <div className="border border-[#d0d4e4] rounded-xl overflow-hidden">
+      <div className="border border-[#d0d4e4] rounded-lg overflow-hidden">
         {loading ? (
           <LoadingSkeleton />
         ) : error ? (
@@ -393,6 +587,13 @@ const ProcurementTab: React.FC<ProcurementTabProps> = ({ projectId }) => {
           </table>
         )}
       </div>
+
+      {/* Create Procurement Drawer */}
+      <CreateProcurementDrawer
+        open={showCreateDrawer}
+        onClose={() => setShowCreateDrawer(false)}
+        onSubmit={handleCreate}
+      />
     </div>
   );
 };

@@ -97,7 +97,7 @@ function RichTextDisplay({ content }: { content: string }) {
 
     // Horizontal rule
     if (/^-{3,}$/.test(line.trim()) || /^_{3,}$/.test(line.trim())) {
-      elements.push(<hr key={i} className="my-3 border-t border-[#d0d4e4]" />);
+      elements.push(<hr key={i} className="my-3 border-t border-[#E8ECF4]" />);
       continue;
     }
 
@@ -105,13 +105,14 @@ function RichTextDisplay({ content }: { content: string }) {
     const headerMatch = line.match(/^(#{1,3})\s+(.+)/);
     if (headerMatch) {
       const level = headerMatch[1].length;
-      const className = level === 1
-        ? 'text-lg font-bold mt-4 mb-2'
-        : level === 2
-        ? 'text-base font-bold mt-3 mb-1.5'
-        : 'text-[15px] font-semibold mt-2 mb-1';
+      const className =
+        level === 1
+          ? 'text-lg font-bold mt-4 mb-2'
+          : level === 2
+            ? 'text-base font-bold mt-3 mb-1.5'
+            : 'text-[15px] font-medium mt-2 mb-1';
       elements.push(
-        <div key={i} className={`${className} text-[#323338]`}>
+        <div key={i} className={`${className} text-light-text`}>
           {headerMatch[2]}
         </div>
       );
@@ -122,8 +123,8 @@ function RichTextDisplay({ content }: { content: string }) {
     if (/^[\s]*[-*•]\s+/.test(line)) {
       elements.push(
         <div key={i} className="flex gap-2.5 py-0.5 pl-1">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#0073ea] shrink-0" />
-          <span className="text-[15px] text-[#323338] leading-relaxed">
+          <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+          <span className="text-[15px] text-light-text leading-relaxed">
             {line.replace(/^[\s]*[-*•]\s+/, '')}
           </span>
         </div>
@@ -136,10 +137,10 @@ function RichTextDisplay({ content }: { content: string }) {
     if (numMatch) {
       elements.push(
         <div key={i} className="flex gap-2.5 py-0.5 pl-1">
-          <span className="shrink-0 w-6 h-6 rounded-full bg-[#edf1fc] text-[11px] font-bold text-[#0073ea] flex items-center justify-center mt-0.5">
+          <span className="shrink-0 w-6 h-6 rounded-full bg-[#EFF3F9] text-[11px] font-bold text-primary flex items-center justify-center mt-0.5">
             {numMatch[1]}
           </span>
-          <span className="text-[15px] text-[#323338] leading-relaxed">{numMatch[2]}</span>
+          <span className="text-[15px] text-light-text leading-relaxed">{numMatch[2]}</span>
         </div>
       );
       continue;
@@ -150,7 +151,7 @@ function RichTextDisplay({ content }: { content: string }) {
     elements.push(
       <p
         key={i}
-        className="text-[15px] text-[#323338] leading-relaxed"
+        className="text-[15px] text-light-text leading-relaxed"
         dangerouslySetInnerHTML={{ __html: formatted }}
       />
     );
@@ -165,12 +166,12 @@ export const ArtifactPanel: React.FC<ArtifactPanelProps> = ({ artifact, onClose 
   // Text artifact
   if (artifact.type === 'text' && artifact.text) {
     return (
-      <div className="flex flex-col h-full bg-white border-l border-[#d0d4e4] animate-slide-in-right">
+      <div className="flex flex-col h-full bg-white border-l border-[#E8ECF4] animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[#d0d4e4] shrink-0 bg-[#f6f7fb]">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[#E8ECF4] shrink-0 bg-[#F4F6FC]">
           <div className="flex items-center gap-2 min-w-0">
-            <h3 className="text-[14px] font-semibold text-[#323338] truncate">{artifact.title}</h3>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 uppercase tracking-wider bg-[#edf1fc] text-[#676879]">
+            <h3 className="text-[14px] font-medium text-light-text truncate">{artifact.title}</h3>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0 uppercase tracking-wider bg-[#EFF3F9] text-light-text-secondary">
               <FileText size={9} />
               全文
             </span>
@@ -178,7 +179,7 @@ export const ArtifactPanel: React.FC<ArtifactPanelProps> = ({ artifact, onClose 
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-[#676879] hover:bg-[#dcdfec] hover:text-[#323338] transition-colors shrink-0 ml-2"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-light-text-secondary hover:bg-[#E8ECF4] hover:text-light-text transition-colors shrink-0 ml-2"
             aria-label="关闭"
           >
             <X size={16} />
@@ -203,16 +204,16 @@ export const ArtifactPanel: React.FC<ArtifactPanelProps> = ({ artifact, onClose 
     : TYPE_LABELS[card.type] || card.type;
 
   return (
-    <div className="flex flex-col h-full bg-white border-l border-[#d0d4e4] animate-slide-in-right">
+    <div className="flex flex-col h-full bg-white border-l border-[#E8ECF4] animate-slide-in-right">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[#d0d4e4] shrink-0 bg-[#f6f7fb]">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-[#E8ECF4] shrink-0 bg-[#F4F6FC]">
         <div className="flex items-center gap-2 min-w-0">
-          <h3 className="text-[14px] font-semibold text-[#323338] truncate">{card.title}</h3>
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 uppercase tracking-wider ${
-            isWidget
-              ? 'bg-[#0073ea]/10 text-[#0073ea]'
-              : 'bg-[#edf1fc] text-[#676879]'
-          }`}>
+          <h3 className="text-[14px] font-medium text-light-text truncate">{card.title}</h3>
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[10px] text-[10px] font-medium shrink-0 uppercase tracking-wider ${
+              isWidget ? 'bg-primary/10 text-primary' : 'bg-[#EFF3F9] text-light-text-secondary'
+            }`}
+          >
             {isWidget && <Zap size={9} />}
             {typeLabel}
           </span>
@@ -220,7 +221,7 @@ export const ArtifactPanel: React.FC<ArtifactPanelProps> = ({ artifact, onClose 
         <button
           type="button"
           onClick={onClose}
-          className="w-7 h-7 rounded-md flex items-center justify-center text-[#676879] hover:bg-[#dcdfec] hover:text-[#323338] transition-colors shrink-0 ml-2"
+          className="w-7 h-7 rounded-md flex items-center justify-center text-light-text-secondary hover:bg-[#E8ECF4] hover:text-light-text transition-colors shrink-0 ml-2"
           aria-label="关闭"
         >
           <X size={16} />
@@ -237,8 +238,8 @@ export const ArtifactPanel: React.FC<ArtifactPanelProps> = ({ artifact, onClose 
           <ExpandedCardFallback card={card} />
           {card.content && card.type !== 'report' && card.type !== 'file' && (
             <div className="mt-4">
-              <h4 className="text-[13px] font-semibold text-[#676879] mb-2">详细说明</h4>
-              <div className="text-[14px] text-[#323338] leading-relaxed whitespace-pre-wrap">
+              <h4 className="text-[13px] font-medium text-light-text-secondary mb-2">详细说明</h4>
+              <div className="text-[14px] text-light-text leading-relaxed whitespace-pre-wrap">
                 {card.content}
               </div>
             </div>
