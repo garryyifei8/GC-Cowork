@@ -1,4 +1,5 @@
 """法务Agent — contract review, compliance checks."""
+
 from src.agents.base import BaseAgent
 from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import LEGAL_SYSTEM_PROMPT

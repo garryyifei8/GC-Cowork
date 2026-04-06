@@ -7,6 +7,7 @@ Responsibilities:
 - Multi-agent coordination: orchestrate workflows (P1: parallel execution)
 - Session management: maintain conversation context
 """
+
 import logging
 
 from src.agents.base import BaseAgent

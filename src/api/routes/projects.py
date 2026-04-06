@@ -29,6 +29,7 @@ DELETE /api/tasks/{task_id}           — delete a task
 
 GET    /api/activities/recent         — global recent activities
 """
+
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
@@ -44,10 +45,12 @@ from src.core.models import (
     TaskPriority,
     TaskStatus,
 )
+from src.db.compat import val
 from src.stores.activity_store import (
     create_activity,
     list_activities,
     list_recent_activities,
+    list_task_comments,
 )
 from src.stores.project_store import (
     create_project,
@@ -109,6 +112,9 @@ class CreateProjectRequest(BaseModel):
     name: str = Field(min_length=1, max_length=256)
     project_type: str = Field(default="", max_length=128)
     budget_display: str | None = None
+    due_date: str | None = None
+    description: str | None = None
+    manager: str | None = None
 
 
 class UpdateProjectRequest(BaseModel):
@@ -172,6 +178,11 @@ class UpdateTeamRequest(BaseModel):
     members: list[str]
 
 
+class CreateTaskCommentRequest(BaseModel):
+    content: str = Field(min_length=1, max_length=4096)
+    author: str = "当前用户"
+
+
 class TaskWithProject(TaskListItem):
     project_name: str
 
@@ -207,7 +218,7 @@ def _to_list_item(project: Project) -> ProjectListItem:
         id=project.id,
         name=project.name,
         project_type=project.project_type,
-        stage=project.stage.value,
+        stage=val(project.stage),
         status=project.status,
         status_label=project.status_label,
         progress_pct=project.progress_pct,
@@ -224,8 +235,8 @@ def _to_task_item(task: ProjectTask) -> TaskListItem:
         project_id=task.project_id,
         name=task.name,
         assignee=task.assignee,
-        status=task.status.value,
-        priority=task.priority.value,
+        status=val(task.status),
+        priority=val(task.priority),
         due_date=task.due_date,
         description=task.description,
     )
@@ -248,7 +259,7 @@ def _to_detail(project: Project, tasks: list[ProjectTask]) -> ProjectDetail:
         id=project.id,
         name=project.name,
         project_type=project.project_type,
-        stage=project.stage.value,
+        stage=val(project.stage),
         status=project.status,
         status_label=project.status_label,
         progress_pct=project.progress_pct,
@@ -291,6 +302,9 @@ async def create_project_endpoint(req: CreateProjectRequest):
         name=req.name,
         project_type=req.project_type,
         budget_display=req.budget_display,
+        due_date=req.due_date,
+        team_members=[req.manager] if req.manager else [],
+        metadata={"description": req.description} if req.description else {},
     )
     created = create_project(project)
     return _to_list_item(created)
@@ -307,13 +321,15 @@ async def update_project_endpoint(project_id: str, req: UpdateProjectRequest):
     detail = {"before": {}, "after": {}}
     for key, value in updates.items():
         detail["after"][key] = str(value)
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="status_changed",
-        actor="系统",
-        summary="项目信息已更新",
-        detail=detail,
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="status_changed",
+            actor="系统",
+            summary="项目信息已更新",
+            detail=detail,
+        )
+    )
 
     return _to_list_item(updated)
 
@@ -329,13 +345,15 @@ async def delete_project_endpoint(project_id: str):
         raise ProjectNotFoundError(f"Project {project_id} not found")
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="project_deleted",
-        actor="系统",
-        summary=f"项目 '{project.name}' 已删除",
-        detail={"project_id": project_id, "project_name": project.name},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="project_deleted",
+            actor="系统",
+            summary=f"项目 '{project.name}' 已删除",
+            detail={"project_id": project_id, "project_name": project.name},
+        )
+    )
 
     return None
 
@@ -370,13 +388,15 @@ async def create_task_endpoint(project_id: str, req: CreateTaskRequest):
     created = create_task(task)
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="task_created",
-        actor=created.assignee or "系统",
-        summary=f"新建任务: {created.name}",
-        detail={"task_id": created.id, "task_name": created.name},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="task_created",
+            actor=created.assignee or "系统",
+            summary=f"新建任务: {created.name}",
+            detail={"task_id": created.id, "task_name": created.name},
+        )
+    )
 
     return _to_task_item(created)
 
@@ -393,12 +413,21 @@ async def list_project_documents_endpoint(project_id: str):
     if not project:
         raise ProjectNotFoundError(f"Project {project_id} not found")
     from src.stores.document_store import list_documents
+
     documents = list_documents(project_id=project_id)
-    return [DocumentListItem(
-        id=d.id, title=d.title, doc_type=d.doc_type,
-        project_id=d.project_id, content_summary=d.content_summary,
-        version=d.version, author=d.author, status=d.status,
-    ) for d in documents]
+    return [
+        DocumentListItem(
+            id=d.id,
+            title=d.title,
+            doc_type=d.doc_type,
+            project_id=d.project_id,
+            content_summary=d.content_summary,
+            version=d.version,
+            author=d.author,
+            status=d.status,
+        )
+        for d in documents
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -418,17 +447,19 @@ async def list_all_tasks_endpoint(
     for t in tasks:
         project = get_project(t.project_id)
         project_name = project.name if project else ""
-        results.append(TaskWithProject(
-            id=t.id,
-            project_id=t.project_id,
-            name=t.name,
-            assignee=t.assignee,
-            status=t.status.value,
-            priority=t.priority.value,
-            due_date=t.due_date,
-            description=t.description,
-            project_name=project_name,
-        ))
+        results.append(
+            TaskWithProject(
+                id=t.id,
+                project_id=t.project_id,
+                name=t.name,
+                assignee=t.assignee,
+                status=val(t.status),
+                priority=val(t.priority),
+                due_date=t.due_date,
+                description=t.description,
+                project_name=project_name,
+            )
+        )
     return results
 
 
@@ -445,13 +476,15 @@ async def update_task_endpoint(task_id: str, req: UpdateTaskRequest):
         raise TaskNotFoundError(f"Task {task_id} not found")
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=updated.project_id,
-        event_type="task_updated",
-        actor=updated.assignee or "系统",
-        summary=f"任务 '{updated.name}' 已更新",
-        detail={"task_id": task_id, "updates": {k: str(v) for k, v in updates.items()}},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=updated.project_id,
+            event_type="task_updated",
+            actor=updated.assignee or "系统",
+            summary=f"任务 '{updated.name}' 已更新",
+            detail={"task_id": task_id, "updates": {k: str(v) for k, v in updates.items()}},
+        )
+    )
 
     return _to_task_item(updated)
 
@@ -475,15 +508,50 @@ async def delete_task_endpoint(task_id: str):
         raise TaskNotFoundError(f"Task {task_id} not found")
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=task.project_id,
-        event_type="task_deleted",
-        actor=task.assignee or "系统",
-        summary=f"任务 '{task.name}' 已删除",
-        detail={"task_id": task_id, "task_name": task.name},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=task.project_id,
+            event_type="task_deleted",
+            actor=task.assignee or "系统",
+            summary=f"任务 '{task.name}' 已删除",
+            detail={"task_id": task_id, "task_name": task.name},
+        )
+    )
 
     return None
+
+
+# ---------------------------------------------------------------------------
+# Task comment endpoints
+# ---------------------------------------------------------------------------
+
+
+@task_router.get("/{task_id}/comments", response_model=list[ActivityListItem])
+async def list_task_comments_endpoint(task_id: str):
+    """Return all comments for a specific task."""
+    task = get_task(task_id)
+    if not task:
+        raise TaskNotFoundError(f"Task {task_id} not found")
+    comments = list_task_comments(task_id)
+    return [_to_activity_item(c) for c in comments]
+
+
+@task_router.post("/{task_id}/comments", response_model=ActivityListItem, status_code=201)
+async def create_task_comment_endpoint(task_id: str, req: CreateTaskCommentRequest):
+    """Create a comment / update on a task."""
+    task = get_task(task_id)
+    if not task:
+        raise TaskNotFoundError(f"Task {task_id} not found")
+
+    activity = ActivityEvent(
+        project_id=task.project_id,
+        event_type="task_comment",
+        actor=req.author,
+        summary=req.content,
+        detail={"task_id": task_id, "task_name": task.name},
+    )
+    created = create_activity(activity)
+    return _to_activity_item(created)
 
 
 # ---------------------------------------------------------------------------
@@ -519,7 +587,7 @@ async def transition_project_endpoint(project_id: str, req: TransitionRequest):
             detail={
                 "error_code": "INVALID_TRANSITION",
                 "message": f"无法从「{get_stage_label(project.stage)}」转换到「{get_stage_label(target_stage)}」",
-                "current_stage": project.stage.value,
+                "current_stage": val(project.stage),
                 "current_label": get_stage_label(project.stage),
                 "valid_transitions": valid,
             },
@@ -528,10 +596,13 @@ async def transition_project_endpoint(project_id: str, req: TransitionRequest):
     # 执行阶段转换
     old_stage = project.stage
     new_label = get_stage_label(target_stage)
-    updated = update_project(project_id, {
-        "stage": target_stage,
-        "status_label": new_label,
-    })
+    updated = update_project(
+        project_id,
+        {
+            "stage": target_stage,
+            "status_label": new_label,
+        },
+    )
 
     # 写入活动日志
     activity = ActivityEvent(
@@ -578,16 +649,18 @@ async def create_milestone_endpoint(project_id: str, req: CreateMilestoneRequest
 
     milestone = {"name": req.name, "date": req.date, "status": req.status}
     milestones = list(project.milestones) + [milestone]
-    updated = update_project(project_id, {"milestones": milestones})
+    update_project(project_id, {"milestones": milestones})
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="milestone_created",
-        actor="系统",
-        summary=f"新增里程碑: {req.name}",
-        detail={"milestone": milestone},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="milestone_created",
+            actor="系统",
+            summary=f"新增里程碑: {req.name}",
+            detail={"milestone": milestone},
+        )
+    )
 
     return milestone
 
@@ -608,13 +681,15 @@ async def update_milestone_endpoint(project_id: str, milestone_id: int, req: Upd
     update_project(project_id, {"milestones": milestones})
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="milestone_updated",
-        actor="系统",
-        summary=f"里程碑 '{milestones[milestone_id].get('name', '')}' 已更新",
-        detail={"milestone_id": milestone_id, "updates": updates},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="milestone_updated",
+            actor="系统",
+            summary=f"里程碑 '{milestones[milestone_id].get('name', '')}' 已更新",
+            detail={"milestone_id": milestone_id, "updates": updates},
+        )
+    )
 
     return milestones[milestone_id]
 
@@ -634,13 +709,15 @@ async def delete_milestone_endpoint(project_id: str, milestone_id: int):
     update_project(project_id, {"milestones": milestones})
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="milestone_deleted",
-        actor="系统",
-        summary=f"里程碑 '{removed.get('name', '')}' 已删除",
-        detail={"milestone_id": milestone_id, "milestone": removed},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="milestone_deleted",
+            actor="系统",
+            summary=f"里程碑 '{removed.get('name', '')}' 已删除",
+            detail={"milestone_id": milestone_id, "milestone": removed},
+        )
+    )
 
     return None
 
@@ -669,13 +746,15 @@ async def create_risk_endpoint(project_id: str, req: CreateRiskRequest):
     risk_dict = risk.model_dump()
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="risk_created",
-        actor="系统",
-        summary=f"新增风险: {req.description}",
-        detail={"risk": risk_dict},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="risk_created",
+            actor="系统",
+            summary=f"新增风险: {req.description}",
+            detail={"risk": risk_dict},
+        )
+    )
 
     return risk_dict
 
@@ -709,13 +788,15 @@ async def update_risk_endpoint(project_id: str, risk_id: int, req: UpdateRiskReq
     result = risks[risk_id].model_dump()
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="risk_updated",
-        actor="系统",
-        summary=f"风险 '{risks[risk_id].title}' 已更新",
-        detail={"risk_id": risk_id, "updates": updates},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="risk_updated",
+            actor="系统",
+            summary=f"风险 '{risks[risk_id].title}' 已更新",
+            detail={"risk_id": risk_id, "updates": updates},
+        )
+    )
 
     return result
 
@@ -735,13 +816,15 @@ async def delete_risk_endpoint(project_id: str, risk_id: int):
     update_project(project_id, {"risks": risks})
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="risk_deleted",
-        actor="系统",
-        summary=f"风险 '{removed.title}' 已删除",
-        detail={"risk_id": risk_id, "risk": removed.model_dump()},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="risk_deleted",
+            actor="系统",
+            summary=f"风险 '{removed.title}' 已删除",
+            detail={"risk_id": risk_id, "risk": removed.model_dump()},
+        )
+    )
 
     return None
 
@@ -761,13 +844,15 @@ async def replace_team_endpoint(project_id: str, req: UpdateTeamRequest):
     updated = update_project(project_id, {"team_members": req.members})
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="team_updated",
-        actor="系统",
-        summary="团队成员列表已替换",
-        detail={"before": project.team_members, "after": req.members},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="team_updated",
+            actor="系统",
+            summary="团队成员列表已替换",
+            detail={"before": project.team_members, "after": req.members},
+        )
+    )
 
     return updated.team_members  # type: ignore[union-attr]
 
@@ -786,13 +871,15 @@ async def add_team_member_endpoint(project_id: str, req: AddTeamMemberRequest):
     updated = update_project(project_id, {"team_members": members})
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="team_member_added",
-        actor="系统",
-        summary=f"新增团队成员: {req.name}",
-        detail={"member": req.name},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="team_member_added",
+            actor="系统",
+            summary=f"新增团队成员: {req.name}",
+            detail={"member": req.name},
+        )
+    )
 
     return updated.team_members  # type: ignore[union-attr]
 
@@ -811,13 +898,15 @@ async def remove_team_member_endpoint(project_id: str, member_name: str):
     update_project(project_id, {"team_members": members})
 
     # 写入活动日志
-    create_activity(ActivityEvent(
-        project_id=project_id,
-        event_type="team_member_removed",
-        actor="系统",
-        summary=f"移除团队成员: {member_name}",
-        detail={"member": member_name},
-    ))
+    create_activity(
+        ActivityEvent(
+            project_id=project_id,
+            event_type="team_member_removed",
+            actor="系统",
+            summary=f"移除团队成员: {member_name}",
+            detail={"member": member_name},
+        )
+    )
 
     return None
 
@@ -834,14 +923,39 @@ async def get_project_procurement(project_id: str):
     if not project:
         raise ProjectNotFoundError(f"Project {project_id} not found")
     from src.stores.procurement_store import list_by_project as list_procurement
+
     items = list_procurement(project_id)
     return {"items": [item.model_dump() for item in items]}
+
+
+@router.post("/{project_id}/procurement", status_code=201)
+async def create_procurement(project_id: str, body: dict):
+    """Create a new procurement package under a project."""
+    project = get_project(project_id)
+    if not project:
+        raise ProjectNotFoundError(f"Project {project_id} not found")
+    from src.core.models import ProcurementPackage
+    from src.stores.procurement_store import create as create_pkg
+
+    pkg = ProcurementPackage(
+        project_id=project_id,
+        name=body.get("name", "未命名"),
+        category=body.get("category", ""),
+        supplier=body.get("supplier"),
+        budget_amount=body.get("budget_amount"),
+        plan_date=body.get("plan_date"),
+        responsible=body.get("responsible"),
+        notes=body.get("notes", ""),
+    )
+    created = create_pkg(pkg)
+    return created.model_dump()
 
 
 @router.put("/{project_id}/procurement/{pkg_id}")
 async def update_procurement(project_id: str, pkg_id: str, body: dict):
     """Update a procurement package."""
     from src.stores.procurement_store import update as update_pkg
+
     updated = update_pkg(pkg_id, body)
     if not updated:
         raise HTTPException(status_code=404, detail="Procurement package not found")
@@ -860,6 +974,7 @@ async def get_project_processes(project_id: str, record_type: str | None = None)
     if not project:
         raise ProjectNotFoundError(f"Project {project_id} not found")
     from src.stores.process_store import list_by_project as list_processes
+
     items = list_processes(project_id, record_type)
     return {"items": [item.model_dump() for item in items]}
 
@@ -871,6 +986,7 @@ async def create_process_record(project_id: str, body: dict):
     if not project:
         raise ProjectNotFoundError(f"Project {project_id} not found")
     from src.stores.process_store import create as create_record
+
     record = create_record(project_id, body)
     return record.model_dump()
 

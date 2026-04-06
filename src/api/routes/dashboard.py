@@ -1,4 +1,5 @@
 """Dashboard metrics API — aggregated project health & risk overview."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -7,6 +8,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from src.core.models import TaskStatus
+from src.db.compat import val
 from src.services.ai_suggestions import generate_suggestions
 from src.services.risk_engine import calculate_project_risk, generate_ai_insights
 from src.stores.project_store import list_projects
@@ -19,6 +21,7 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 # ---------------------------------------------------------------------------
 # Response models
 # ---------------------------------------------------------------------------
+
 
 class ProjectRiskSummary(BaseModel):
     project_id: str
@@ -76,6 +79,7 @@ class DashboardMetrics(BaseModel):
 # Endpoint
 # ---------------------------------------------------------------------------
 
+
 @router.get("/metrics", response_model=DashboardMetrics)
 async def get_dashboard_metrics() -> DashboardMetrics:
     """Compute and return aggregated dashboard metrics."""
@@ -95,14 +99,10 @@ async def get_dashboard_metrics() -> DashboardMetrics:
         total_task_count += len(tasks)
 
         for t in tasks:
-            task_status_dist[t.status.value] = task_status_dist.get(t.status.value, 0) + 1
+            task_status_dist[val(t.status)] = task_status_dist.get(val(t.status), 0) + 1
             if t.status == TaskStatus.DONE:
                 done_task_count += 1
-            if (
-                t.due_date
-                and t.status != TaskStatus.DONE
-                and date.fromisoformat(t.due_date) < today
-            ):
+            if t.due_date and t.status != TaskStatus.DONE and date.fromisoformat(t.due_date) < today:
                 overdue_task_count += 1
 
     # --- Project-level counts ---
@@ -111,11 +111,7 @@ async def get_dashboard_metrics() -> DashboardMetrics:
     completed_count = sum(1 for p in projects if p.status == "completed")
 
     # --- Completion rate ---
-    completion_rate = (
-        round((done_task_count / total_task_count) * 100, 1)
-        if total_task_count > 0
-        else 0.0
-    )
+    completion_rate = round((done_task_count / total_task_count) * 100, 1) if total_task_count > 0 else 0.0
 
     # --- Stage distribution (Chinese labels) ---
     stage_dist: dict[str, int] = {}
@@ -174,6 +170,7 @@ async def get_dashboard_metrics() -> DashboardMetrics:
 # ---------------------------------------------------------------------------
 # AI Suggestions endpoint
 # ---------------------------------------------------------------------------
+
 
 @router.get("/suggestions", response_model=list[SuggestionItem])
 async def get_suggestions() -> list[SuggestionItem]:

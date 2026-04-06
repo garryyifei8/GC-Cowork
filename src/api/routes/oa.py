@@ -9,6 +9,7 @@ GET    /api/oa/vehicle-requests          — list vehicle requests (?applicant=&
 POST   /api/oa/vehicle-requests          — create vehicle request
 PATCH  /api/oa/vehicle-requests/{id}    — approve / reject vehicle request
 """
+
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
@@ -18,8 +19,6 @@ from src.core.models import ApprovalStatus
 from src.stores.oa_store import (
     create_notice,
     create_vehicle_request,
-    get_notice,
-    get_vehicle_request,
     list_notices,
     list_vehicle_requests,
     update_notice,
@@ -32,6 +31,7 @@ router = APIRouter(prefix="/oa", tags=["oa"])
 # ---------------------------------------------------------------------------
 # Request / Response schemas
 # ---------------------------------------------------------------------------
+
 
 class NoticeListItem(BaseModel):
     id: str
@@ -85,6 +85,7 @@ class UpdateVehicleRequestBody(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _enum_val(v) -> str:
     return v.value if hasattr(v, "value") else str(v)
 
@@ -97,7 +98,7 @@ def _to_notice_item(n) -> NoticeListItem:
         type=_enum_val(n.type),
         target_user=n.target_user,
         is_read=n.is_read,
-        created_at=n.created_at.isoformat() if hasattr(n.created_at, 'isoformat') else str(n.created_at),
+        created_at=n.created_at.isoformat() if hasattr(n.created_at, "isoformat") else str(n.created_at),
     )
 
 
@@ -111,13 +112,14 @@ def _to_vehicle_item(v) -> VehicleRequestListItem:
         reason=v.reason,
         status=_enum_val(v.status),
         approver=v.approver,
-        created_at=v.created_at.isoformat() if hasattr(v.created_at, 'isoformat') else str(v.created_at),
+        created_at=v.created_at.isoformat() if hasattr(v.created_at, "isoformat") else str(v.created_at),
     )
 
 
 # ---------------------------------------------------------------------------
 # Notice endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.get("/notices", response_model=list[NoticeListItem])
 async def list_notices_endpoint(
@@ -147,6 +149,7 @@ async def update_notice_endpoint(notice_id: str, req: UpdateNoticeRequest):
 # ---------------------------------------------------------------------------
 # Vehicle request endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.get("/vehicle-requests", response_model=list[VehicleRequestListItem])
 async def list_vehicle_requests_endpoint(

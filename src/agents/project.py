@@ -1,10 +1,11 @@
 """项目管理Agent — project lifecycle management with structured card output."""
+
 from src.agents.base import BaseAgent
 from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import PROJECT_SYSTEM_PROMPT
 from src.stores.project_store import list_projects
 from src.stores.task_store import list_tasks
-from src.workflow.engine import get_valid_transitions, get_stage_label
+from src.workflow.engine import get_stage_label, get_valid_transitions
 
 
 class ProjectAgent(BaseAgent):
@@ -18,13 +19,13 @@ class ProjectAgent(BaseAgent):
         # 2. Build messages with project data injected
         messages = self._build_messages(request)
         # Insert project data after system prompt
-        messages.insert(1, {
-            "role": "system",
-            "content": (
-                "以下是当前系统中的项目数据，请基于这些数据回答用户问题：\n\n"
-                + project_context
-            ),
-        })
+        messages.insert(
+            1,
+            {
+                "role": "system",
+                "content": ("以下是当前系统中的项目数据，请基于这些数据回答用户问题：\n\n" + project_context),
+            },
+        )
 
         # 3. Call LLM for structured JSON output
         try:
@@ -44,14 +45,19 @@ class ProjectAgent(BaseAgent):
     def build_stream_messages(self, request: AgentRequest) -> list[dict[str, str]]:
         """Build messages for streaming with project data injected."""
         messages = self._build_messages(request)
-        messages.insert(1, {
-            "role": "system",
-            "content": f"以下是当前系统中的项目数据，请基于这些数据回答用户问题：\n\n{self._build_project_context()}",
-        })
-        messages.append({
-            "role": "system",
-            "content": "重要：本次请直接用自然语言回复用户。不要使用JSON格式，不要输出代码块。请使用清晰的中文段落和列表来组织回答。",
-        })
+        messages.insert(
+            1,
+            {
+                "role": "system",
+                "content": f"以下是当前系统中的项目数据，请基于这些数据回答用户问题：\n\n{self._build_project_context()}",
+            },
+        )
+        messages.append(
+            {
+                "role": "system",
+                "content": "重要：本次请直接用自然语言回复用户。不要使用JSON格式，不要输出代码块。请使用清晰的中文段落和列表来组织回答。",
+            }
+        )
         return messages
 
     def _build_project_context(self) -> str:
@@ -68,16 +74,10 @@ class ProjectAgent(BaseAgent):
 
             # Count task statuses
             done_count = sum(1 for t in tasks if t.status.value == "done")
-            in_progress_count = sum(
-                1 for t in tasks if t.status.value == "in_progress"
-            )
+            in_progress_count = sum(1 for t in tasks if t.status.value == "in_progress")
 
             valid_transitions = get_valid_transitions(p.stage)
-            next_stages = (
-                ", ".join(t["label"] for t in valid_transitions)
-                if valid_transitions
-                else "无（已归档）"
-            )
+            next_stages = ", ".join(t["label"] for t in valid_transitions) if valid_transitions else "无（已归档）"
 
             lines.append(
                 f"- 项目: {p.name} (ID: {p.id})\n"
@@ -88,4 +88,3 @@ class ProjectAgent(BaseAgent):
                 f"  可推进阶段: {next_stages}"
             )
         return "\n\n".join(lines)
-

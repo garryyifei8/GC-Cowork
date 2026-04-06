@@ -2,6 +2,7 @@
 Agent registry — maps AgentType to agent instances.
 Single source of truth for agent lookup. All agents share one LLMClient.
 """
+
 from src.agents.base import BaseAgent
 from src.core.models import AgentType
 from src.llm.client import LLMClient
@@ -16,9 +17,9 @@ def create_agent_registry(llm_client: LLMClient) -> dict[AgentType, BaseAgent]:
     from src.agents.hr import HRAgent
     from src.agents.knowledge import KnowledgeAgent
     from src.agents.legal import LegalAgent
+    from src.agents.process import ProcessControlAgent
     from src.agents.procurement import ProcurementAgent
     from src.agents.project import ProjectAgent
-    from src.agents.process import ProcessControlAgent
     from src.agents.supervision import SupervisionAgent
 
     return {

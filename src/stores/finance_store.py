@@ -5,6 +5,7 @@ Covers three finance entities:
   - BudgetLine     (预算行)
   - Invoice        (发票)
 """
+
 from __future__ import annotations
 
 from src.core.models import (
@@ -30,6 +31,7 @@ _seeded: bool = False
 # ---------------------------------------------------------------------------
 # Seed data
 # ---------------------------------------------------------------------------
+
 
 def seed_finance() -> None:
     """Populate the stores with canonical seed data for all three finance entities."""
@@ -319,6 +321,7 @@ def seed_finance() -> None:
 # Expense CRUD
 # ---------------------------------------------------------------------------
 
+
 def list_expenses(
     status: str | None = None,
     project_id: str | None = None,
@@ -372,6 +375,7 @@ def update_expense(expense_id: str, data: dict) -> ExpenseReport | None:
 # Budget CRUD
 # ---------------------------------------------------------------------------
 
+
 def list_budgets(
     project_id: str | None = None,
     fiscal_year: int | None = None,
@@ -413,6 +417,7 @@ def update_budget(budget_id: str, data: dict) -> BudgetLine | None:
 # ---------------------------------------------------------------------------
 # Invoice CRUD
 # ---------------------------------------------------------------------------
+
 
 def list_invoices(
     status: str | None = None,

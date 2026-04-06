@@ -2,6 +2,7 @@
 Core domain data models for the AI-native project collaboration platform.
 All models use Pydantic v2 for validation and serialization.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -11,23 +12,23 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
 
+
 class AgentType(str, Enum):
-    DISPATCH = "dispatch"          # 调度Agent — universal router
-    PROJECT = "project"            # 项目管理Agent
-    FINANCE = "finance"            # 财务Agent
-    LEGAL = "legal"                # 法务Agent
-    PROCUREMENT = "procurement"    # 采购Agent
-    HR = "hr"                      # 人事Agent
-    BIDDING = "bidding"            # 投标Agent
-    DOCUMENT = "document"          # 文档Agent
-    KNOWLEDGE = "knowledge"        # 知识Agent
+    DISPATCH = "dispatch"  # 调度Agent — universal router
+    PROJECT = "project"  # 项目管理Agent
+    FINANCE = "finance"  # 财务Agent
+    LEGAL = "legal"  # 法务Agent
+    PROCUREMENT = "procurement"  # 采购Agent
+    HR = "hr"  # 人事Agent
+    BIDDING = "bidding"  # 投标Agent
+    DOCUMENT = "document"  # 文档Agent
+    KNOWLEDGE = "knowledge"  # 知识Agent
     PROCESS_CONTROL = "process_control"  # 过控Agent — 四控管理（进度/质量/安全/成本）
-    SUPERVISION = "supervision"    # 监理Agent — 监理管理
+    SUPERVISION = "supervision"  # 监理Agent — 监理管理
 
 
 class MessageRole(str, Enum):
@@ -37,45 +38,46 @@ class MessageRole(str, Enum):
 
 
 class TaskComplexity(str, Enum):
-    SIMPLE = "simple"    # Q&A, lookup — use lightweight model
+    SIMPLE = "simple"  # Q&A, lookup — use lightweight model
     COMPLEX = "complex"  # analysis, multi-agent — use large model
 
 
 class WorkflowPattern(str, Enum):
-    SERIAL = "serial"           # 串行：sequential agent handoff
-    PARALLEL = "parallel"       # 并行：concurrent agents, aggregated result
+    SERIAL = "serial"  # 串行：sequential agent handoff
+    PARALLEL = "parallel"  # 并行：concurrent agents, aggregated result
     HUMAN_IN_LOOP = "human_in_loop"  # 人机协同：agent + human confirmation
 
 
 class ProjectStage(str, Enum):
-    INITIATION = "initiation"          # 立项
-    BIDDING = "bidding"                # 投标
-    CONTRACT = "contract"              # 签约
-    DESIGN = "design"                  # 设计
-    PROCUREMENT = "procurement"        # 采购
-    CONSTRUCTION = "construction"      # 施工/实施
-    ACCEPTANCE = "acceptance"          # 验收
-    SETTLEMENT = "settlement"          # 结算
-    ARCHIVED = "archived"              # 归档
+    INITIATION = "initiation"  # 立项
+    BIDDING = "bidding"  # 投标
+    CONTRACT = "contract"  # 签约
+    DESIGN = "design"  # 设计
+    PROCUREMENT = "procurement"  # 采购
+    CONSTRUCTION = "construction"  # 施工/实施
+    ACCEPTANCE = "acceptance"  # 验收
+    SETTLEMENT = "settlement"  # 结算
+    ARCHIVED = "archived"  # 归档
 
 
 class CardType(str, Enum):
-    ACTION = "action"        # 操作卡片 — buttons for approve/reject/assign
-    DATA = "data"            # 数据卡片 — charts and summaries
-    FORM = "form"            # 表单卡片 — inline form filling
-    FILE = "file"            # 文件卡片 — document preview/edit
-    ALERT = "alert"          # 预警卡片 — risk / anomaly warnings
+    ACTION = "action"  # 操作卡片 — buttons for approve/reject/assign
+    DATA = "data"  # 数据卡片 — charts and summaries
+    FORM = "form"  # 表单卡片 — inline form filling
+    FILE = "file"  # 文件卡片 — document preview/edit
+    ALERT = "alert"  # 预警卡片 — risk / anomaly warnings
     TASK_LIST = "task_list"  # 可交互任务列表
-    KANBAN = "kanban"        # 可交互看板
-    PROGRESS = "progress"    # 项目进度图
-    TABLE = "table"          # 表格（项目/通用）
-    CHART = "chart"          # 图表（环形/柱状等）
-    REPORT = "report"        # 报告卡片
+    KANBAN = "kanban"  # 可交互看板
+    PROGRESS = "progress"  # 项目进度图
+    TABLE = "table"  # 表格（项目/通用）
+    CHART = "chart"  # 图表（环形/柱状等）
+    REPORT = "report"  # 报告卡片
 
 
 # ---------------------------------------------------------------------------
 # Base
 # ---------------------------------------------------------------------------
+
 
 class TimestampedModel(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -86,8 +88,10 @@ class TimestampedModel(BaseModel):
 # Conversation & Messaging
 # ---------------------------------------------------------------------------
 
+
 class InteractiveCard(BaseModel):
     """Rich interactive component embedded in an agent reply."""
+
     card_type: CardType
     title: str
     data: dict[str, Any] = Field(default_factory=dict)
@@ -96,6 +100,7 @@ class InteractiveCard(BaseModel):
 
 class Message(TimestampedModel):
     """A single message in a conversation session."""
+
     id: UUID = Field(default_factory=uuid4)
     session_id: UUID
     role: MessageRole
@@ -107,6 +112,7 @@ class Message(TimestampedModel):
 
 class Session(TimestampedModel):
     """A conversation session between a user and the platform."""
+
     id: UUID = Field(default_factory=uuid4)
     user_id: str
     title: str = ""
@@ -119,8 +125,10 @@ class Session(TimestampedModel):
 # Agent System
 # ---------------------------------------------------------------------------
 
+
 class AgentIntent(BaseModel):
     """Result of intent recognition by the Dispatch Agent."""
+
     primary_agent: AgentType
     secondary_agents: list[AgentType] = Field(default_factory=list)
     complexity: TaskComplexity = TaskComplexity.SIMPLE
@@ -131,6 +139,7 @@ class AgentIntent(BaseModel):
 
 class AgentRequest(BaseModel):
     """Request sent to a specialized agent."""
+
     request_id: UUID = Field(default_factory=uuid4)
     session_id: UUID
     agent_type: AgentType
@@ -141,6 +150,7 @@ class AgentRequest(BaseModel):
 
 class AgentResponse(BaseModel):
     """Response from a specialized agent."""
+
     request_id: UUID
     agent_type: AgentType
     content: str
@@ -154,6 +164,7 @@ class AgentResponse(BaseModel):
 # Project
 # ---------------------------------------------------------------------------
 
+
 class RiskItem(BaseModel):
     title: str
     description: str
@@ -163,6 +174,7 @@ class RiskItem(BaseModel):
 
 class Project(TimestampedModel):
     """Core project entity covering the full lifecycle."""
+
     id: str
     name: str
     stage: ProjectStage = ProjectStage.INITIATION
@@ -174,16 +186,17 @@ class Project(TimestampedModel):
     team_members: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
     # Extended fields for dashboard display
-    project_type: str = ""          # "EPC / 展馆", "信息化开发", "专项债咨询"
-    status: str = "planning"        # "active" | "risk" | "planning" | "completed"
-    status_label: str = ""          # "施工中", "进度延误", "立项评估"
-    due_date: str | None = None     # "2026-10-15"
+    project_type: str = ""  # "EPC / 展馆", "信息化开发", "专项债咨询"
+    status: str = "planning"  # "active" | "risk" | "planning" | "completed"
+    status_label: str = ""  # "施工中", "进度延误", "立项评估"
+    due_date: str | None = None  # "2026-10-15"
     budget_display: str | None = None  # "1.2亿", "450万"
 
 
 # ---------------------------------------------------------------------------
 # Task Management
 # ---------------------------------------------------------------------------
+
 
 class TaskStatus(str, Enum):
     TODO = "todo"
@@ -201,6 +214,7 @@ class TaskPriority(str, Enum):
 
 class ProjectTask(TimestampedModel):
     """A task within a project."""
+
     id: str = Field(default_factory=lambda: str(uuid4()))
     project_id: str
     name: str
@@ -215,13 +229,15 @@ class ProjectTask(TimestampedModel):
 # Activity Log (活动日志)
 # ---------------------------------------------------------------------------
 
+
 class ActivityEvent(BaseModel):
     """A single activity event in the project lifecycle."""
+
     id: str = Field(default_factory=lambda: str(uuid4()))
     project_id: str
     event_type: str  # task_created | task_updated | stage_transition | status_changed
     actor: str
-    summary: str        # 人类可读的中文摘要
+    summary: str  # 人类可读的中文摘要
     detail: dict[str, Any] = Field(default_factory=dict)  # before/after
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -230,8 +246,10 @@ class ActivityEvent(BaseModel):
 # Bidding
 # ---------------------------------------------------------------------------
 
+
 class BiddingOpportunity(TimestampedModel):
     """A bidding/tender opportunity."""
+
     id: str = Field(default_factory=lambda: str(uuid4()))
     title: str
     source: str = ""
@@ -249,8 +267,10 @@ class BiddingOpportunity(TimestampedModel):
 # Documents
 # ---------------------------------------------------------------------------
 
+
 class DocumentItem(TimestampedModel):
     """A document in the system."""
+
     id: str = Field(default_factory=lambda: str(uuid4()))
     title: str
     doc_type: str = "report"
@@ -259,33 +279,36 @@ class DocumentItem(TimestampedModel):
     version: str = "1.0"
     author: str = ""
     status: str = "draft"
+    category: str = "general"  # EPC分类: design/construction/quality/safety/completion/contract/change/general
 
 
 # ---------------------------------------------------------------------------
 # Procurement (采购管理)
 # ---------------------------------------------------------------------------
 
+
 class ProcurementStatus(str, Enum):
-    PLANNING = "planning"       # 计划中
-    BIDDING = "bidding"         # 招标中
-    EVALUATING = "evaluating"   # 评标中
-    CONTRACTED = "contracted"   # 已签约
-    DELIVERING = "delivering"   # 供货中
-    INSPECTING = "inspecting"   # 验收中
-    COMPLETED = "completed"     # 已完成
+    PLANNING = "planning"  # 计划中
+    BIDDING = "bidding"  # 招标中
+    EVALUATING = "evaluating"  # 评标中
+    CONTRACTED = "contracted"  # 已签约
+    DELIVERING = "delivering"  # 供货中
+    INSPECTING = "inspecting"  # 验收中
+    COMPLETED = "completed"  # 已完成
 
 
 class ProcurementPackage(TimestampedModel):
     """采购包 — EPC项目的材料/设备/分包采购单元"""
+
     id: str = Field(default_factory=lambda: str(uuid4()))
     project_id: str
-    name: str                    # "幕墙玻璃采购"
-    category: str = ""           # "材料" | "设备" | "分包"
+    name: str  # "幕墙玻璃采购"
+    category: str = ""  # "材料" | "设备" | "分包"
     supplier: str | None = None
     budget_amount: float | None = None
     actual_amount: float | None = None
     status: ProcurementStatus = ProcurementStatus.PLANNING
-    plan_date: str | None = None     # 计划采购日期
+    plan_date: str | None = None  # 计划采购日期
     arrival_date: str | None = None  # 到货日期
     responsible: str | None = None
     notes: str = ""
@@ -295,35 +318,39 @@ class ProcurementPackage(TimestampedModel):
 # Process Records (过程管理)
 # ---------------------------------------------------------------------------
 
+
 class ProcessRecordType(str, Enum):
-    DAILY_LOG = "daily_log"         # 施工日志
-    QUALITY_CHECK = "quality_check" # 质量检查
-    INSPECTION = "inspection"       # 巡检记录
-    MATERIAL_ENTRY = "material_entry" # 材料进场
-    HIDDEN_WORK = "hidden_work"     # 隐蔽工程验收
-    SAFETY_CHECK = "safety_check"   # 安全检查
+    DAILY_LOG = "daily_log"  # 施工日志
+    QUALITY_CHECK = "quality_check"  # 质量检查
+    INSPECTION = "inspection"  # 巡检记录
+    MATERIAL_ENTRY = "material_entry"  # 材料进场
+    HIDDEN_WORK = "hidden_work"  # 隐蔽工程验收
+    SAFETY_CHECK = "safety_check"  # 安全检查
 
 
 class ProcessRecord(TimestampedModel):
     """过程管理记录 — 施工日志、质检、巡检等"""
+
     id: str = Field(default_factory=lambda: str(uuid4()))
     project_id: str
     record_type: ProcessRecordType
     title: str
-    date: str                  # "2026-03-13"
+    date: str  # "2026-03-13"
     author: str
     content: str = ""
-    status: str = "normal"     # "normal" | "issue" | "resolved"
+    status: str = "normal"  # "normal" | "issue" | "resolved"
     attachments: list[str] = Field(default_factory=list)  # 附件文件名列表
-    related_stage: str = ""    # 关联阶段
+    related_stage: str = ""  # 关联阶段
 
 
 # ---------------------------------------------------------------------------
 # Knowledge Base
 # ---------------------------------------------------------------------------
 
+
 class KnowledgeItem(TimestampedModel):
     """A single entry in the enterprise knowledge base."""
+
     id: UUID = Field(default_factory=uuid4)
     title: str
     content: str
@@ -340,6 +367,7 @@ class KnowledgeItem(TimestampedModel):
 # Shared Enums (HR + Finance approval flow)
 # ---------------------------------------------------------------------------
 
+
 class ApprovalStatus(str, Enum):
     PENDING = "pending"
     APPROVED = "approved"
@@ -349,6 +377,7 @@ class ApprovalStatus(str, Enum):
 # ---------------------------------------------------------------------------
 # HR Enums & Models
 # ---------------------------------------------------------------------------
+
 
 class EmployeeStatus(str, Enum):
     ACTIVE = "active"
@@ -375,7 +404,7 @@ class Employee(TimestampedModel):
     name: str
     department: str
     position: str
-    hire_date: str           # "2024-03-01"
+    hire_date: str  # "2024-03-01"
     salary: float
     status: EmployeeStatus = EmployeeStatus.ACTIVE
     phone: str = ""
@@ -386,8 +415,8 @@ class Employee(TimestampedModel):
 class AttendanceRecord(TimestampedModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     employee_id: str
-    date: str                # "2026-03-11"
-    check_in: str | None = None   # "08:55"
+    date: str  # "2026-03-11"
+    check_in: str | None = None  # "08:55"
     check_out: str | None = None  # "18:05"
     status: AttendanceStatus = AttendanceStatus.NORMAL
 
@@ -407,7 +436,7 @@ class LeaveRequest(TimestampedModel):
 class SalaryRecord(TimestampedModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     employee_id: str
-    month: str               # "2026-03"
+    month: str  # "2026-03"
     base_salary: float
     overtime_pay: float = 0
     bonus: float = 0
@@ -420,6 +449,7 @@ class SalaryRecord(TimestampedModel):
 # ---------------------------------------------------------------------------
 # Finance Enums & Models
 # ---------------------------------------------------------------------------
+
 
 class ExpenseCategory(str, Enum):
     TRAVEL = "travel"
@@ -483,6 +513,7 @@ class Invoice(TimestampedModel):
 # OA Enums & Models
 # ---------------------------------------------------------------------------
 
+
 class NoticeType(str, Enum):
     SYSTEM = "system"
     ANNOUNCEMENT = "announcement"
@@ -501,7 +532,7 @@ class Notice(TimestampedModel):
 class VehicleRequest(TimestampedModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     applicant: str
-    date: str          # YYYY-MM-DD
+    date: str  # YYYY-MM-DD
     origin: str
     destination: str
     reason: str = ""

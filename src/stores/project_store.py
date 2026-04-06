@@ -1,4 +1,5 @@
 """In-memory project CRUD store with seed data."""
+
 from __future__ import annotations
 
 from src.core.models import Project, ProjectStage, RiskItem
@@ -14,6 +15,7 @@ _seeded: bool = False
 # ---------------------------------------------------------------------------
 # Seed data
 # ---------------------------------------------------------------------------
+
 
 def seed_projects() -> None:
     """Populate the store with the 3 canonical seed projects."""
@@ -35,12 +37,26 @@ def seed_projects() -> None:
             budget=12000.0,
             actual_spend=8160.0,
             team_members=[
-                "张工", "李设计", "王监理", "刘采购", "陈施工",
-                "赵结构", "周机电", "吴幕墙", "郑消防", "孙智能",
-                "钱景观", "冯展陈",
+                "张工",
+                "李设计",
+                "王监理",
+                "刘采购",
+                "陈施工",
+                "赵结构",
+                "周机电",
+                "吴幕墙",
+                "郑消防",
+                "孙智能",
+                "钱景观",
+                "冯展陈",
             ],
             risks=[
-                RiskItem(title="幕墙材料供货延迟", description="进口Low-E玻璃交期延长2周，影响A区封闭节点", severity="medium", owner="刘采购"),
+                RiskItem(
+                    title="幕墙材料供货延迟",
+                    description="进口Low-E玻璃交期延长2周，影响A区封闭节点",
+                    severity="medium",
+                    owner="刘采购",
+                ),
             ],
             milestones=[
                 {"name": "主体结构封顶", "date": "2025-12-20", "status": "completed"},
@@ -62,12 +78,28 @@ def seed_projects() -> None:
             budget=450.0,
             actual_spend=198.0,
             team_members=[
-                "赵开发", "钱前端", "孙后端", "李测试",
-                "周运维", "吴产品", "郑架构", "冯数据",
+                "赵开发",
+                "钱前端",
+                "孙后端",
+                "李测试",
+                "周运维",
+                "吴产品",
+                "郑架构",
+                "冯数据",
             ],
             risks=[
-                RiskItem(title="前端开发阻塞", description="前端页面开发因后端接口文档未确认处于阻塞状态", severity="high", owner="钱前端"),
-                RiskItem(title="进度严重滞后", description="当前进度35%，距截止日期不足3个月，存在延期风险", severity="high", owner="郑架构"),
+                RiskItem(
+                    title="前端开发阻塞",
+                    description="前端页面开发因后端接口文档未确认处于阻塞状态",
+                    severity="high",
+                    owner="钱前端",
+                ),
+                RiskItem(
+                    title="进度严重滞后",
+                    description="当前进度35%，距截止日期不足3个月，存在延期风险",
+                    severity="high",
+                    owner="郑架构",
+                ),
             ],
             milestones=[
                 {"name": "需求评审通过", "date": "2026-02-15", "status": "completed"},
@@ -109,8 +141,13 @@ def seed_projects() -> None:
             budget=6800.0,
             actual_spend=1020.0,
             team_members=[
-                "韩总工", "方设计", "吕结构", "马机电",
-                "苗幕墙", "宋暖通", "唐智能",
+                "韩总工",
+                "方设计",
+                "吕结构",
+                "马机电",
+                "苗幕墙",
+                "宋暖通",
+                "唐智能",
             ],
             milestones=[
                 {"name": "方案设计评审", "date": "2026-03-30", "status": "completed"},
@@ -132,8 +169,12 @@ def seed_projects() -> None:
             budget=1800.0,
             actual_spend=540.0,
             team_members=[
-                "何架构", "邓开发", "许数据", "萧测试",
-                "曹运维", "汪产品",
+                "何架构",
+                "邓开发",
+                "许数据",
+                "萧测试",
+                "曹运维",
+                "汪产品",
             ],
             milestones=[
                 {"name": "数据治理规范发布", "date": "2026-03-01", "status": "completed"},
@@ -155,11 +196,20 @@ def seed_projects() -> None:
             budget=3500.0,
             actual_spend=3220.0,
             team_members=[
-                "丁项目", "蒋施工", "沈监理", "韩质检",
-                "秦资料", "尤安全",
+                "丁项目",
+                "蒋施工",
+                "沈监理",
+                "韩质检",
+                "秦资料",
+                "尤安全",
             ],
             risks=[
-                RiskItem(title="验收时间紧迫", description="距竣工验收截止仅剩20天，资料归档尚未完成", severity="medium", owner="秦资料"),
+                RiskItem(
+                    title="验收时间紧迫",
+                    description="距竣工验收截止仅剩20天，资料归档尚未完成",
+                    severity="medium",
+                    owner="秦资料",
+                ),
             ],
             milestones=[
                 {"name": "主体施工完成", "date": "2025-11-30", "status": "completed"},
@@ -200,12 +250,27 @@ def seed_projects() -> None:
             budget=960.0,
             actual_spend=144.0,
             team_members=[
-                "范开发", "石测试", "姚前端", "田后端",
-                "彭运维", "潘安全", "蔡DBA",
+                "范开发",
+                "石测试",
+                "姚前端",
+                "田后端",
+                "彭运维",
+                "潘安全",
+                "蔡DBA",
             ],
             risks=[
-                RiskItem(title="测试环境未就绪", description="高并发压测方案因测试环境未部署处于阻塞状态", severity="high", owner="彭运维"),
-                RiskItem(title="人力资源不足", description="前端重构与题库迁移并行，开发资源紧张", severity="medium", owner="范开发"),
+                RiskItem(
+                    title="测试环境未就绪",
+                    description="高并发压测方案因测试环境未部署处于阻塞状态",
+                    severity="high",
+                    owner="彭运维",
+                ),
+                RiskItem(
+                    title="人力资源不足",
+                    description="前端重构与题库迁移并行，开发资源紧张",
+                    severity="medium",
+                    owner="范开发",
+                ),
             ],
             milestones=[
                 {"name": "需求冻结", "date": "2026-03-15", "status": "completed"},
@@ -227,7 +292,10 @@ def seed_projects() -> None:
             budget=2200.0,
             actual_spend=2090.0,
             team_members=[
-                "薛景观", "雷施工", "贺绿化", "倪水系",
+                "薛景观",
+                "雷施工",
+                "贺绿化",
+                "倪水系",
             ],
             milestones=[
                 {"name": "景观方案设计", "date": "2025-04-30", "status": "completed"},
@@ -250,8 +318,12 @@ def seed_projects() -> None:
             budget=2600.0,
             actual_spend=52.0,
             team_members=[
-                "武产品", "严架构", "金开发", "魏测试",
-                "陶运维", "柳数据",
+                "武产品",
+                "严架构",
+                "金开发",
+                "魏测试",
+                "陶运维",
+                "柳数据",
             ],
             milestones=[
                 {"name": "合同签订", "date": "2026-03-01", "status": "completed"},
@@ -272,6 +344,7 @@ def seed_projects() -> None:
 # ---------------------------------------------------------------------------
 # CRUD functions
 # ---------------------------------------------------------------------------
+
 
 def list_projects(status: str | None = None) -> list[Project]:
     """Return all projects, optionally filtered by status."""

@@ -2,19 +2,20 @@
 AI 任务建议引擎 — 纯规则计算，无 LLM 调用。
 基于项目状态、任务分布、截止日期等因子生成可操作的智能建议。
 """
+
 from __future__ import annotations
 
 from collections import Counter
 from datetime import date
 from uuid import uuid4
 
-from src.core.models import Project, ProjectStage, ProjectTask, TaskStatus
+from src.core.models import Project, ProjectTask, TaskStatus
 from src.workflow.engine import TRANSITIONS, get_stage_label
-
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def generate_suggestions(
     projects: list[Project],
@@ -77,6 +78,7 @@ def generate_suggestions(
 # Rule implementations
 # ---------------------------------------------------------------------------
 
+
 def _make_suggestion(
     type_: str,
     title: str,
@@ -131,11 +133,7 @@ def _rule_overdue_tasks(
     """Rule 2: 逾期任务跟进 — 建议延期或拆分任务。"""
     results: list[dict] = []
     for t in tasks:
-        if (
-            t.due_date
-            and t.status != TaskStatus.DONE
-            and date.fromisoformat(t.due_date) < today
-        ):
+        if t.due_date and t.status != TaskStatus.DONE and date.fromisoformat(t.due_date) < today:
             overdue_days = (today - date.fromisoformat(t.due_date)).days
             results.append(
                 _make_suggestion(
@@ -161,10 +159,7 @@ def _rule_unassigned_tasks(
 ) -> list[dict]:
     """Rule 3: 未指派的任务 — 建议分配负责人。"""
     results: list[dict] = []
-    unassigned = [
-        t for t in tasks
-        if not t.assignee and t.status != TaskStatus.DONE
-    ]
+    unassigned = [t for t in tasks if not t.assignee and t.status != TaskStatus.DONE]
     if unassigned:
         names = "、".join(t.name for t in unassigned[:3])
         suffix = f"等 {len(unassigned)} 个任务" if len(unassigned) > 3 else ""
@@ -268,10 +263,7 @@ def _rule_missing_due_dates(
 ) -> list[dict]:
     """Rule 6: 缺少截止日期的任务 — 建议设置截止日期。"""
     results: list[dict] = []
-    no_due = [
-        t for t in tasks
-        if not t.due_date and t.status != TaskStatus.DONE
-    ]
+    no_due = [t for t in tasks if not t.due_date and t.status != TaskStatus.DONE]
     if no_due:
         names = "、".join(t.name for t in no_due[:3])
         suffix = f"等 {len(no_due)} 个任务" if len(no_due) > 3 else ""

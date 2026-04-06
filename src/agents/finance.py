@@ -1,4 +1,5 @@
 """财务Agent — expense audit, budgeting, fund planning."""
+
 from src.agents.base import BaseAgent
 from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import FINANCE_SYSTEM_PROMPT
@@ -15,10 +16,13 @@ class FinanceAgent(BaseAgent):
 
         # 2. Build messages with finance data injected after the system prompt
         messages = self._build_messages(request)
-        messages.insert(1, {
-            "role": "system",
-            "content": f"以下是当前系统中的财务数据：\n\n{context_data}",
-        })
+        messages.insert(
+            1,
+            {
+                "role": "system",
+                "content": f"以下是当前系统中的财务数据：\n\n{context_data}",
+            },
+        )
 
         # 3. Call LLM for structured JSON output, fall back to plain text on error
         try:
@@ -36,14 +40,19 @@ class FinanceAgent(BaseAgent):
     def build_stream_messages(self, request: AgentRequest) -> list[dict[str, str]]:
         """Build messages for streaming with finance data injected."""
         messages = self._build_messages(request)
-        messages.insert(1, {
-            "role": "system",
-            "content": f"以下是当前系统中的财务数据：\n\n{self._build_finance_context()}",
-        })
-        messages.append({
-            "role": "system",
-            "content": "重要：本次请直接用自然语言回复用户。不要使用JSON格式，不要输出代码块。请使用清晰的中文段落和列表来组织回答。",
-        })
+        messages.insert(
+            1,
+            {
+                "role": "system",
+                "content": f"以下是当前系统中的财务数据：\n\n{self._build_finance_context()}",
+            },
+        )
+        messages.append(
+            {
+                "role": "system",
+                "content": "重要：本次请直接用自然语言回复用户。不要使用JSON格式，不要输出代码块。请使用清晰的中文段落和列表来组织回答。",
+            }
+        )
         return messages
 
     def _build_finance_context(self) -> str:
@@ -69,11 +78,7 @@ class FinanceAgent(BaseAgent):
         if budgets:
             bgt_lines = ["【预算行】"]
             for b in budgets:
-                utilization = (
-                    round(b.actual_amount / b.planned_amount * 100, 1)
-                    if b.planned_amount
-                    else 0
-                )
+                utilization = round(b.actual_amount / b.planned_amount * 100, 1) if b.planned_amount else 0
                 bgt_lines.append(
                     f"- {b.id}: 项目={b.project_id} | 类别={b.category}"
                     f" | 计划={b.planned_amount}万元 | 实际={b.actual_amount}万元"

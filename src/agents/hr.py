@@ -1,4 +1,5 @@
 """人事Agent — attendance, performance, recruitment."""
+
 from src.agents.base import BaseAgent
 from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import HR_SYSTEM_PROMPT
@@ -15,10 +16,13 @@ class HRAgent(BaseAgent):
 
         # 2. Build messages with HR data injected after the system prompt
         messages = self._build_messages(request)
-        messages.insert(1, {
-            "role": "system",
-            "content": f"以下是当前系统中的人事数据：\n\n{context_data}",
-        })
+        messages.insert(
+            1,
+            {
+                "role": "system",
+                "content": f"以下是当前系统中的人事数据：\n\n{context_data}",
+            },
+        )
 
         # 3. Call LLM for structured JSON output, fall back to plain text on error
         try:
@@ -36,14 +40,19 @@ class HRAgent(BaseAgent):
     def build_stream_messages(self, request: AgentRequest) -> list[dict[str, str]]:
         """Build messages for streaming with HR data injected."""
         messages = self._build_messages(request)
-        messages.insert(1, {
-            "role": "system",
-            "content": f"以下是当前系统中的人事数据：\n\n{self._build_hr_context()}",
-        })
-        messages.append({
-            "role": "system",
-            "content": "重要：本次请直接用自然语言回复用户。不要使用JSON格式，不要输出代码块。请使用清晰的中文段落和列表来组织回答。",
-        })
+        messages.insert(
+            1,
+            {
+                "role": "system",
+                "content": f"以下是当前系统中的人事数据：\n\n{self._build_hr_context()}",
+            },
+        )
+        messages.append(
+            {
+                "role": "system",
+                "content": "重要：本次请直接用自然语言回复用户。不要使用JSON格式，不要输出代码块。请使用清晰的中文段落和列表来组织回答。",
+            }
+        )
         return messages
 
     def _build_hr_context(self) -> str:
@@ -71,8 +80,7 @@ class HRAgent(BaseAgent):
                 emp = next((e for e in employees if e.id == a.employee_id), None)
                 name = emp.name if emp else a.employee_id
                 att_lines.append(
-                    f"- {a.date} | {name} | 状态={a.status.value}"
-                    + (f" | 签到={a.check_in}" if a.check_in else "")
+                    f"- {a.date} | {name} | 状态={a.status.value}" + (f" | 签到={a.check_in}" if a.check_in else "")
                 )
             sections.append("\n".join(att_lines))
         else:

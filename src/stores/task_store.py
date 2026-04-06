@@ -1,4 +1,5 @@
 """In-memory task CRUD store with seed data."""
+
 from __future__ import annotations
 
 from src.core.models import ProjectTask, TaskPriority, TaskStatus
@@ -14,6 +15,7 @@ _seeded: bool = False
 # ---------------------------------------------------------------------------
 # Seed data
 # ---------------------------------------------------------------------------
+
 
 def seed_tasks() -> None:
     """Populate the store with seed tasks for each project."""
@@ -433,6 +435,7 @@ def seed_tasks() -> None:
 # ---------------------------------------------------------------------------
 # CRUD functions
 # ---------------------------------------------------------------------------
+
 
 def list_all_tasks(
     assignee: str | None = None,

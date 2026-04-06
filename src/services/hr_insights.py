@@ -3,14 +3,15 @@
 Produces structured insight dicts and summary metrics from in-memory HR data.
 No LLM calls — all logic is deterministic rule evaluation.
 """
+
 from __future__ import annotations
 
 from collections import defaultdict
 
-
 # ---------------------------------------------------------------------------
 # Insight generation
 # ---------------------------------------------------------------------------
+
 
 def generate_hr_insights(
     employees: list,
@@ -55,15 +56,17 @@ def generate_hr_insights(
             if count > 3:
                 emp = emp_by_id.get(emp_id)
                 emp_name = emp.name if emp else emp_id
-                insights.append({
-                    "title": f"频繁迟到预警：{emp_name}",
-                    "description": (
-                        f"{emp_name}（{emp_dept.get(emp_id, '')}）在 {month_key} 月共迟到 {count} 次，"
-                        "超过警戒阈值（3次），请HR及时跟进。"
-                    ),
-                    "severity": "warning",
-                    "category": "attendance",
-                })
+                insights.append(
+                    {
+                        "title": f"频繁迟到预警：{emp_name}",
+                        "description": (
+                            f"{emp_name}（{emp_dept.get(emp_id, '')}）在 {month_key} 月共迟到 {count} 次，"
+                            "超过警戒阈值（3次），请HR及时跟进。"
+                        ),
+                        "severity": "warning",
+                        "category": "attendance",
+                    }
+                )
 
     # ------------------------------------------------------------------
     # Rule 2: Simultaneous leave conflicts within the same department
@@ -82,7 +85,7 @@ def generate_hr_insights(
         # Check pairwise overlaps
         reported_pairs: set[tuple[str, str]] = set()
         for i, a in enumerate(dept_leave_list):
-            for b in dept_leave_list[i + 1:]:
+            for b in dept_leave_list[i + 1 :]:
                 if a.employee_id == b.employee_id:
                     continue
                 # Overlap: not (a ends before b starts OR b ends before a starts)
@@ -94,16 +97,18 @@ def generate_hr_insights(
                         emp_b = emp_by_id.get(b.employee_id)
                         name_a = emp_a.name if emp_a else a.employee_id
                         name_b = emp_b.name if emp_b else b.employee_id
-                        insights.append({
-                            "title": f"同部门假期冲突：{dept}",
-                            "description": (
-                                f"{dept} 的 {name_a} 与 {name_b} 请假时间存在重叠"
-                                f"（{a.start_date} ~ {a.end_date} / {b.start_date} ~ {b.end_date}），"
-                                "可能影响部门正常运转，建议协调排班。"
-                            ),
-                            "severity": "warning",
-                            "category": "leave",
-                        })
+                        insights.append(
+                            {
+                                "title": f"同部门假期冲突：{dept}",
+                                "description": (
+                                    f"{dept} 的 {name_a} 与 {name_b} 请假时间存在重叠"
+                                    f"（{a.start_date} ~ {a.end_date} / {b.start_date} ~ {b.end_date}），"
+                                    "可能影响部门正常运转，建议协调排班。"
+                                ),
+                                "severity": "warning",
+                                "category": "leave",
+                            }
+                        )
 
     # ------------------------------------------------------------------
     # Rule 3: Department headcount imbalance (largest > 3× smallest)
@@ -119,38 +124,38 @@ def generate_hr_insights(
         max_count = dept_counts[max_dept]
         min_count = dept_counts[min_dept]
         if max_dept != min_dept and min_count > 0 and max_count > 3 * min_count:
-            insights.append({
-                "title": "部门人员配置不均衡",
-                "description": (
-                    f"{max_dept}（{max_count}人）与 {min_dept}（{min_count}人）人员规模差距超过3倍，"
-                    "建议评估是否需要跨部门资源调配或补充招聘。"
-                ),
-                "severity": "info",
-                "category": "headcount",
-            })
+            insights.append(
+                {
+                    "title": "部门人员配置不均衡",
+                    "description": (
+                        f"{max_dept}（{max_count}人）与 {min_dept}（{min_count}人）人员规模差距超过3倍，"
+                        "建议评估是否需要跨部门资源调配或补充招聘。"
+                    ),
+                    "severity": "info",
+                    "category": "headcount",
+                }
+            )
 
     # ------------------------------------------------------------------
     # Rule 4: ON_LEAVE employee with no active leave request
     # ------------------------------------------------------------------
-    employees_on_leave_status = {
-        e.id for e in employees if e.status.value == "on_leave"
-    }
-    employees_with_active_leave = {
-        lr.employee_id for lr in leaves if lr.status.value in ("approved", "pending")
-    }
+    employees_on_leave_status = {e.id for e in employees if e.status.value == "on_leave"}
+    employees_with_active_leave = {lr.employee_id for lr in leaves if lr.status.value in ("approved", "pending")}
     orphaned = employees_on_leave_status - employees_with_active_leave
     for emp_id in orphaned:
         emp = emp_by_id.get(emp_id)
         emp_name = emp.name if emp else emp_id
-        insights.append({
-            "title": f"假期记录缺失：{emp_name}",
-            "description": (
-                f"{emp_name} 的员工状态为「休假中」，但系统中未找到对应的审批通过或待审假期申请，"
-                "请HR核实并补录相关记录。"
-            ),
-            "severity": "warning",
-            "category": "hr",
-        })
+        insights.append(
+            {
+                "title": f"假期记录缺失：{emp_name}",
+                "description": (
+                    f"{emp_name} 的员工状态为「休假中」，但系统中未找到对应的审批通过或待审假期申请，"
+                    "请HR核实并补录相关记录。"
+                ),
+                "severity": "warning",
+                "category": "hr",
+            }
+        )
 
     return insights
 
@@ -158,6 +163,7 @@ def generate_hr_insights(
 # ---------------------------------------------------------------------------
 # HR summary metrics
 # ---------------------------------------------------------------------------
+
 
 def get_hr_summary(
     employees: list,
@@ -187,9 +193,7 @@ def get_hr_summary(
         if emp.status.value != "resigned":
             dept_dist[emp.department] += 1
 
-    avg_salary = (
-        sum(e.salary for e in employees) / total if total > 0 else 0.0
-    )
+    avg_salary = sum(e.salary for e in employees) / total if total > 0 else 0.0
 
     # Attendance rate: NORMAL / total records (exclude LEAVE as absence-equivalent)
     if attendance:

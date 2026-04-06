@@ -1,4 +1,5 @@
 """In-memory process record CRUD store with seed data."""
+
 from __future__ import annotations
 
 from src.core.models import ProcessRecord, ProcessRecordType
@@ -14,6 +15,7 @@ _seeded: bool = False
 # ---------------------------------------------------------------------------
 # Seed data
 # ---------------------------------------------------------------------------
+
 
 def seed_processes() -> None:
     """Populate the store with seed process records for EPC projects."""
@@ -123,6 +125,7 @@ def seed_processes() -> None:
 # ---------------------------------------------------------------------------
 # CRUD functions
 # ---------------------------------------------------------------------------
+
 
 def list_by_project(
     project_id: str,

@@ -2,6 +2,7 @@
 
 Manages notices and vehicle requests.
 """
+
 from __future__ import annotations
 
 from uuid import uuid4
@@ -26,6 +27,7 @@ _seeded: bool = False
 # ---------------------------------------------------------------------------
 # Seed data
 # ---------------------------------------------------------------------------
+
 
 def seed_oa() -> None:
     """Populate OA stores with realistic demo data."""
@@ -130,6 +132,7 @@ def seed_oa() -> None:
 # Notice CRUD
 # ---------------------------------------------------------------------------
 
+
 def list_notices(
     target_user: str | None = None,
     notice_type: str | None = None,
@@ -140,7 +143,7 @@ def list_notices(
     if target_user is not None:
         result = [n for n in result if n.target_user is None or n.target_user == target_user]
     if notice_type is not None:
-        result = [n for n in result if (n.type.value if hasattr(n.type, 'value') else n.type) == notice_type]
+        result = [n for n in result if (n.type.value if hasattr(n.type, "value") else n.type) == notice_type]
     if is_read is not None:
         result = [n for n in result if n.is_read == is_read]
     return sorted(result, key=lambda n: n.created_at, reverse=True)
@@ -171,6 +174,7 @@ def update_notice(notice_id: str, data: dict) -> Notice | None:
 # Vehicle Request CRUD
 # ---------------------------------------------------------------------------
 
+
 def list_vehicle_requests(
     applicant: str | None = None,
     status: str | None = None,
@@ -179,7 +183,7 @@ def list_vehicle_requests(
     if applicant is not None:
         result = [v for v in result if v.applicant == applicant]
     if status is not None:
-        result = [v for v in result if (v.status.value if hasattr(v.status, 'value') else v.status) == status]
+        result = [v for v in result if (v.status.value if hasattr(v.status, "value") else v.status) == status]
     return sorted(result, key=lambda v: v.created_at, reverse=True)
 
 

@@ -1,4 +1,5 @@
 """In-memory procurement package CRUD store with seed data."""
+
 from __future__ import annotations
 
 from src.core.models import ProcurementPackage, ProcurementStatus
@@ -14,6 +15,7 @@ _seeded: bool = False
 # ---------------------------------------------------------------------------
 # Seed data
 # ---------------------------------------------------------------------------
+
 
 def seed_procurement() -> None:
     """Populate the store with seed procurement packages for EPC projects."""
@@ -148,6 +150,7 @@ def seed_procurement() -> None:
 # ---------------------------------------------------------------------------
 # CRUD functions
 # ---------------------------------------------------------------------------
+
 
 def list_by_project(project_id: str) -> list[ProcurementPackage]:
     """Return all procurement packages for a given project."""

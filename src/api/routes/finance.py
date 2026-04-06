@@ -17,11 +17,12 @@ PATCH  /api/finance/invoices/{id}        — update invoice
 GET    /api/finance/summary              — finance summary metrics
 GET    /api/finance/insights             — rule-based finance insights
 """
+
 from __future__ import annotations
 
 import random
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
 from src.core.models import (
@@ -37,9 +38,7 @@ from src.stores.finance_store import (
     create_budget,
     create_expense,
     create_invoice,
-    get_budget,
     get_expense,
-    get_invoice,
     list_budgets,
     list_expenses,
     list_invoices,
@@ -59,6 +58,7 @@ router = APIRouter(prefix="/finance", tags=["finance"])
 # Request / Response schemas
 # ---------------------------------------------------------------------------
 
+
 class ExpenseListItem(BaseModel):
     id: str
     submitter: str
@@ -67,7 +67,7 @@ class ExpenseListItem(BaseModel):
     amount: float
     description: str
     receipts_count: int
-    submit_date: str
+    submit_date: str | None = None
     status: str
     approver: str | None
     payment_date: str | None
@@ -203,6 +203,7 @@ def _invoice_to_item(inv: Invoice) -> InvoiceListItem:
 # Expense endpoints
 # ---------------------------------------------------------------------------
 
+
 @router.get("/expenses", response_model=list[ExpenseListItem])
 async def list_expenses_endpoint(
     status: str | None = None,
@@ -261,6 +262,7 @@ async def update_expense_endpoint(expense_id: str, req: UpdateExpenseRequest):
 # Budget endpoints
 # ---------------------------------------------------------------------------
 
+
 @router.get("/budgets", response_model=list[BudgetListItem])
 async def list_budgets_endpoint(
     project_id: str | None = None,
@@ -291,6 +293,7 @@ async def update_budget_endpoint(budget_id: str, req: UpdateBudgetRequest):
 # ---------------------------------------------------------------------------
 # Invoice endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.get("/invoices", response_model=list[InvoiceListItem])
 async def list_invoices_endpoint(
@@ -343,6 +346,7 @@ async def update_invoice_endpoint(invoice_id: str, req: UpdateInvoiceRequest):
 # ---------------------------------------------------------------------------
 # AI Receipt parsing (mock)
 # ---------------------------------------------------------------------------
+
 
 class ReceiptParseResult(BaseModel):
     amount: float

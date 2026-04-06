@@ -2,6 +2,7 @@
 Base Agent class — all specialized agents inherit from this.
 Provides common interface for intent handling, LLM message building, and response generation.
 """
+
 from abc import ABC, abstractmethod
 
 from src.core.models import AgentRequest, AgentResponse, AgentType, CardType, InteractiveCard
@@ -48,14 +49,16 @@ class BaseAgent(ABC):
         """
         messages = self._build_messages(request)
         # Override the JSON requirement — tell LLM to respond in natural language
-        messages.append({
-            "role": "system",
-            "content": (
-                "重要：本次请直接用自然语言回复用户。"
-                "不要使用JSON格式，不要输出代码块。"
-                "请使用清晰的中文段落和列表来组织回答。"
-            ),
-        })
+        messages.append(
+            {
+                "role": "system",
+                "content": (
+                    "重要：本次请直接用自然语言回复用户。"
+                    "不要使用JSON格式，不要输出代码块。"
+                    "请使用清晰的中文段落和列表来组织回答。"
+                ),
+            }
+        )
         return messages
 
     def _base_response(self, request: AgentRequest, content: str) -> AgentResponse:

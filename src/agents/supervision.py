@@ -1,4 +1,5 @@
 """监理Agent (Supervision Agent) — 工程监理管理."""
+
 from src.agents.base import BaseAgent
 from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import SUPERVISION_SYSTEM_PROMPT
@@ -8,14 +9,14 @@ from src.stores.task_store import list_tasks
 
 class SupervisionAgent(BaseAgent):
     """监理Agent - 工程监理管理
-    
+
     职责：
     - 旁站监理：关键工序旁站记录、影像留存
     - 巡视检查：日常巡视记录、问题台账
     - 平行检验：独立检测记录、数据比对
     - 监理报告：周报/月报、专题报告
     """
-    
+
     agent_type = AgentType.SUPERVISION
     system_prompt = SUPERVISION_SYSTEM_PROMPT
 
@@ -23,16 +24,16 @@ class SupervisionAgent(BaseAgent):
         """处理监理管理请求"""
         # 1. 收集监理数据
         supervision_data = self._build_supervision_data()
-        
+
         # 2. 构建消息
         messages = self._build_messages(request)
-        messages.insert(1, {
-            "role": "system",
-            "content": (
-                "以下是当前项目的监理数据，请基于这些数据回答用户问题：\n\n"
-                + supervision_data
-            ),
-        })
+        messages.insert(
+            1,
+            {
+                "role": "system",
+                "content": ("以下是当前项目的监理数据，请基于这些数据回答用户问题：\n\n" + supervision_data),
+            },
+        )
 
         # 3. 调用LLM
         try:
@@ -56,13 +57,13 @@ class SupervisionAgent(BaseAgent):
 
         lines = []
         for p in projects:
-            tasks = list_tasks(p.id)
-            
+            list_tasks(p.id)  # preload task data
+
             # 模拟监理数据
             patrol_records = self._get_patrol_records(p.id)
             inspection_records = self._get_inspection_records(p.id)
             issues = self._get_issues(p.id)
-            
+
             lines.append(
                 f"## 项目: {p.name} (ID: {p.id})\n"
                 f"**巡视记录**: {patrol_records['total']}次\n"

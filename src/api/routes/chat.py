@@ -7,7 +7,7 @@ POST /api/chat/message   — send a message, get an agent response
 GET  /api/chat/sessions  — list sessions (stub)
 POST /api/chat/sessions  — create a new session
 """
-import asyncio
+
 import json
 import logging
 from collections.abc import AsyncIterator
@@ -39,29 +39,55 @@ def _check_api_key() -> None:
     if settings.llm_api_key in _PLACEHOLDER_KEYS:
         raise HTTPException(
             status_code=503,
-            detail=(
-                "LLM API key is not configured. "
-                "Set the LLM_API_KEY environment variable or add it to .env."
-            ),
+            detail=("LLM API key is not configured. Set the LLM_API_KEY environment variable or add it to .env."),
         )
 
 
+# Cache dict so settings.py can clear it on provider switch
+_llm_client_cache: dict = {}
+
+
 def _get_llm_client() -> LLMClient:
-    """Return a configured LLMClient. Extracted for easy mocking in tests."""
-    _check_api_key()
-    return LLMClient(
-        api_key=settings.llm_api_key,
-        api_base=settings.llm_api_base,
-        model=settings.llm_model,
-    )
+    """Return a configured LLMClient. Reads active provider from settings API."""
+    # Get current provider config directly from the settings registry
+    try:
+        from src.api.routes.settings import get_active_provider_config
+
+        provider = get_active_provider_config()
+        if provider:
+            api_key = provider["api_key"]
+            api_base = provider["api_base"]
+            model = provider["model"]
+        else:
+            api_key = settings.llm_api_key
+            api_base = settings.llm_api_base
+            model = settings.llm_model
+    except ImportError:
+        api_key = settings.llm_api_key
+        api_base = settings.llm_api_base
+        model = settings.llm_model
+
+    cache_key = f"{api_base}:{model}:{api_key[:8]}"
+    if cache_key not in _llm_client_cache:
+        _llm_client_cache.clear()
+        if api_key in _PLACEHOLDER_KEYS:
+            raise HTTPException(status_code=503, detail="LLM API key is not configured.")
+        _llm_client_cache[cache_key] = LLMClient(
+            api_key=api_key,
+            api_base=api_base,
+            model=model,
+        )
+    return _llm_client_cache[cache_key]
 
 
 # ---------------------------------------------------------------------------
 # Request / Response models
 # ---------------------------------------------------------------------------
 
+
 class SimpleChatRequest(BaseModel):
     """Frontend-compatible chat request (POST /api/chat)."""
+
     message: str = Field(min_length=1, max_length=4096)
     context: list[dict] | None = None
 
@@ -117,6 +143,7 @@ class SessionSummary(BaseModel):
 # POST /api/chat — simple chat (frontend-compatible, no session required)
 # ---------------------------------------------------------------------------
 
+
 @router.post("", response_model=SimpleChatResponse)
 async def simple_chat(req: SimpleChatRequest) -> SimpleChatResponse:
     """Simple chat endpoint matching frontend expectations.
@@ -149,16 +176,24 @@ async def simple_chat(req: SimpleChatRequest) -> SimpleChatResponse:
         logger.exception("Agent dispatch failed for simple chat")
         raise
 
+    # Build cards from real data (fast, no extra LLM call)
+    from src.services.card_builder import build_cards_for_intent
+
+    data_cards = build_cards_for_intent(agent_response.agent_type, req.message)
+    # Use data cards; only add LLM cards if data cards are empty
+    all_cards = data_cards if data_cards else [c.model_dump() for c in agent_response.cards]
+
     return SimpleChatResponse(
         reply=agent_response.content,
         agent_type=agent_response.agent_type.value,
-        cards=[c.model_dump() for c in agent_response.cards],
+        cards=all_cards,
     )
 
 
 # ---------------------------------------------------------------------------
 # POST /api/chat/stream — SSE streaming chat
 # ---------------------------------------------------------------------------
+
 
 async def _generate_cards_async(agent, request: AgentRequest) -> list[dict]:
     """Run the agent's normal handle() to get structured cards (JSON mode).
@@ -228,16 +263,17 @@ async def _stream_chat_response(
 
     # Route to specialized agent for streaming + card generation
     from src.agents.registry import create_agent_registry, get_agent
+
     registry = create_agent_registry(llm_client)
     target_agent = get_agent(registry, agent_type)
 
     # Build the LLM messages with data context and plain-text override
     stream_messages = target_agent.build_stream_messages(agent_request)
 
-    # Launch card generation concurrently (non-streaming JSON call)
-    card_task = asyncio.create_task(
-        _generate_cards_async(target_agent, agent_request)
-    )
+    # Build cards from real data (instant, no LLM needed)
+    from src.services.card_builder import build_cards_for_intent
+
+    cards_data = build_cards_for_intent(agent_type, message)
 
     # Step 3: Stream response tokens
     full_content = ""
@@ -248,23 +284,17 @@ async def _stream_chat_response(
             yield f"event: token\ndata: {token_payload}\n\n"
     except Exception as exc:
         logger.exception("Streaming failed")
-        card_task.cancel()
         error_payload = json.dumps({"error": str(exc)})
         yield f"event: error\ndata: {error_payload}\n\n"
         return
 
-    # Step 4: Wait for card generation to finish, then send done event
-    cards_data: list[dict] = []
-    try:
-        cards_data = await asyncio.wait_for(card_task, timeout=30.0)
-    except (asyncio.TimeoutError, Exception):
-        logger.warning("Card generation failed or timed out, sending empty cards")
-
-    done_payload = json.dumps({
-        "agent_type": agent_type.value,
-        "cards": cards_data,
-        "full_content": full_content,
-    })
+    done_payload = json.dumps(
+        {
+            "agent_type": agent_type.value,
+            "cards": cards_data,
+            "full_content": full_content,
+        }
+    )
     yield f"event: done\ndata: {done_payload}\n\n"
 
 
@@ -289,8 +319,31 @@ async def stream_chat(req: SimpleChatRequest):
 
 
 # ---------------------------------------------------------------------------
+# Health check endpoint
+# ---------------------------------------------------------------------------
+
+
+@router.get("/health")
+async def chat_health():
+    """Quick check — can we build an LLM client at all?"""
+    try:
+        from src.api.routes.settings import get_active_provider_config
+
+        provider = get_active_provider_config()
+        provider_id = provider["id"] if provider else "unknown"
+    except Exception:
+        provider_id = "unknown"
+    try:
+        _get_llm_client()
+        return {"status": "ok", "provider": provider_id}
+    except Exception as e:
+        return {"status": "error", "message": str(e), "provider": provider_id}
+
+
+# ---------------------------------------------------------------------------
 # Session management endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.post("/sessions", response_model=SessionSummary)
 async def create_session(req: CreateSessionRequest) -> SessionSummary:

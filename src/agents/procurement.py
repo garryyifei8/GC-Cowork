@@ -1,4 +1,5 @@
 """采购Agent — supplier management, price comparison."""
+
 from src.agents.base import BaseAgent
 from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import PROCUREMENT_SYSTEM_PROMPT

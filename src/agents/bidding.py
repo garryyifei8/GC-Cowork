@@ -1,4 +1,5 @@
 """投标管理Agent — bidding management with structured card output."""
+
 from src.agents.base import BaseAgent
 from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import BIDDING_SYSTEM_PROMPT
@@ -12,10 +13,7 @@ class BiddingAgent(BaseAgent):
     async def handle(self, request: AgentRequest) -> AgentResponse:
         context = self._build_bidding_context()
         messages = self._build_messages(request)
-        messages.insert(1, {
-            "role": "system",
-            "content": f"以下是当前系统中的投标机会数据：\n\n{context}"
-        })
+        messages.insert(1, {"role": "system", "content": f"以下是当前系统中的投标机会数据：\n\n{context}"})
 
         try:
             result = await self.llm_client.chat_json(messages, max_tokens=2048)
@@ -43,4 +41,3 @@ class BiddingAgent(BaseAgent):
                 f"  地区: {opp.region}"
             )
         return "\n\n".join(lines)
-

@@ -1,4 +1,5 @@
 """知识Agent — experience retrieval, case recommendations."""
+
 from src.agents.base import BaseAgent
 from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import KNOWLEDGE_SYSTEM_PROMPT

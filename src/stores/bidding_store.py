@@ -1,4 +1,5 @@
 """In-memory bidding opportunity CRUD store with seed data."""
+
 from __future__ import annotations
 
 from src.core.models import BiddingOpportunity
@@ -14,6 +15,7 @@ _seeded: bool = False
 # ---------------------------------------------------------------------------
 # Seed data
 # ---------------------------------------------------------------------------
+
 
 def seed_bidding() -> None:
     """Populate the store with seed bidding opportunities."""
@@ -131,6 +133,7 @@ def seed_bidding() -> None:
 # CRUD functions
 # ---------------------------------------------------------------------------
 
+
 def list_opportunities(
     category: str | None = None,
     status: str | None = None,
@@ -155,9 +158,7 @@ def create_opportunity(opportunity: BiddingOpportunity) -> BiddingOpportunity:
     return opportunity
 
 
-def update_opportunity(
-    opportunity_id: str, updates: dict
-) -> BiddingOpportunity | None:
+def update_opportunity(opportunity_id: str, updates: dict) -> BiddingOpportunity | None:
     """Apply a dict of updates to an existing opportunity and return it.
 
     Returns None if the opportunity does not exist.

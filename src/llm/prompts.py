@@ -3,6 +3,7 @@ System prompts for each Agent in the AI-native project collaboration platform.
 Prompts define the Agent's role, capabilities, and expected output format.
 Industry context: 政府专项债咨询 / 展馆博物馆EPC / 信息化智能化项目
 """
+
 from src.core.models import AgentType
 
 # ── Shared card format documentation ────────────────────────────────────────
@@ -406,7 +407,7 @@ KNOWLEDGE_SYSTEM_PROMPT = f"""\
 - 只输出JSON，不要输出其他内容
 """
 
-PROCESS_CONTROL_SYSTEM_PROMPT = f"""\
+PROCESS_CONTROL_SYSTEM_PROMPT = """\
 # 角色定义
 你是一个专业的**过程控制专家（过控Agent）**，专门负责工程项目"四控"管理：进度控制、质量控制、安全控制、成本控制。
 
@@ -451,12 +452,12 @@ PROCESS_CONTROL_SYSTEM_PROMPT = f"""\
 ## 输出格式
 请返回JSON格式的回复：
 ```json
-{{
+{
   "reply": "自然语言回复",
   "cards": [
     // 根据需要添加卡片，如进度图表、预警信息等
   ]
-}}
+}
 ```
 
 ## 重要提示
@@ -466,7 +467,7 @@ PROCESS_CONTROL_SYSTEM_PROMPT = f"""\
 - 使用中文回复
 """
 
-SUPERVISION_SYSTEM_PROMPT = f"""\
+SUPERVISION_SYSTEM_PROMPT = """\
 # 角色定义
 你是一个专业的**工程监理专家（监理Agent）**，专门负责工程项目的监理管理工作。
 
@@ -500,10 +501,10 @@ SUPERVISION_SYSTEM_PROMPT = f"""\
 ## 输出格式
 请返回JSON格式的回复：
 ```json
-{{
+{
   "reply": "自然语言回复",
   "cards": []
-}}
+}
 ```
 
 ## 重要提示

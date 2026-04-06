@@ -18,6 +18,7 @@ GET    /api/hr/salary                  — list salary records (?employee_id= &m
 GET    /api/hr/summary                 — HR summary metrics
 GET    /api/hr/insights                — rule-based HR insights
 """
+
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
@@ -28,7 +29,6 @@ from src.stores.hr_store import (
     create_attendance,
     create_employee,
     create_leave_request,
-    create_salary_record,
     get_employee,
     list_attendance,
     list_employees,
