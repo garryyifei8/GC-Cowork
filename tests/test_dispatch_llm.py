@@ -34,8 +34,13 @@ class TestDispatchRouting:
     @pytest.mark.asyncio
     async def test_routes_to_finance(self):
         client = AsyncMock(spec=LLMClient)
+        # First call: DispatchAgent classifies intent as "finance"
+        # Second call: FinanceAgent tries chat_json, which raises → falls back to chat()
         client.chat_json = AsyncMock(
-            return_value=_mock_dispatch_intent("finance")
+            side_effect=[
+                _mock_dispatch_intent("finance"),
+                Exception("force fallback to chat"),
+            ]
         )
         client.chat = AsyncMock(return_value="已为您审核发票，金额合规。")
 

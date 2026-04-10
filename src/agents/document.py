@@ -1,8 +1,7 @@
 """文档处理Agent — document management with structured card output."""
+
 from src.agents.base import BaseAgent
-from src.core.models import (
-    AgentRequest, AgentResponse, AgentType, CardType, InteractiveCard,
-)
+from src.core.models import AgentRequest, AgentResponse, AgentType
 from src.llm.prompts import DOCUMENT_SYSTEM_PROMPT
 from src.stores.document_store import list_documents
 
@@ -14,10 +13,7 @@ class DocumentAgent(BaseAgent):
     async def handle(self, request: AgentRequest) -> AgentResponse:
         context = self._build_document_context()
         messages = self._build_messages(request)
-        messages.insert(1, {
-            "role": "system",
-            "content": f"以下是当前系统中的文档数据：\n\n{context}"
-        })
+        messages.insert(1, {"role": "system", "content": f"以下是当前系统中的文档数据：\n\n{context}"})
 
         try:
             result = await self.llm_client.chat_json(messages, max_tokens=2048)
@@ -43,28 +39,3 @@ class DocumentAgent(BaseAgent):
                 f"  作者: {doc.author} | 项目: {doc.project_id or '通用'}"
             )
         return "\n\n".join(lines)
-
-    def _parse_cards(self, raw_cards: list) -> list[InteractiveCard]:
-        cards = []
-        for raw in raw_cards:
-            if not isinstance(raw, dict):
-                continue
-            try:
-                card_type_str = raw.get("card_type", "data")
-                card_type_map = {
-                    "action": CardType.ACTION,
-                    "data": CardType.DATA,
-                    "form": CardType.FORM,
-                    "file": CardType.FILE,
-                    "alert": CardType.DATA,
-                }
-                card = InteractiveCard(
-                    card_type=card_type_map.get(card_type_str, CardType.DATA),
-                    title=raw.get("title", ""),
-                    data=raw.get("data", {}),
-                    actions=raw.get("actions", []),
-                )
-                cards.append(card)
-            except Exception:
-                continue
-        return cards

@@ -1,0 +1,26 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "husky": "^9.1.0",
+    "lint-staged": "^16.0.0"
+  },
+  "lint-staged": {
+    "frontend/src/**/*.{ts,tsx}": [
+      "npx --prefix frontend eslint --config frontend/eslint.config.js --fix",
+      "npx --prefix frontend prettier --config frontend/.prettierrc --write"
+    ],
+    "frontend/src/**/*.{css,json}": [
+      "npx --prefix frontend prettier --config frontend/.prettierrc --write"
+    ],
+    "src/**/*.py": [
+      "ruff check --fix",
+      "ruff format"
+    ]
+  }
+}

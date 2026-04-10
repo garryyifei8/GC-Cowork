@@ -116,12 +116,12 @@ export const ActionCard: React.FC<ActionCardProps> = ({ card }) => {
   };
 
   return (
-    <div className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border border-l-4 border-l-primary rounded-xl p-4 transition-colors duration-200 hover:-translate-y-px hover:shadow-sm">
+    <div className="bg-light-surface border border-light-border border-l-4 border-l-primary rounded-[10px] p-4 transition-colors duration-200 hover:-translate-y-px">
       <div className="flex items-center gap-2 mb-2">
-        <p className="text-sm font-semibold m-0 leading-snug">{card.title}</p>
+        <p className="text-sm font-medium m-0 leading-snug">{card.title}</p>
       </div>
       {card.content && (
-        <p className="text-[0.8125rem] text-light-text-secondary dark:text-dark-text-secondary leading-relaxed m-0">
+        <p className="text-[0.8125rem] text-light-text-secondary leading-relaxed m-0">
           {card.content}
         </p>
       )}
@@ -132,12 +132,12 @@ export const ActionCard: React.FC<ActionCardProps> = ({ card }) => {
             .map(([key, value]) => (
               <div
                 key={key}
-                className="flex justify-between items-center py-1.5 border-b border-light-border/60 dark:border-dark-border/60 last:border-b-0 text-[0.8125rem]"
+                className="flex justify-between items-center py-1.5 border-b border-light-border/60 last:border-b-0 text-[0.8125rem]"
               >
-                <span className="text-light-text-secondary dark:text-dark-text-secondary font-medium flex-shrink-0 mr-4">
+                <span className="text-light-text-secondary font-medium flex-shrink-0 mr-4">
                   {key}
                 </span>
-                <span className="font-semibold text-right">{String(value)}</span>
+                <span className="font-medium text-right">{String(value)}</span>
               </div>
             ))}
         </div>
@@ -153,10 +153,10 @@ export const ActionCard: React.FC<ActionCardProps> = ({ card }) => {
                 key={index}
                 className={`inline-flex items-center justify-center gap-1 px-4 py-1.5 rounded-full text-[0.8125rem] font-medium whitespace-nowrap border transition-colors duration-150 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${
                   isExecuted
-                    ? 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-700 dark:text-slate-400 dark:border-slate-600'
+                    ? 'bg-[#ecedf5] text-light-text-secondary border-light-border'
                     : btn.primary
                     ? 'bg-primary text-white border-primary hover:bg-primary/90'
-                    : 'bg-transparent text-slate-700 dark:text-slate-200 border-light-border dark:border-dark-border hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                    : 'bg-transparent text-light-text border-light-border hover:bg-light-bg'
                 }`}
                 onClick={() => handleAction(btn.action, index)}
                 type="button"

@@ -2,6 +2,7 @@
 Custom exception hierarchy for the AI-native project collaboration platform.
 All domain errors inherit from PlatformError so handlers can catch them uniformly.
 """
+
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 
@@ -35,23 +36,27 @@ class AgentRoutingError(PlatformError):
 
 class LLMError(PlatformError):
     """Base exception for all LLM-related errors."""
+
     status_code = 503
     error_code = "LLM_SERVICE_ERROR"
 
 
 class LLMConnectionError(LLMError):
     """Network unreachable or timeout when calling LLM API."""
+
     error_code = "LLM_CONNECTION_ERROR"
 
 
 class LLMAuthError(LLMError):
     """Invalid API key or authentication failure (HTTP 401)."""
+
     status_code = 401
     error_code = "LLM_AUTH_ERROR"
 
 
 class LLMResponseError(LLMError):
     """LLM returned malformed or unparseable response."""
+
     error_code = "LLM_RESPONSE_ERROR"
 
 
@@ -78,6 +83,7 @@ class PermissionDeniedError(PlatformError):
 # ---------------------------------------------------------------------------
 # FastAPI exception handlers (register these on the app)
 # ---------------------------------------------------------------------------
+
 
 def _error_body(error_code: str, message: str, detail: dict) -> dict:
     return {"error_code": error_code, "message": message, "detail": detail}

@@ -1,4 +1,12 @@
-export type AgentType = 'dispatch' | 'project' | 'finance' | 'legal' | 'procurement' | 'hr' | 'bidding' | 'document' | 'knowledge';
+export type AgentType =
+  | 'dispatch'
+  | 'project'
+  | 'finance'
+  | 'legal'
+  | 'procurement'
+  | 'hr'
+  | 'document'
+  | 'knowledge';
 
 export interface ChatMessage {
   id: string;
@@ -8,15 +16,34 @@ export interface ChatMessage {
   senderName: string;
   timestamp: Date;
   cards?: InteractiveCard[];
+  /** True while SSE tokens are still streaming in. */
+  isStreaming?: boolean;
+  /** True when the message represents a failed AI response. */
+  error?: boolean;
+  /** Human-readable error detail shown in the bubble. */
+  errorMessage?: string;
 }
 
 export interface InteractiveCard {
-  type: 'action' | 'data' | 'alert' | 'form';
+  type:
+    | 'action'
+    | 'data'
+    | 'alert'
+    | 'form'
+    | 'task_list'
+    | 'progress'
+    | 'table'
+    | 'kanban'
+    | 'file'
+    | 'chart'
+    | 'report';
   title: string;
   content?: string;
   data?: Record<string, any>;
   status?: 'success' | 'warning' | 'danger' | 'info';
   actions?: CardAction[];
+  /** Explicit widget type for registry lookup (snake_case). Falls back to heuristic detection. */
+  widget_type?: string;
 }
 
 export interface CardAction {
@@ -59,19 +86,6 @@ export interface ProjectTask {
   priority: string;
   due_date: string | null;
   description: string;
-}
-
-export interface BiddingOpportunity {
-  id: string;
-  title: string;
-  source: string;
-  publish_date: string;
-  deadline: string;
-  budget_amount: string | null;
-  region: string;
-  category: string;
-  status: string;
-  match_score: number;
 }
 
 export type ViewType = 'table' | 'kanban' | 'gantt';
@@ -202,6 +216,12 @@ export interface DocumentItem {
   version: string;
   author: string;
   status: string;
+  category: string;
+  storage_path?: string | null;
+  file_name?: string | null;
+  file_size?: number | null;
+  mime_type?: string | null;
+  file_url?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -318,4 +338,162 @@ export interface FinanceSummary {
   budget_utilization_rate: number;
   overdue_invoices: number;
   monthly_expense_trend: Array<{ month: string; amount: number }>;
+}
+
+// ---------------------------------------------------------------------------
+// OA
+// ---------------------------------------------------------------------------
+
+export interface Notice {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  target_user: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface VehicleRequest {
+  id: string;
+  applicant: string;
+  date: string;
+  origin: string;
+  destination: string;
+  reason: string;
+  status: string;
+  approver: string | null;
+  created_at: string;
+}
+
+export interface ReceiptParseResult {
+  amount: number;
+  date: string;
+  category: string;
+  vendor: string;
+  description: string;
+  confidence: number;
+}
+
+// ---------------------------------------------------------------------------
+// Procurement
+// ---------------------------------------------------------------------------
+
+export interface ProcurementPackage {
+  id: string;
+  project_id: string;
+  name: string;
+  category: string;
+  supplier: string | null;
+  budget_amount: number | null;
+  actual_amount: number | null;
+  status: string;
+  plan_date: string | null;
+  arrival_date: string | null;
+  responsible: string | null;
+  notes: string;
+}
+
+// ---------------------------------------------------------------------------
+// Process Management
+// ---------------------------------------------------------------------------
+
+export interface ProcessRecord {
+  id: string;
+  project_id: string;
+  record_type: string;
+  title: string;
+  date: string;
+  author: string;
+  content: string;
+  status: string;
+  attachments: string[];
+  related_stage: string;
+}
+
+// ---------------------------------------------------------------------------
+// Legal / Contract Management
+// ---------------------------------------------------------------------------
+
+export interface LegalContract {
+  id: string;
+  title: string;
+  contract_type: string;
+  party_a: string;
+  party_b: string;
+  project_id: string | null;
+  amount: number;
+  sign_date: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  risk_level: string;
+  key_terms: string;
+  responsible: string;
+}
+
+// ---------------------------------------------------------------------------
+// Audit Management
+// ---------------------------------------------------------------------------
+
+export interface AuditReport {
+  id: string;
+  title: string;
+  audit_type: string;
+  project_id: string | null;
+  auditor: string;
+  start_date: string;
+  end_date: string | null;
+  status: string;
+  findings_count: number;
+  risk_level: string;
+  summary: string;
+}
+
+// ---------------------------------------------------------------------------
+// Supervision Management
+// ---------------------------------------------------------------------------
+
+export interface SupervisionRecord {
+  id: string;
+  project_id: string;
+  record_type: string;
+  title: string;
+  date: string;
+  inspector: string;
+  location: string;
+  content: string;
+  status: string;
+  issues_found: number;
+  photos: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Supplier Management
+// ---------------------------------------------------------------------------
+
+export type SupplierCategory = 'material' | 'equipment' | 'subcontract' | 'service' | 'consulting';
+export type SupplierStatusType = 'active' | 'inactive' | 'blacklisted';
+
+export interface Supplier {
+  id: string;
+  name: string;
+  category: SupplierCategory;
+  contact_person: string;
+  phone: string;
+  email: string;
+  address: string;
+  qualification: string;
+  rating: number;
+  status: SupplierStatusType;
+  projects: string[];
+  notes: string;
+}
+
+export interface SupplierSummary {
+  total: number;
+  active: number;
+  inactive: number;
+  by_category: Record<string, number>;
+  avg_rating: number;
 }

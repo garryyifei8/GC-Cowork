@@ -4,41 +4,36 @@ type Theme = 'light' | 'dark';
 
 interface ThemeState {
   theme: Theme;
-  toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
+  toggle: () => void;
+  setTheme: (t: Theme) => void;
 }
 
-const getInitialTheme = (): Theme => {
-  const stored = localStorage.getItem('theme');
-  if (stored === 'light' || stored === 'dark') return stored;
-  return 'dark';
-};
-
-const applyTheme = (theme: Theme) => {
-  const root = document.documentElement;
-  if (theme === 'dark') {
-    root.classList.add('dark');
+function applyTheme(t: Theme) {
+  if (t === 'dark') {
+    document.documentElement.classList.add('dark');
   } else {
-    root.classList.remove('dark');
+    document.documentElement.classList.remove('dark');
   }
-  localStorage.setItem('theme', theme);
-};
+  localStorage.setItem('theme', t);
+}
+
+const saved = (typeof localStorage !== 'undefined' &&
+  localStorage.getItem('theme')) as Theme | null;
+const initial: Theme = saved === 'dark' ? 'dark' : 'light';
 
 export const useThemeStore = create<ThemeState>((set) => {
-  const initial = getInitialTheme();
   applyTheme(initial);
-
   return {
     theme: initial,
-    toggleTheme: () =>
+    toggle: () =>
       set((state) => {
-        const next = state.theme === 'dark' ? 'light' : 'dark';
+        const next: Theme = state.theme === 'light' ? 'dark' : 'light';
         applyTheme(next);
         return { theme: next };
       }),
-    setTheme: (theme) => {
-      applyTheme(theme);
-      set({ theme });
+    setTheme: (t: Theme) => {
+      applyTheme(t);
+      set({ theme: t });
     },
   };
 });

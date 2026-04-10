@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harness Engineering — 工程化治理体系</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181b24;
+    --surface-2: #1e2230;
+    --border: #2a2e3b;
+    --text: #e4e6ed;
+    --text-dim: #8b8fa3;
+    --accent: #6c8aff;
+    --accent-glow: rgba(108,138,255,0.15);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.12);
+    --yellow: #fbbf24;
+    --yellow-dim: rgba(251,191,36,0.12);
+    --red: #f87171;
+    --red-dim: rgba(248,113,113,0.12);
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.12);
+    --cyan: #22d3ee;
+    --cyan-dim: rgba(34,211,238,0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 600px;
+    background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: 48px; font-weight: 700; letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 16px; position: relative;
+  }
+  .hero .subtitle {
+    font-size: 20px; color: var(--text-dim); max-width: 640px; margin: 0 auto 40px;
+  }
+  .hero .badge {
+    display: inline-block; padding: 6px 16px; border-radius: 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 13px; color: var(--text-dim); margin-bottom: 24px;
+  }
+
+  /* ---- Section ---- */
+  section { padding: 60px 0; }
+  .section-label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--accent); margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 32px; font-weight: 700; margin-bottom: 12px;
+  }
+  .section-desc {
+    font-size: 16px; color: var(--text-dim); max-width: 600px; margin-bottom: 40px;
+  }
+
+  /* ---- Core Principles (4 cards) ---- */
+  .principles-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  .principle-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 24px;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .principle-card:hover {
+    border-color: var(--accent); transform: translateY(-2px);
+  }
+  .principle-card .icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 16px;
+  }
+  .principle-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .principle-card p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+  /* ---- Pipeline Flow ---- */
+  .pipeline {
+    display: flex; align-items: stretch; gap: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    position: relative;
+  }
+  .pipeline-stage {
+    flex: 1; padding: 28px 20px; text-align: center;
+    position: relative; border-right: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+  .pipeline-stage:last-child { border-right: none; }
+  .pipeline-stage:hover { background: var(--surface-2); }
+  .pipeline-stage .stage-num {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 8px;
+  }
+  .pipeline-stage .stage-icon {
+    font-size: 28px; margin-bottom: 10px;
+  }
+  .pipeline-stage h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .pipeline-stage .stage-tools {
+    font-size: 11px; color: var(--text-dim); line-height: 1.6;
+  }
+  .pipeline-arrow {
+    position: absolute; right: -8px; top: 50%; transform: translateY(-50%);
+    z-index: 2; width: 16px; height: 16px; background: var(--surface);
+    border-right: 1px solid var(--border); border-top: 1px solid var(--border);
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .pipeline-stage:last-child .pipeline-arrow { display: none; }
+
+  /* ---- Phase Grid ---- */
+  .phases-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  }
+  .phase-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+  .phase-card:hover { border-color: var(--accent); }
+  .phase-card .phase-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .phase-card .phase-num {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .phase-card .phase-title { font-size: 16px; font-weight: 600; }
+  .phase-card .phase-items { list-style: none; }
+  .phase-card .phase-items li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 13px; color: var(--text-dim); padding: 4px 0;
+  }
+  .phase-card .phase-items li::before {
+    content: ''; display: inline-block;
+    width: 6px; height: 6px; border-radius: 50%;
+    margin-top: 7px; flex-shrink: 0;
+  }
+  .phase-detail {
+    display: none; margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .phase-card.open .phase-detail { display: block; }
+  .phase-detail .file-list {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .file-tag {
+    font-size: 11px; padding: 3px 10px; border-radius: 4px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text-dim);
+  }
+
+  /* ---- Rules Matrix ---- */
+  .rules-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .rules-table th {
+    text-align: left; padding: 14px 20px; font-size: 12px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-dim); background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
+  .rules-table td {
+    padding: 12px 20px; font-size: 13px; border-bottom: 1px solid var(--border);
+  }
+  .rules-table tr:last-child td { border-bottom: none; }
+  .rules-table .tool {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px; color: var(--accent);
+  }
+  .rules-table .enforcement { font-weight: 600; }
+
+  .badge-green { color: var(--green); background: var(--green-dim); padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-yellow { color: var(--yellow); background: var(--yellow-dim); padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-red { color: var(--red); background: var(--red-dim); padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-purple { color: var(--purple); background: var(--purple-dim); padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+  /* ---- Enforcement Layers ---- */
+  .layers {
+    display: flex; flex-direction: column; gap: 0;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .layer {
+    display: grid; grid-template-columns: 160px 1fr 200px;
+    align-items: center; padding: 20px 24px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .layer:last-child { border-bottom: none; }
+  .layer:hover { background: var(--surface-2); }
+  .layer-timing {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .layer-content h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .layer-content p { font-size: 12px; color: var(--text-dim); }
+  .layer-tools {
+    display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end;
+  }
+  .tool-chip {
+    font-size: 11px; padding: 3px 10px; border-radius: 4px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text-dim);
+  }
+
+  /* ---- Gradual Upgrade ---- */
+  .upgrade-timeline {
+    position: relative; padding-left: 40px;
+  }
+  .upgrade-timeline::before {
+    content: ''; position: absolute; left: 15px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .upgrade-step {
+    position: relative; padding: 16px 0 32px;
+  }
+  .upgrade-step::before {
+    content: ''; position: absolute; left: -29px; top: 20px;
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid; background: var(--bg);
+  }
+  .upgrade-step.current::before { border-color: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+  .upgrade-step.future::before { border-color: var(--text-dim); }
+  .upgrade-step.done::before { border-color: var(--green); background: var(--green); }
+  .upgrade-step h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .upgrade-step p { font-size: 13px; color: var(--text-dim); }
+
+  /* ---- Stack Map ---- */
+  .stack-map {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  .stack-group {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+  }
+  .stack-group h4 {
+    font-size: 13px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-dim); margin-bottom: 16px;
+  }
+  .stack-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+  }
+  .stack-item:last-child { border-bottom: none; }
+  .stack-item .name { font-size: 13px; font-weight: 500; }
+  .stack-item .ver {
+    font-size: 11px; color: var(--text-dim);
+    font-family: 'SF Mono', monospace;
+  }
+
+  /* ---- Flow Diagram (SVG) ---- */
+  .flow-container {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 40px; text-align: center;
+    overflow-x: auto;
+  }
+  .flow-container svg text {
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+
+  /* ---- Stats Bar ---- */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-bottom: 48px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; text-align: center;
+  }
+  .stat-card .stat-value {
+    font-size: 36px; font-weight: 700; margin-bottom: 4px;
+  }
+  .stat-card .stat-label {
+    font-size: 12px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ---- Footer ---- */
+  footer {
+    padding: 40px 0; text-align: center;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim); font-size: 13px;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 900px) {
+    .principles-grid { grid-template-columns: repeat(2, 1fr); }
+    .phases-grid { grid-template-columns: 1fr; }
+    .stack-map { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .pipeline { flex-direction: column; }
+    .pipeline-stage { border-right: none; border-bottom: 1px solid var(--border); }
+    .pipeline-arrow { display: none !important; }
+    .layer { grid-template-columns: 1fr; gap: 8px; }
+    .layer-tools { justify-content: flex-start; }
+  }
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 32px; }
+    .principles-grid { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<div class="hero">
+  <div class="container">
+    <div class="badge">Engineering Infrastructure v1.0</div>
+    <h1>Harness Engineering</h1>
+    <p class="subtitle">
+      通过机械化工具链替代口头约定，在代码编写、提交、审查、测试、部署的每个环节建立自动化质量关卡。
+    </p>
+  </div>
+</div>
+
+<!-- ============ STATS ============ -->
+<div class="container">
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--accent)">8</div>
+      <div class="stat-label">治理阶段</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--green)">5</div>
+      <div class="stat-label">自动拦截层</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--yellow)">21</div>
+      <div class="stat-label">配置文件</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--purple)">6</div>
+      <div class="stat-label">CI/CD Jobs</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PRINCIPLES ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Core Principles</div>
+    <div class="section-title">设计原则</div>
+    <p class="section-desc">四条不可妥协的工程化治理原则，指导所有工具选择和规则设定。</p>
+
+    <div class="principles-grid">
+      <div class="principle-card">
+        <div class="icon" style="background:var(--accent-glow); color:var(--accent)">&#9881;</div>
+        <h3>机械执行 &gt; 文档约定</h3>
+        <p>能被工具自动强制执行的规则，绝不依赖口头约定或文档要求。Pre-commit hook 检查替代"请记住格式化代码"。</p>
+      </div>
+      <div class="principle-card">
+        <div class="icon" style="background:var(--green-dim); color:var(--green)">&#9650;</div>
+        <h3>渐进式采用</h3>
+        <p>新规则先设为 <code>warn</code>，团队适应后再升级为 <code>error</code>。避免一次性引入大量破坏性变更。</p>
+      </div>
+      <div class="principle-card">
+        <div class="icon" style="background:var(--yellow-dim); color:var(--yellow)">&#128218;</div>
+        <h3>Repo 即唯一真相源</h3>
+        <p>所有配置、规范、文档、ADR 都在仓库内。不依赖外部 Wiki、Notion 或口头传达。克隆仓库 = 获得全部上下文。</p>
+      </div>
+      <div class="principle-card">
+        <div class="icon" style="background:var(--purple-dim); color:var(--purple)">&#9889;</div>
+        <h3>最小必要复杂度</h3>
+        <p>只添加当前需要的配置。不为假设性需求过度设计。三行重复代码好过一个过早抽象。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PIPELINE ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Quality Pipeline</div>
+    <div class="section-title">质量关卡流水线</div>
+    <p class="section-desc">代码从编写到上线经过 5 层自动化拦截，每层解决不同类别的问题。</p>
+
+    <div class="pipeline">
+      <div class="pipeline-stage">
+        <div class="stage-num">Layer 1</div>
+        <div class="stage-icon">&#9998;</div>
+        <h4>编辑器</h4>
+        <div class="stage-tools">EditorConfig<br>Prettier on-save</div>
+        <div class="pipeline-arrow"></div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-num">Layer 2</div>
+        <div class="stage-icon">&#128190;</div>
+        <h4>Pre-commit</h4>
+        <div class="stage-tools">husky<br>lint-staged<br>ESLint + Prettier + Ruff</div>
+        <div class="pipeline-arrow"></div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-num">Layer 3</div>
+        <div class="stage-icon">&#128172;</div>
+        <h4>Commit-msg</h4>
+        <div class="stage-tools">commitlint<br>Conventional Commits</div>
+        <div class="pipeline-arrow"></div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-num">Layer 4</div>
+        <div class="stage-icon">&#9989;</div>
+        <h4>CI (PR)</h4>
+        <div class="stage-tools">Lint / Type-check<br>Vitest / pytest<br>Build</div>
+        <div class="pipeline-arrow"></div>
+      </div>
+      <div class="pipeline-stage">
+        <div class="stage-num">Layer 5</div>
+        <div class="stage-icon">&#128640;</div>
+        <h4>CD (Deploy)</h4>
+        <div class="stage-tools">Staging: auto<br>Production: manual<br>Smoke test</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ENFORCEMENT LAYERS ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Enforcement Model</div>
+    <div class="section-title">拦截层级详解</div>
+    <p class="section-desc">每层拦截的时机、内容和使用的工具。越早发现问题，修复成本越低。</p>
+
+    <div class="layers">
+      <div class="layer">
+        <div class="layer-timing" style="color:var(--green)">&#9679; 编码时</div>
+        <div class="layer-content">
+          <h4>编辑器自动格式化</h4>
+          <p>保存文件时自动应用统一缩进、换行符、尾部空格规则</p>
+        </div>
+        <div class="layer-tools">
+          <span class="tool-chip">EditorConfig</span>
+          <span class="tool-chip">Prettier</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-timing" style="color:var(--yellow)">&#9679; git add 后</div>
+        <div class="layer-content">
+          <h4>暂存文件自动修复</h4>
+          <p>只对暂存区文件运行 lint fix + format，不影响未暂存的工作区</p>
+        </div>
+        <div class="layer-tools">
+          <span class="tool-chip">husky</span>
+          <span class="tool-chip">lint-staged</span>
+          <span class="tool-chip">ESLint --fix</span>
+          <span class="tool-chip">Ruff --fix</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-timing" style="color:var(--orange)">&#9679; git commit 时</div>
+        <div class="layer-content">
+          <h4>提交消息格式校验</h4>
+          <p>强制 <code>&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;</code> 格式，支持自动 changelog 生成</p>
+        </div>
+        <div class="layer-tools">
+          <span class="tool-chip">commitlint</span>
+          <span class="tool-chip">Conventional Commits</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-timing" style="color:var(--red)">&#9679; PR 提交后</div>
+        <div class="layer-content">
+          <h4>CI 全量检查</h4>
+          <p>6 个并行 Job：前端 lint、后端 lint、类型检查、前端测试、后端测试、构建</p>
+        </div>
+        <div class="layer-tools">
+          <span class="tool-chip">GitHub Actions</span>
+          <span class="tool-chip">Vitest</span>
+          <span class="tool-chip">pytest</span>
+          <span class="tool-chip">tsc</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="layer-timing" style="color:var(--purple)">&#9679; 合并到 main</div>
+        <div class="layer-content">
+          <h4>自动部署 + Smoke Test</h4>
+          <p>Staging 自动部署并运行健康检查；Production 需手动确认后部署</p>
+        </div>
+        <div class="layer-tools">
+          <span class="tool-chip">Cloud Run</span>
+          <span class="tool-chip">Docker</span>
+          <span class="tool-chip">curl /health</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMMIT FLOW (SVG) ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Commit Flow</div>
+    <div class="section-title">一次提交经历的完整流程</div>
+    <p class="section-desc">从 <code>git commit</code> 到代码上线的每一步自动化检查。</p>
+
+    <div class="flow-container">
+      <svg viewBox="0 0 1100 320" width="100%" height="320" xmlns="http://www.w3.org/2000/svg">
+        <!-- Boxes -->
+        <g>
+          <!-- git commit -->
+          <rect x="10" y="120" width="120" height="56" rx="10" fill="#1e2230" stroke="#6c8aff" stroke-width="1.5"/>
+          <text x="70" y="153" text-anchor="middle" fill="#e4e6ed" font-size="13" font-weight="600">git commit</text>
+
+          <!-- lint-staged -->
+          <rect x="170" y="40" width="130" height="56" rx="10" fill="#1e2230" stroke="#34d399" stroke-width="1.5"/>
+          <text x="235" y="63" text-anchor="middle" fill="#34d399" font-size="10" font-weight="600">PRE-COMMIT</text>
+          <text x="235" y="80" text-anchor="middle" fill="#e4e6ed" font-size="12">lint-staged</text>
+
+          <!-- ESLint fix -->
+          <rect x="170" y="108" width="130" height="40" rx="8" fill="#1e2230" stroke="#2a2e3b" stroke-width="1"/>
+          <text x="235" y="132" text-anchor="middle" fill="#8b8fa3" font-size="11">ESLint --fix</text>
+
+          <!-- Prettier -->
+          <rect x="170" y="158" width="130" height="40" rx="8" fill="#1e2230" stroke="#2a2e3b" stroke-width="1"/>
+          <text x="235" y="182" text-anchor="middle" fill="#8b8fa3" font-size="11">Prettier --write</text>
+
+          <!-- Ruff -->
+          <rect x="170" y="208" width="130" height="40" rx="8" fill="#1e2230" stroke="#2a2e3b" stroke-width="1"/>
+          <text x="235" y="232" text-anchor="middle" fill="#8b8fa3" font-size="11">Ruff (Python)</text>
+
+          <!-- commitlint -->
+          <rect x="340" y="120" width="130" height="56" rx="10" fill="#1e2230" stroke="#fbbf24" stroke-width="1.5"/>
+          <text x="405" y="143" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">COMMIT-MSG</text>
+          <text x="405" y="160" text-anchor="middle" fill="#e4e6ed" font-size="12">commitlint</text>
+
+          <!-- Committed! -->
+          <rect x="510" y="120" width="100" height="56" rx="10" fill="#1e2230" stroke="#34d399" stroke-width="1.5"/>
+          <text x="560" y="148" text-anchor="middle" fill="#34d399" font-size="12" font-weight="600">Committed</text>
+          <text x="560" y="164" text-anchor="middle" fill="#34d399" font-size="18">&#10003;</text>
+
+          <!-- Push + PR -->
+          <rect x="650" y="120" width="100" height="56" rx="10" fill="#1e2230" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="700" y="148" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">PUSH</text>
+          <text x="700" y="163" text-anchor="middle" fill="#e4e6ed" font-size="12">Open PR</text>
+
+          <!-- CI -->
+          <rect x="790" y="40" width="120" height="240" rx="10" fill="#1e2230" stroke="#f87171" stroke-width="1.5"/>
+          <text x="850" y="63" text-anchor="middle" fill="#f87171" font-size="10" font-weight="600">CI CHECKS</text>
+          <text x="850" y="95" text-anchor="middle" fill="#8b8fa3" font-size="11">Lint</text>
+          <text x="850" y="120" text-anchor="middle" fill="#8b8fa3" font-size="11">Lint Backend</text>
+          <text x="850" y="145" text-anchor="middle" fill="#8b8fa3" font-size="11">Type Check</text>
+          <text x="850" y="170" text-anchor="middle" fill="#8b8fa3" font-size="11">Test Frontend</text>
+          <text x="850" y="195" text-anchor="middle" fill="#8b8fa3" font-size="11">Test Backend</text>
+          <text x="850" y="220" text-anchor="middle" fill="#8b8fa3" font-size="11">Build</text>
+          <text x="850" y="260" text-anchor="middle" fill="#34d399" font-size="14">&#10003; all pass</text>
+
+          <!-- Merge -->
+          <rect x="950" y="60" width="110" height="56" rx="10" fill="#1e2230" stroke="#34d399" stroke-width="1.5"/>
+          <text x="1005" y="88" text-anchor="middle" fill="#34d399" font-size="12" font-weight="600">Merge &#8594; main</text>
+          <text x="1005" y="105" text-anchor="middle" fill="#8b8fa3" font-size="10">1 approval</text>
+
+          <!-- Deploy -->
+          <rect x="950" y="200" width="110" height="56" rx="10" fill="#1e2230" stroke="#22d3ee" stroke-width="1.5"/>
+          <text x="1005" y="223" text-anchor="middle" fill="#22d3ee" font-size="10" font-weight="600">AUTO DEPLOY</text>
+          <text x="1005" y="240" text-anchor="middle" fill="#e4e6ed" font-size="12">Staging</text>
+        </g>
+
+        <!-- Arrows -->
+        <g fill="none" stroke="#2a2e3b" stroke-width="1.5" marker-end="url(#arrow)">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b8fa3"/>
+            </marker>
+          </defs>
+          <line x1="130" y1="148" x2="170" y2="68"/>
+          <line x1="130" y1="148" x2="170" y2="128"/>
+          <line x1="130" y1="148" x2="170" y2="178"/>
+          <line x1="130" y1="148" x2="170" y2="228"/>
+          <line x1="300" y1="68" x2="340" y2="140"/>
+          <line x1="300" y1="128" x2="340" y2="146"/>
+          <line x1="300" y1="178" x2="340" y2="152"/>
+          <line x1="300" y1="228" x2="340" y2="158"/>
+          <line x1="470" y1="148" x2="510" y2="148"/>
+          <line x1="610" y1="148" x2="650" y2="148"/>
+          <line x1="750" y1="148" x2="790" y2="148"/>
+          <line x1="910" y1="88" x2="950" y2="88"/>
+          <line x1="1005" y1="116" x2="1005" y2="200"/>
+        </g>
+
+        <!-- fail paths -->
+        <g fill="none" stroke="#f87171" stroke-width="1" stroke-dasharray="4,4">
+          <path d="M 235 258 L 235 295 L 70 295 L 70 178" marker-end="url(#arrowRed)"/>
+          <text x="150" y="290" fill="#f87171" font-size="10" text-anchor="middle">fix &amp; retry</text>
+          <path d="M 405 176 L 405 295 L 70 295" />
+          <defs>
+            <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#f87171"/>
+            </marker>
+          </defs>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 PHASES ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Implementation Phases</div>
+    <div class="section-title">八阶段实施体系</div>
+    <p class="section-desc">点击展开查看每个阶段涉及的配置文件。</p>
+
+    <div class="phases-grid">
+
+      <div class="phase-card" onclick="this.classList.toggle('open')">
+        <div class="phase-header">
+          <div class="phase-num" style="background:var(--accent-glow); color:var(--accent)">1</div>
+          <div class="phase-title">代码格式与质量</div>
+        </div>
+        <ul class="phase-items">
+          <li style="--dot:var(--accent)"><span>EditorConfig — 编辑器基础设置统一</span></li>
+          <li style="--dot:var(--accent)"><span>Prettier — 前端代码自动格式化</span></li>
+          <li style="--dot:var(--accent)"><span>ESLint flat config — TypeScript + React 静态分析</span></li>
+          <li style="--dot:var(--accent)"><span>Ruff — Python lint + format (替代 flake8 + black + isort)</span></li>
+        </ul>
+        <div class="phase-detail">
+          <div class="file-list">
+            <span class="file-tag">.editorconfig</span>
+            <span class="file-tag">.prettierrc</span>
+            <span class="file-tag">.prettierignore</span>
+            <span class="file-tag">eslint.config.js</span>
+            <span class="file-tag">pyproject.toml [tool.ruff]</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card" onclick="this.classList.toggle('open')">
+        <div class="phase-header">
+          <div class="phase-num" style="background:var(--green-dim); color:var(--green)">2</div>
+          <div class="phase-title">Git Hooks 与提交规范</div>
+        </div>
+        <ul class="phase-items">
+          <li><span>husky — Git hook 管理器</span></li>
+          <li><span>lint-staged — 只对暂存文件运行检查</span></li>
+          <li><span>commitlint — Conventional Commits 格式强制</span></li>
+          <li><span>PR Template — 标准化 Pull Request 描述</span></li>
+        </ul>
+        <div class="phase-detail">
+          <div class="file-list">
+            <span class="file-tag">.husky/pre-commit</span>
+            <span class="file-tag">.husky/commit-msg</span>
+            <span class="file-tag">commitlint.config.js</span>
+            <span class="file-tag">.github/pull_request_template.md</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card" onclick="this.classList.toggle('open')">
+        <div class="phase-header">
+          <div class="phase-num" style="background:var(--yellow-dim); color:var(--yellow)">3</div>
+          <div class="phase-title">前端测试 (Vitest)</div>
+        </div>
+        <ul class="phase-items">
+          <li><span>Vitest 4 — 基于 Vite 的极速测试框架</span></li>
+          <li><span>React Testing Library — 组件行为测试</span></li>
+          <li><span>Workspace 配置 — 多包统一运行</span></li>
+          <li><span>Coverage v8 — 覆盖率报告 (target: 50%)</span></li>
+        </ul>
+        <div class="phase-detail">
+          <div class="file-list">
+            <span class="file-tag">vitest.config.ts</span>
+            <span class="file-tag">packages/*/vitest.config.ts</span>
+            <span class="file-tag">packages/*/src/test/setup.ts</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card" onclick="this.classList.toggle('open')">
+        <div class="phase-header">
+          <div class="phase-num" style="background:var(--red-dim); color:var(--red)">4</div>
+          <div class="phase-title">后端测试 (pytest)</div>
+        </div>
+        <ul class="phase-items">
+          <li><span>pytest markers — unit / integration / e2e / slow 分类</span></li>
+          <li><span>pytest-cov — 覆盖率 (target: 60%, fail_under)</span></li>
+          <li><span>pytest-asyncio — 异步测试支持</span></li>
+          <li><span>SQLite in-memory — 测试用内存数据库</span></li>
+        </ul>
+        <div class="phase-detail">
+          <div class="file-list">
+            <span class="file-tag">pyproject.toml [tool.pytest]</span>
+            <span class="file-tag">pyproject.toml [tool.coverage]</span>
+            <span class="file-tag">tests/conftest.py</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card" onclick="this.classList.toggle('open')">
+        <div class="phase-header">
+          <div class="phase-num" style="background:var(--purple-dim); color:var(--purple)">5</div>
+          <div class="phase-title">CI 持续集成</div>
+        </div>
+        <ul class="phase-items">
+          <li><span>PR 触发 — 6 个并行检查 Job</span></li>
+          <li><span>Concurrency — 同分支只保留最新 run</span></li>
+          <li><span>Coverage artifacts — 覆盖率报告上传</span></li>
+          <li><span>Branch protection — 全部通过才可合并</span></li>
+        </ul>
+        <div class="phase-detail">
+          <div class="file-list">
+            <span class="file-tag">.github/workflows/ci.yml</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card" onclick="this.classList.toggle('open')">
+        <div class="phase-header">
+          <div class="phase-num" style="background:var(--cyan-dim); color:var(--cyan)">6</div>
+          <div class="phase-title">CD 持续部署</div>
+        </div>
+        <ul class="phase-items">
+          <li><span>Staging — push to main 自动部署</span></li>
+          <li><span>Production — workflow_dispatch 手动确认</span></li>
+          <li><span>Image promotion — staging 镜像直推 production</span></li>
+          <li><span>Smoke test — 部署后自动健康检查</span></li>
+        </ul>
+        <div class="phase-detail">
+          <div class="file-list">
+            <span class="file-tag">.github/workflows/deploy-staging.yml</span>
+            <span class="file-tag">.github/workflows/deploy-production.yml</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card" onclick="this.classList.toggle('open')">
+        <div class="phase-header">
+          <div class="phase-num" style="background:rgba(236,72,153,0.12); color:#ec4899">7</div>
+          <div class="phase-title">E2E 测试 + 文档 + Review</div>
+        </div>
+        <ul class="phase-items">
+          <li><span>Playwright — 浏览器端到端测试</span></li>
+          <li><span>文档结构 — guides / adr / api / specs</span></li>
+          <li><span>CODEOWNERS — 自动分配代码审查者</span></li>
+          <li><span>CLAUDE.md — AI Agent 上下文指引</span></li>
+        </ul>
+        <div class="phase-detail">
+          <div class="file-list">
+            <span class="file-tag">playwright.config.ts</span>
+            <span class="file-tag">e2e/</span>
+            <span class="file-tag">docs/guides/*.md</span>
+            <span class="file-tag">docs/adr/*.md</span>
+            <span class="file-tag">.github/CODEOWNERS</span>
+            <span class="file-tag">CLAUDE.md</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="phase-card" onclick="this.classList.toggle('open')">
+        <div class="phase-header">
+          <div class="phase-num" style="background:rgba(251,146,60,0.12); color:#fb923c">8</div>
+          <div class="phase-title">熵管理 (Entropy Management)</div>
+        </div>
+        <ul class="phase-items">
+          <li><span>Dependabot — 依赖自动更新 (npm + pip + actions)</span></li>
+          <li><span>knip — 死代码 / 未使用依赖检测</span></li>
+          <li><span>Entropy Scan — 每周定时扫描 TODO/FIXME/HACK</span></li>
+          <li><span>技术债可视化 — GitHub Step Summary 报告</span></li>
+        </ul>
+        <div class="phase-detail">
+          <div class="file-list">
+            <span class="file-tag">.github/dependabot.yml</span>
+            <span class="file-tag">knip.config.ts</span>
+            <span class="file-tag">.github/workflows/entropy-scan.yml</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ RULES MATRIX ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Rules Matrix</div>
+    <div class="section-title">规则执行矩阵</div>
+    <p class="section-desc">每条规则的执行方式、严格程度和当前策略。</p>
+
+    <table class="rules-table">
+      <thead>
+        <tr>
+          <th>规则</th>
+          <th>工具</th>
+          <th>触发时机</th>
+          <th>当前策略</th>
+          <th>执行方式</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>代码缩进 / 换行</td>
+          <td class="tool">EditorConfig + Prettier</td>
+          <td>编辑器保存 + pre-commit</td>
+          <td><span class="badge-green">自动修复</span></td>
+          <td class="enforcement">Auto-fix</td>
+        </tr>
+        <tr>
+          <td>未使用变量</td>
+          <td class="tool">@typescript-eslint/no-unused-vars</td>
+          <td>pre-commit + CI</td>
+          <td><span class="badge-yellow">warn</span></td>
+          <td class="enforcement">警告 (渐进)</td>
+        </tr>
+        <tr>
+          <td>any 类型使用</td>
+          <td class="tool">@typescript-eslint/no-explicit-any</td>
+          <td>pre-commit + CI</td>
+          <td><span class="badge-yellow">warn</span></td>
+          <td class="enforcement">警告 (渐进)</td>
+        </tr>
+        <tr>
+          <td>React Hooks 规则</td>
+          <td class="tool">react-hooks/rules-of-hooks</td>
+          <td>pre-commit + CI</td>
+          <td><span class="badge-yellow">warn</span></td>
+          <td class="enforcement">警告 (渐进)</td>
+        </tr>
+        <tr>
+          <td>Python import 排序</td>
+          <td class="tool">Ruff (I)</td>
+          <td>pre-commit + CI</td>
+          <td><span class="badge-green">自动修复</span></td>
+          <td class="enforcement">Auto-fix</td>
+        </tr>
+        <tr>
+          <td>Python 常见 Bug</td>
+          <td class="tool">Ruff (B, SIM)</td>
+          <td>pre-commit + CI</td>
+          <td><span class="badge-red">error</span></td>
+          <td class="enforcement">阻断</td>
+        </tr>
+        <tr>
+          <td>提交消息格式</td>
+          <td class="tool">commitlint</td>
+          <td>commit-msg hook</td>
+          <td><span class="badge-red">error</span></td>
+          <td class="enforcement">阻断提交</td>
+        </tr>
+        <tr>
+          <td>Scope 范围</td>
+          <td class="tool">commitlint scope-enum</td>
+          <td>commit-msg hook</td>
+          <td><span class="badge-red">error</span></td>
+          <td class="enforcement">阻断提交</td>
+        </tr>
+        <tr>
+          <td>TypeScript 类型错误</td>
+          <td class="tool">tsc --noEmit</td>
+          <td>CI</td>
+          <td><span class="badge-red">error</span></td>
+          <td class="enforcement">阻断合并</td>
+        </tr>
+        <tr>
+          <td>前端测试通过</td>
+          <td class="tool">Vitest</td>
+          <td>CI</td>
+          <td><span class="badge-red">error</span></td>
+          <td class="enforcement">阻断合并</td>
+        </tr>
+        <tr>
+          <td>后端测试覆盖率</td>
+          <td class="tool">pytest-cov (fail_under=60)</td>
+          <td>CI</td>
+          <td><span class="badge-red">error</span></td>
+          <td class="enforcement">阻断合并</td>
+        </tr>
+        <tr>
+          <td>构建成功</td>
+          <td class="tool">turbo build</td>
+          <td>CI</td>
+          <td><span class="badge-red">error</span></td>
+          <td class="enforcement">阻断合并</td>
+        </tr>
+        <tr>
+          <td>死代码检测</td>
+          <td class="tool">knip</td>
+          <td>每周一 9:00 UTC</td>
+          <td><span class="badge-purple">info</span></td>
+          <td class="enforcement">信息性报告</td>
+        </tr>
+        <tr>
+          <td>依赖更新</td>
+          <td class="tool">Dependabot</td>
+          <td>每周一自动 PR</td>
+          <td><span class="badge-purple">info</span></td>
+          <td class="enforcement">自动提 PR</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ GRADUAL UPGRADE ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Gradual Adoption</div>
+    <div class="section-title">渐进式升级路线</div>
+    <p class="section-desc">ESLint 规则从 <code>warn</code> 逐步升级为 <code>error</code> 的计划路径。</p>
+
+    <div class="upgrade-timeline">
+      <div class="upgrade-step done">
+        <h4>Phase 0 — 初始化 <span class="badge-green">已完成</span></h4>
+        <p>所有规则设为 <code>warn</code>，不阻断任何流程。团队零摩擦适应。</p>
+      </div>
+      <div class="upgrade-step current">
+        <h4>Phase 1 — 当前状态 <span class="badge-yellow">进行中</span></h4>
+        <p>118 个 warnings（0 error）。开发者在编辑器中看到提示，但不影响提交和 CI。</p>
+      </div>
+      <div class="upgrade-step future">
+        <h4>Phase 2 — 收紧高优先级规则</h4>
+        <p>将 <code>no-unused-vars</code> 和 <code>rules-of-hooks</code> 升级为 <code>error</code>。修复现有违规后执行。</p>
+      </div>
+      <div class="upgrade-step future">
+        <h4>Phase 3 — 收紧类型安全</h4>
+        <p>将 <code>no-explicit-any</code> 升级为 <code>error</code>。逐步消除所有 <code>any</code> 使用。</p>
+      </div>
+      <div class="upgrade-step future">
+        <h4>Phase 4 — 全面 error</h4>
+        <p>所有规则升级为 <code>error</code>。零 warning 策略。CI 全面阻断。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOOL STACK ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Tool Stack</div>
+    <div class="section-title">工具栈一览</div>
+    <p class="section-desc">当前配置使用的全部工具及版本。</p>
+
+    <div class="stack-map">
+      <div class="stack-group">
+        <h4>&#128295; 代码质量</h4>
+        <div class="stack-item"><span class="name">Prettier</span><span class="ver">^3.8</span></div>
+        <div class="stack-item"><span class="name">ESLint</span><span class="ver">^10.2</span></div>
+        <div class="stack-item"><span class="name">typescript-eslint</span><span class="ver">^8.58</span></div>
+        <div class="stack-item"><span class="name">eslint-config-prettier</span><span class="ver">^10.1</span></div>
+        <div class="stack-item"><span class="name">eslint-plugin-react-hooks</span><span class="ver">^7.0</span></div>
+        <div class="stack-item"><span class="name">eslint-plugin-react-refresh</span><span class="ver">^0.5</span></div>
+        <div class="stack-item"><span class="name">Ruff</span><span class="ver">^0.15</span></div>
+      </div>
+      <div class="stack-group">
+        <h4>&#128736; Git 工作流</h4>
+        <div class="stack-item"><span class="name">husky</span><span class="ver">^9.1</span></div>
+        <div class="stack-item"><span class="name">lint-staged</span><span class="ver">^16.4</span></div>
+        <div class="stack-item"><span class="name">@commitlint/cli</span><span class="ver">^20.5</span></div>
+        <div class="stack-item"><span class="name">@commitlint/config-conventional</span><span class="ver">^20.5</span></div>
+      </div>
+      <div class="stack-group">
+        <h4>&#128300; 测试</h4>
+        <div class="stack-item"><span class="name">Vitest</span><span class="ver">^4.1</span></div>
+        <div class="stack-item"><span class="name">@vitest/coverage-v8</span><span class="ver">^4.1</span></div>
+        <div class="stack-item"><span class="name">@testing-library/react</span><span class="ver">^16.3</span></div>
+        <div class="stack-item"><span class="name">@testing-library/jest-dom</span><span class="ver">^6.9</span></div>
+        <div class="stack-item"><span class="name">@playwright/test</span><span class="ver">^1.59</span></div>
+        <div class="stack-item"><span class="name">knip</span><span class="ver">^6.3</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONVENTIONAL COMMITS ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Commit Convention</div>
+    <div class="section-title">提交消息规范</div>
+    <p class="section-desc">所有提交必须遵循 Conventional Commits 格式，由 commitlint 自动强制执行。</p>
+
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px; margin-bottom:24px;">
+      <div style="text-align:center; margin-bottom:24px;">
+        <span style="font-family:'SF Mono',monospace; font-size:20px; color:var(--accent)">
+          &lt;type&gt;(<span style="color:var(--yellow)">scope</span>): <span style="color:var(--green)">subject</span>
+        </span>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+        <div>
+          <h4 style="font-size:12px; color:var(--accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Type (必填)</h4>
+          <div style="display:flex; flex-direction:column; gap:4px; font-size:13px;">
+            <div><code style="color:var(--accent)">feat</code> <span style="color:var(--text-dim)">— 新功能</span></div>
+            <div><code style="color:var(--accent)">fix</code> <span style="color:var(--text-dim)">— Bug 修复</span></div>
+            <div><code style="color:var(--accent)">refactor</code> <span style="color:var(--text-dim)">— 重构</span></div>
+            <div><code style="color:var(--accent)">docs</code> <span style="color:var(--text-dim)">— 文档</span></div>
+            <div><code style="color:var(--accent)">test</code> <span style="color:var(--text-dim)">— 测试</span></div>
+            <div><code style="color:var(--accent)">chore</code> <span style="color:var(--text-dim)">— 构建/工具</span></div>
+            <div><code style="color:var(--accent)">ci</code> <span style="color:var(--text-dim)">— CI/CD</span></div>
+            <div><code style="color:var(--accent)">style</code> <span style="color:var(--text-dim)">— 格式</span></div>
+          </div>
+        </div>
+        <div>
+          <h4 style="font-size:12px; color:var(--yellow); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Scope (建议填写)</h4>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <span class="file-tag">app</span>
+            <span class="file-tag">admin</span>
+            <span class="file-tag">landing</span>
+            <span class="file-tag">player</span>
+            <span class="file-tag">shared</span>
+            <span class="file-tag">backend</span>
+            <span class="file-tag">gpu-worker</span>
+            <span class="file-tag">infra</span>
+            <span class="file-tag">docs</span>
+          </div>
+        </div>
+        <div>
+          <h4 style="font-size:12px; color:var(--green); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Subject 规则</h4>
+          <div style="font-size:13px; color:var(--text-dim); line-height:1.8;">
+            <div>&#10003; 小写字母开头</div>
+            <div>&#10003; 不以句号结尾</div>
+            <div>&#10003; 祈使语气 (add, fix, update)</div>
+            <div>&#10003; &le; 72 字符</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--border);">
+        <h4 style="font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">示例</h4>
+        <div style="display:flex; flex-direction:column; gap:6px; font-family:'SF Mono',monospace; font-size:12px;">
+          <div><span style="color:var(--green)">&#10003;</span> <code>feat(app): add dark mode toggle</code></div>
+          <div><span style="color:var(--green)">&#10003;</span> <code>fix(backend): resolve auth token expiry bug</code></div>
+          <div><span style="color:var(--green)">&#10003;</span> <code>chore(infra): update CI workflow for Node 20</code></div>
+          <div><span style="color:var(--red)">&#10007;</span> <code style="text-decoration:line-through; opacity:0.5">updated the login page</code> <span style="color:var(--text-dim)"> — 缺少 type 和 scope</span></div>
+          <div><span style="color:var(--red)">&#10007;</span> <code style="text-decoration:line-through; opacity:0.5">feat: Add New Feature.</code> <span style="color:var(--text-dim)"> — 大写开头 + 句号结尾</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DEPLOYMENT MODEL ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Deployment Model</div>
+    <div class="section-title">部署模型</div>
+    <p class="section-desc">GitHub Flow + GCP Cloud Run 的两阶段部署策略。</p>
+
+    <div style="display:grid; grid-template-columns: 1fr 60px 1fr; gap:0; align-items:start;">
+      <!-- Staging -->
+      <div style="background:var(--surface); border:1px solid var(--green); border-radius:var(--radius); padding:28px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+          <div style="width:10px; height:10px; border-radius:50%; background:var(--green);"></div>
+          <h4 style="font-size:16px; font-weight:600;">Staging</h4>
+          <span class="badge-green">自动</span>
+        </div>
+        <div style="font-size:13px; color:var(--text-dim); line-height:2;">
+          <div><strong>触发：</strong>push to <code>main</code></div>
+          <div><strong>流程：</strong>Build Docker &#8594; Push Registry &#8594; Deploy Cloud Run &#8594; Smoke Test</div>
+          <div><strong>回滚：</strong><code>gcloud run services update-traffic</code></div>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div style="text-align:center; padding-top:40px;">
+        <span style="font-size:24px; color:var(--text-dim)">&#8594;</span>
+      </div>
+
+      <!-- Production -->
+      <div style="background:var(--surface); border:1px solid var(--red); border-radius:var(--radius); padding:28px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+          <div style="width:10px; height:10px; border-radius:50%; background:var(--red);"></div>
+          <h4 style="font-size:16px; font-weight:600;">Production</h4>
+          <span class="badge-red">手动</span>
+        </div>
+        <div style="font-size:13px; color:var(--text-dim); line-height:2;">
+          <div><strong>触发：</strong>workflow_dispatch + 输入 "deploy" 确认</div>
+          <div><strong>流程：</strong>Pull staging-latest &#8594; Re-tag &#8594; Deploy Cloud Run &#8594; Smoke Test</div>
+          <div><strong>安全：</strong>双重确认 (input + environment protection)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ENTROPY ============ -->
+<section>
+  <div class="container">
+    <div class="section-label">Entropy Management</div>
+    <div class="section-title">熵管理机制</div>
+    <p class="section-desc">代码库的复杂度和技术债会随时间自然增长。通过定期自动化扫描来监控和控制这种增长。</p>
+
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px;">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px;">
+        <div style="font-size:28px; margin-bottom:12px;">&#128230;</div>
+        <h4 style="font-size:14px; font-weight:600; margin-bottom:8px;">依赖更新</h4>
+        <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px;">Dependabot 每周一自动扫描 npm / pip / GitHub Actions 依赖，提交更新 PR。</p>
+        <div style="display:flex; gap:6px;">
+          <span class="badge-green">自动 PR</span>
+          <span class="file-tag">每周一</span>
+        </div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px;">
+        <div style="font-size:28px; margin-bottom:12px;">&#128465;</div>
+        <h4 style="font-size:14px; font-weight:600; margin-bottom:8px;">死代码检测</h4>
+        <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px;">knip 扫描未使用的文件、依赖和导出。Entropy Scan workflow 每周运行并生成报告。</p>
+        <div style="display:flex; gap:6px;">
+          <span class="badge-purple">信息性</span>
+          <span class="file-tag">每周一</span>
+        </div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px;">
+        <div style="font-size:28px; margin-bottom:12px;">&#128203;</div>
+        <h4 style="font-size:14px; font-weight:600; margin-bottom:8px;">技术债追踪</h4>
+        <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px;">自动统计代码中 TODO / FIXME / HACK 的数量变化趋势，写入 GitHub Step Summary。</p>
+        <div style="display:flex; gap:6px;">
+          <span class="badge-purple">信息性</span>
+          <span class="file-tag">每周一</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container">
+    <p>Harness Engineering Standard &middot; v1.0 &middot; 2026-04-05</p>
+    <p style="margin-top:4px;">基于 OpenAI Harness Engineering + Anthropic Harness Design 最佳实践</p>
+  </div>
+</footer>
+
+</body>
+</html>

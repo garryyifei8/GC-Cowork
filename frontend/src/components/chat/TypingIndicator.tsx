@@ -10,12 +10,12 @@ export const TypingIndicator: React.FC = () => (
 
     {/* Body */}
     <div className="flex flex-col gap-1">
-      <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary font-medium pl-0.5">
+      <span className="text-xs text-light-text-secondary font-medium pl-0.5">
         Agent 正在思考...
       </span>
 
       {/* Bubble */}
-      <div className="inline-flex items-center bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
+      <div className="inline-flex items-center bg-light-surface border border-light-border rounded-2xl rounded-bl-none px-4 py-3 shadow-sm">
         <div className="flex items-center gap-1">
           {[0, 1, 2].map((i) => (
             <span

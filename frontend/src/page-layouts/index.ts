@@ -1,0 +1,8 @@
+export { overviewLayout } from './overview'
+export { tasksLayout } from './tasks'
+export { projectsLayout } from './projects'
+export { projectDetailLayout } from './projectDetail'
+export { hrLayout } from './hr'
+export { financeLayout } from './finance'
+export { knowledgeLayout } from './knowledge'
+export { dailyLayout } from './daily'

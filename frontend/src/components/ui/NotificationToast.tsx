@@ -47,7 +47,7 @@ const ToastItem: React.FC<{ notification: Notification; onDismiss: (id: string) 
 
   return (
     <div
-      className={`bg-light-surface dark:bg-dark-surface rounded-xl shadow-lg border border-light-border dark:border-dark-border border-l-4 ${BORDER_ACCENT[notification.type]} p-3 px-4 min-w-72 flex items-start gap-2.5 pointer-events-auto transition-all duration-300 ${
+      className={`bg-light-surface rounded-[10px] shadow-lg border border-light-border border-l-4 ${BORDER_ACCENT[notification.type]} p-3 px-4 min-w-72 flex items-start gap-2.5 pointer-events-auto transition-all duration-300 ${
         exiting ? 'opacity-0 translate-x-full' : 'opacity-100 translate-x-0'
       }`}
       role="alert"
@@ -56,13 +56,13 @@ const ToastItem: React.FC<{ notification: Notification; onDismiss: (id: string) 
         {ICON_MAP[notification.type]}
       </div>
       <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-        <span className="text-[0.8125rem] font-semibold">{notification.title}</span>
-        <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary leading-snug">
+        <span className="text-[0.8125rem] font-medium">{notification.title}</span>
+        <span className="text-xs text-light-text-secondary leading-snug">
           {notification.message}
         </span>
       </div>
       <button
-        className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary bg-transparent border-none cursor-pointer transition-colors duration-150 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200"
+        className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-light-text-secondary bg-transparent border-none cursor-pointer transition-colors duration-150 hover:bg-[#ecedf5] hover:text-light-text"
         onClick={handleClose}
         aria-label="关闭"
       >

@@ -25,7 +25,6 @@ class TestPrompts:
             AgentType.LEGAL: "法务",
             AgentType.PROCUREMENT: "采购",
             AgentType.HR: "人事",
-            AgentType.BIDDING: "投标",
             AgentType.DOCUMENT: "文档",
             AgentType.KNOWLEDGE: "知识",
         }

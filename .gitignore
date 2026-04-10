@@ -16,6 +16,10 @@
 .ralph/docs/generated/*
 !.ralph/docs/generated/.gitkeep
 
+# Environment files (contains API keys)
+.env
+.env.local
+
 # General logs
 *.log
 
@@ -45,3 +49,28 @@ target/
 
 # Ralph backup directories (created by migration)
 .ralph_backup_*
+
+# Test coverage
+.coverage
+htmlcov/
+coverage/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+
+# Browser automation debug artifacts
+.playwright-mcp/
+
+# Brainstorm sessions
+.superpowers/
+
+# Claude Code
+.claude/
+
+# Screenshots (dev artifacts)
+*.png
+
+# Marketing videos (too large for git)
+doc/marketing/videos/

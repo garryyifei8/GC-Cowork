@@ -144,9 +144,9 @@ class TestProjectAgentHandle:
 
         assert len(response.cards) == 1
         card = response.cards[0]
-        # Alert maps to DATA enum since CardType has no ALERT member
-        assert card.card_type == CardType.DATA
-        # severity marker is injected for alert cards
+        # Alert is a first-class CardType — maps to ALERT
+        assert card.card_type == CardType.ALERT
+        # severity marker is injected for alert cards that don't already have one
         assert card.data.get("severity") == "warning"
         assert card.data["project_id"] == "proj-002"
 
@@ -349,11 +349,11 @@ class TestParseCards:
         cards = agent._parse_cards(raw)
         assert cards[0].card_type == CardType.FILE
 
-    def test_parse_alert_card_maps_to_data(self):
+    def test_parse_alert_card_maps_to_alert(self):
         agent = self._agent()
         raw = [{"card_type": "alert", "title": "Alert", "data": {}, "actions": []}]
         cards = agent._parse_cards(raw)
-        assert cards[0].card_type == CardType.DATA
+        assert cards[0].card_type == CardType.ALERT
         assert cards[0].data["severity"] == "warning"
 
     def test_parse_unknown_type_defaults_to_data(self):

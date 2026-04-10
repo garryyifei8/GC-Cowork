@@ -108,3 +108,54 @@ class TestChatMessage:
         )
         assert resp1.json()["session_id"] == session_id
         assert resp2.json()["session_id"] == session_id
+
+
+class TestChatValidation:
+    """API-012/014: Chat input validation."""
+
+    def test_empty_message_returns_422(self):
+        resp = client.post(
+            "/api/chat/message",
+            json={"user_id": "user_v1", "message": ""},
+        )
+        assert resp.status_code == 422
+
+    def test_blank_message_returns_422(self):
+        resp = client.post(
+            "/api/chat/message",
+            json={"user_id": "user_v2", "message": "   "},
+        )
+        assert resp.status_code == 422
+
+    def test_missing_user_id_returns_422(self):
+        resp = client.post(
+            "/api/chat/message",
+            json={"message": "hello"},
+        )
+        assert resp.status_code == 422
+
+    def test_overlong_message_returns_422(self):
+        resp = client.post(
+            "/api/chat/message",
+            json={"user_id": "user_v3", "message": "a" * 5000},
+        )
+        assert resp.status_code == 422
+
+    def test_simple_chat_empty_message_422(self):
+        resp = client.post("/api/chat", json={"message": ""})
+        assert resp.status_code == 422
+
+    def test_simple_chat_overlong_422(self):
+        resp = client.post("/api/chat", json={"message": "x" * 5000})
+        assert resp.status_code == 422
+
+
+class TestChatHealth:
+    """Chat health endpoint."""
+
+    def test_chat_health(self):
+        resp = client.get("/api/chat/health")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "status" in data
+        assert "provider" in data

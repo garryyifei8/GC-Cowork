@@ -54,7 +54,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
           </h3>
 
           {this.state.error?.message && (
-            <p className="m-0 text-sm text-light-text-secondary dark:text-dark-text-secondary max-w-sm leading-relaxed">
+            <p className="m-0 text-sm text-light-text-secondary max-w-sm leading-relaxed">
               {this.state.error.message}
             </p>
           )}
