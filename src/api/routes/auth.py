@@ -22,7 +22,6 @@ async def login(req: LoginRequest):
     if not user:
         raise PlatformError(
             "用户名或密码错误",
-            error_code="AUTH_FAILED",
             detail={"username": req.username},
         )
     token = create_token(

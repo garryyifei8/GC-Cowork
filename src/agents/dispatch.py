@@ -47,7 +47,7 @@ class DispatchAgent(BaseAgent):
                 metadata={"intent": intent.model_dump()},
             )
 
-        # Step 3: Route to specialized agent
+        # Step 3: Route to primary specialized agent
         from src.agents.registry import create_agent_registry, get_agent
 
         registry = create_agent_registry(self.llm_client)
@@ -55,6 +55,20 @@ class DispatchAgent(BaseAgent):
 
         response = await target_agent.handle(request)
         response.metadata["intent"] = intent.model_dump()
+
+        # Step 4: Execute secondary agents and merge their cards
+        if intent.secondary_agents:
+            for sec_type in intent.secondary_agents:
+                if sec_type == intent.primary_agent:
+                    continue  # skip duplicate
+                try:
+                    sec_agent = get_agent(registry, sec_type)
+                    sec_response = await sec_agent.handle(request)
+                    response.cards.extend(sec_response.cards)
+                    logger.info("Secondary agent %s returned %d cards", sec_type.value, len(sec_response.cards))
+                except Exception:
+                    logger.warning("Secondary agent %s failed", sec_type.value, exc_info=True)
+
         return response
 
     @staticmethod

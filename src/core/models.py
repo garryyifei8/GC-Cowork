@@ -24,11 +24,11 @@ class AgentType(str, Enum):
     LEGAL = "legal"  # 法务Agent
     PROCUREMENT = "procurement"  # 采购Agent
     HR = "hr"  # 人事Agent
-    BIDDING = "bidding"  # 投标Agent
     DOCUMENT = "document"  # 文档Agent
     KNOWLEDGE = "knowledge"  # 知识Agent
     PROCESS_CONTROL = "process_control"  # 过控Agent — 四控管理（进度/质量/安全/成本）
     SUPERVISION = "supervision"  # 监理Agent — 监理管理
+    AUDIT = "audit"  # 审计Agent — 审计报告分析与风险标注
 
 
 class MessageRole(str, Enum):
@@ -243,27 +243,6 @@ class ActivityEvent(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Bidding
-# ---------------------------------------------------------------------------
-
-
-class BiddingOpportunity(TimestampedModel):
-    """A bidding/tender opportunity."""
-
-    id: str = Field(default_factory=lambda: str(uuid4()))
-    title: str
-    source: str = ""
-    publish_date: str = ""
-    deadline: str = ""
-    budget_amount: str | None = None
-    region: str = ""
-    category: str = ""
-    status: str = "monitoring"
-    match_score: float = Field(ge=0.0, le=100.0, default=0.0)
-    project_id: str | None = None
-
-
-# ---------------------------------------------------------------------------
 # Documents
 # ---------------------------------------------------------------------------
 
@@ -280,6 +259,11 @@ class DocumentItem(TimestampedModel):
     author: str = ""
     status: str = "draft"
     category: str = "general"  # EPC分类: design/construction/quality/safety/completion/contract/change/general
+    storage_path: str | None = None
+    file_name: str | None = None
+    file_size: int | None = None
+    mime_type: str | None = None
+    file_url: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -538,3 +522,39 @@ class VehicleRequest(TimestampedModel):
     reason: str = ""
     status: ApprovalStatus = ApprovalStatus.PENDING
     approver: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Supplier (供应商管理)
+# ---------------------------------------------------------------------------
+
+
+class SupplierCategory(str, Enum):
+    MATERIAL = "material"  # 材料供应商
+    EQUIPMENT = "equipment"  # 设备供应商
+    SUBCONTRACT = "subcontract"  # 分包商
+    SERVICE = "service"  # 服务商
+    CONSULTING = "consulting"  # 咨询方
+
+
+class SupplierStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    BLACKLISTED = "blacklisted"
+
+
+class Supplier(TimestampedModel):
+    """供应商主数据"""
+
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    name: str  # 公司名称
+    category: SupplierCategory
+    contact_person: str = ""
+    phone: str = ""
+    email: str = ""
+    address: str = ""
+    qualification: str = ""  # 资质等级
+    rating: int = Field(default=0, ge=0, le=5)  # 评分 0-5
+    status: SupplierStatus = SupplierStatus.ACTIVE
+    projects: list[str] = Field(default_factory=list)  # 关联项目 ID
+    notes: str = ""

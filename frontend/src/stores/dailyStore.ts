@@ -86,7 +86,10 @@ function qs(params: Record<string, string | undefined>): string {
 }
 
 async function api<T>(url: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(url, opts);
+  const token = localStorage.getItem('access_token');
+  const headers: Record<string, string> = { ...(opts?.headers as Record<string, string>) };
+  if (token && !headers['Authorization']) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(url, { ...opts, headers });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
@@ -127,17 +130,23 @@ export const useDailyStore = create<DailyState>((set, get) => ({
   },
 
   fetchMyAttendance: async (dateFrom?: string, dateTo?: string) => {
-    const data = await api<AttendanceRecord[]>(`/api/hr/attendance${qs({ employee_id: CURRENT_USER_ID, date_from: dateFrom, date_to: dateTo })}`);
+    const data = await api<AttendanceRecord[]>(
+      `/api/hr/attendance${qs({ employee_id: CURRENT_USER_ID, date_from: dateFrom, date_to: dateTo })}`
+    );
     set({ myAttendance: data });
   },
 
   fetchMySalary: async (month?: string) => {
-    const data = await api<SalaryRecord[]>(`/api/hr/salary${qs({ employee_id: CURRENT_USER_ID, month })}`);
+    const data = await api<SalaryRecord[]>(
+      `/api/hr/salary${qs({ employee_id: CURRENT_USER_ID, month })}`
+    );
     set({ mySalary: data });
   },
 
   fetchMyExpenses: async () => {
-    const data = await api<ExpenseReport[]>(`/api/finance/expenses${qs({ submitter: CURRENT_USER_NAME })}`);
+    const data = await api<ExpenseReport[]>(
+      `/api/finance/expenses${qs({ submitter: CURRENT_USER_NAME })}`
+    );
     set({ myExpenses: data });
   },
 
@@ -156,7 +165,9 @@ export const useDailyStore = create<DailyState>((set, get) => ({
   },
 
   fetchMyVehicles: async () => {
-    const data = await api<VehicleRequest[]>(`/api/oa/vehicle-requests${qs({ applicant: CURRENT_USER_ID })}`);
+    const data = await api<VehicleRequest[]>(
+      `/api/oa/vehicle-requests${qs({ applicant: CURRENT_USER_ID })}`
+    );
     set({ myVehicles: data });
   },
 
@@ -173,7 +184,12 @@ export const useDailyStore = create<DailyState>((set, get) => ({
     await api('/api/finance/expenses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, submitter: CURRENT_USER_NAME, status: 'submitted', submit_date: new Date().toISOString().slice(0, 10) }),
+      body: JSON.stringify({
+        ...data,
+        submitter: CURRENT_USER_NAME,
+        status: 'submitted',
+        submit_date: new Date().toISOString().slice(0, 10),
+      }),
     });
     await get().fetchMyExpenses();
   },
@@ -181,7 +197,14 @@ export const useDailyStore = create<DailyState>((set, get) => ({
   parseReceipt: async (file: File) => {
     const form = new FormData();
     form.append('file', file);
-    const res = await fetch('/api/finance/expenses/parse-receipt', { method: 'POST', body: form });
+    const token = localStorage.getItem('access_token');
+    const uploadHeaders: Record<string, string> = {};
+    if (token) uploadHeaders['Authorization'] = `Bearer ${token}`;
+    const res = await fetch('/api/finance/expenses/parse-receipt', {
+      method: 'POST',
+      body: form,
+      headers: uploadHeaders,
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json() as Promise<ReceiptParseResult>;
   },
@@ -199,7 +222,10 @@ export const useDailyStore = create<DailyState>((set, get) => ({
     await api(`/api/hr/leaves/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: approved ? 'approved' : 'rejected', approver: CURRENT_USER_NAME }),
+      body: JSON.stringify({
+        status: approved ? 'approved' : 'rejected',
+        approver: CURRENT_USER_NAME,
+      }),
     });
     await get().fetchPendingApprovals();
   },
@@ -208,7 +234,10 @@ export const useDailyStore = create<DailyState>((set, get) => ({
     await api(`/api/finance/expenses/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: approved ? 'approved' : 'rejected', approver: CURRENT_USER_NAME }),
+      body: JSON.stringify({
+        status: approved ? 'approved' : 'rejected',
+        approver: CURRENT_USER_NAME,
+      }),
     });
     await get().fetchPendingApprovals();
   },
@@ -217,7 +246,10 @@ export const useDailyStore = create<DailyState>((set, get) => ({
     await api(`/api/oa/vehicle-requests/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: approved ? 'approved' : 'rejected', approver: CURRENT_USER_NAME }),
+      body: JSON.stringify({
+        status: approved ? 'approved' : 'rejected',
+        approver: CURRENT_USER_NAME,
+      }),
     });
     await get().fetchPendingApprovals();
   },

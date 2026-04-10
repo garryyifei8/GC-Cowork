@@ -1,37 +1,35 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Plus } from 'lucide-react'
-import { ViewSwitcher } from '../widgets/atomic'
-import { ProjectTable, ProjectKanban, GanttChart } from '../widgets/views'
-import { LoadingSpinner } from '../widgets/atomic'
-import { ProjectCreateDrawer } from '../components/projects/ProjectCreateDrawer'
-import { useProjectStore } from '../stores/projectStore'
-import { projectService } from '../services/api'
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
+import { ViewSwitcher } from '../widgets/atomic';
+import { ProjectTable, ProjectKanban, GanttChart } from '../widgets/views';
+import { LoadingSpinner } from '../widgets/atomic';
+import { ProjectCreateDrawer } from '../components/projects/ProjectCreateDrawer';
+import type { CreateProjectData } from '../components/projects/ProjectCreateDrawer';
+import { useProjectStore } from '../stores/projectStore';
+import { projectService } from '../services/api';
 
 export const ProjectsDashboard = () => {
-  const navigate = useNavigate()
-  const { projects, isLoading, viewType, setViewType, fetchProjects } = useProjectStore()
-  const [showCreateDrawer, setShowCreateDrawer] = useState(false)
+  const navigate = useNavigate();
+  const { projects, isLoading, viewType, setViewType, fetchProjects } = useProjectStore();
+  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
 
   useEffect(() => {
-    fetchProjects()
-  }, [fetchProjects])
+    fetchProjects();
+  }, [fetchProjects]);
 
-  const handleCreateProject = async (data: {
-    name: string
-    project_type?: string
-    budget_display?: string
-    due_date?: string
-    description?: string
-    manager?: string
-  }) => {
-    const created = await projectService.create(data)
-    await fetchProjects()
-    navigate(`/projects/${created.id}`)
-  }
+  const handleCreateProject = async (data: CreateProjectData) => {
+    const created = await projectService.create(data);
+    await fetchProjects();
+    navigate(`/projects/${created.id}`);
+  };
 
   if (isLoading && projects.length === 0) {
-    return <div className="flex items-center justify-center h-64"><LoadingSpinner /></div>
+    return (
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (
@@ -52,8 +50,12 @@ export const ProjectsDashboard = () => {
       </div>
 
       {/* View */}
-      {viewType === 'table' && <ProjectTable onProjectClick={(p) => navigate(`/projects/${p.id}`)} />}
-      {viewType === 'kanban' && <ProjectKanban onProjectClick={(p) => navigate(`/projects/${p.id}`)} />}
+      {viewType === 'table' && (
+        <ProjectTable onProjectClick={(p) => navigate(`/projects/${p.id}`)} />
+      )}
+      {viewType === 'kanban' && (
+        <ProjectKanban onProjectClick={(p) => navigate(`/projects/${p.id}`)} />
+      )}
       {viewType === 'gantt' && <GanttChart />}
 
       {/* Create project drawer */}
@@ -63,5 +65,5 @@ export const ProjectsDashboard = () => {
         onSubmit={handleCreateProject}
       />
     </div>
-  )
-}
+  );
+};

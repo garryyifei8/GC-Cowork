@@ -384,3 +384,12 @@ def update_document(document_id: str, updates: dict) -> DocumentItem | None:
 def delete_document(document_id: str) -> bool:
     """Delete a document. Returns True if found and deleted."""
     return _documents.pop(document_id, None) is not None
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.document_store import *  # noqa: E402,F401,F403

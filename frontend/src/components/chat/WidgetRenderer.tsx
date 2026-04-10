@@ -270,12 +270,89 @@ function transformCardData(widgetType: string, data: Record<string, any>): any {
 // ── Fallback view for unrecognized cards ───────────────────────────────────
 
 function FallbackCardView({ card }: { card: InteractiveCard }) {
+  const entries = card.data ? Object.entries(card.data) : [];
+
+  // Case 1: Table data with headers + rows → render a real table
+  if (
+    card.data?.headers &&
+    Array.isArray(card.data.headers) &&
+    card.data.rows &&
+    Array.isArray(card.data.rows)
+  ) {
+    return (
+      <div className="rounded-lg border border-[#E8E8E8] bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#F0F0F0] bg-[#FAFBFC]">
+          <h4 className="text-sm font-semibold text-[#333]">{card.title}</h4>
+          {card.content && <p className="text-xs text-[#6C7688] mt-0.5">{card.content}</p>}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-[#F5F6FA]">
+                {(card.data.headers as string[]).map((h: string, i: number) => (
+                  <th
+                    key={i}
+                    className="px-3 py-2 text-left font-medium text-[#6C7688] whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(card.data.rows as string[][]).map((row: string[], ri: number) => (
+                <tr key={ri} className="border-t border-[#F0F0F0] hover:bg-[#F9FAFB]">
+                  {row.map((cell: string, ci: number) => (
+                    <td key={ci} className="px-3 py-2 text-[#333] whitespace-nowrap">
+                      {String(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  // Case 2: Simple key-value data → render as stat grid
+  const isSimpleKV =
+    entries.length > 0 &&
+    entries.every(
+      ([, v]) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+    );
+
+  if (isSimpleKV) {
+    const cols =
+      entries.length <= 2 ? 'grid-cols-2' : entries.length <= 4 ? 'grid-cols-2' : 'grid-cols-3';
+    return (
+      <div className="rounded-lg border border-[#E8E8E8] bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#F0F0F0] bg-[#FAFBFC]">
+          <h4 className="text-sm font-semibold text-[#333]">{card.title}</h4>
+          {card.content && <p className="text-xs text-[#6C7688] mt-0.5">{card.content}</p>}
+        </div>
+        <div className={`grid gap-px bg-[#F0F0F0] ${cols}`}>
+          {entries.map(([key, value]) => (
+            <div key={key} className="bg-white px-4 py-3 flex flex-col gap-0.5">
+              <span className="text-[11px] text-[#999] leading-tight">{key}</span>
+              <span className="text-sm font-semibold text-[#333] leading-tight">
+                {String(value)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Case 3: Complex data — keep as formatted display
   return (
-    <div className="p-4 rounded-lg border border-[#E8E8E8]  bg-[#F5F6FA] ">
-      <h4 className="text-sm font-semibold text-[#333]  mb-2">{card.title}</h4>
-      {card.content && <p className="text-xs text-[#6C7688] ">{card.content}</p>}
+    <div className="p-4 rounded-lg border border-[#E8E8E8] bg-[#F5F6FA]">
+      <h4 className="text-sm font-semibold text-[#333] mb-2">{card.title}</h4>
+      {card.content && <p className="text-xs text-[#6C7688]">{card.content}</p>}
       {card.data && (
-        <pre className="mt-2 text-[11px] text-[#6C7688]  overflow-auto max-h-40 bg-[#F0F2F8]  rounded p-2">
+        <pre className="mt-2 text-[11px] text-[#6C7688] overflow-auto max-h-40 bg-[#F0F2F8] rounded p-2">
           {JSON.stringify(card.data, null, 2)}
         </pre>
       )}

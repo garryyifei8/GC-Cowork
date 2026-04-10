@@ -41,6 +41,14 @@ def get_activity(activity_id: str) -> dict | None:
     return r.data[0] if r.data else None
 
 
+def list_task_comments(task_id: str) -> list[dict]:
+    """Return all comment-type activities for a specific task, sorted by created_at asc."""
+    sb = get_supabase()
+    r = sb.table("activity_events").select("*").eq("event_type", "task_comment").order("created_at").execute()
+    # Filter by task_id in the detail JSONB field (PostgREST doesn't easily support JSONB filters)
+    return [a for a in (r.data or []) if (a.get("detail") or {}).get("task_id") == task_id]
+
+
 def seed_activities() -> None:
     """No-op: Supabase seed data is loaded via seed.sql."""
     pass

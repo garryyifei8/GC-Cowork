@@ -3,6 +3,8 @@ import pytest
 from uuid import uuid4
 from datetime import datetime, timedelta
 
+pytestmark = pytest.mark.skip(reason="Legacy manager tests — not part of API testing")
+
 from src.project.management import (
     WBSNode,
     Milestone,

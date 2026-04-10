@@ -392,7 +392,8 @@ def list_leave_requests(
     if employee_id is not None:
         result = [r for r in result if r.employee_id == employee_id]
     if status is not None:
-        result = [r for r in result if r.status.value == status]
+        # r.status may be an ApprovalStatus enum or a plain str after model_copy
+        result = [r for r in result if (r.status.value if hasattr(r.status, "value") else r.status) == status]
     return result
 
 
@@ -455,3 +456,12 @@ def create_salary_record(data: dict) -> SalaryRecord:
     record = SalaryRecord(**data)
     _salary_records[record.id] = record
     return record
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.hr_store import *  # noqa: E402,F401,F403

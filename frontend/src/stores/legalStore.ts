@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { apiFetch } from '../services/api';
 import type { LegalContract } from '../types';
 
 interface LegalSummary {
@@ -41,7 +42,7 @@ export const useLegalStore = create<LegalState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const qs = buildQuery({ status, contract_type: contractType });
-      const res = await fetch(`${BASE}/api/legal/contracts${qs}`);
+      const res = await apiFetch(`${BASE}/api/legal/contracts${qs}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ contracts: data, isLoading: false });
@@ -55,7 +56,7 @@ export const useLegalStore = create<LegalState>((set) => ({
 
   fetchSummary: async () => {
     try {
-      const res = await fetch(`${BASE}/api/legal/summary`);
+      const res = await apiFetch(`${BASE}/api/legal/summary`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ summary: data });
@@ -66,7 +67,7 @@ export const useLegalStore = create<LegalState>((set) => ({
 
   updateContract: async (id: string, data: Partial<LegalContract>) => {
     try {
-      const res = await fetch(`${BASE}/api/legal/contracts/${id}`, {
+      const res = await apiFetch(`${BASE}/api/legal/contracts/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

@@ -1,12 +1,12 @@
-import React from 'react'
-import { Clock } from 'lucide-react'
-import { ProgressBar, StatusBadge, AvatarGroup } from '../atomic'
-import type { StatusVariant } from '../atomic'
-import type { Project } from '../../types'
+import React from 'react';
+import { Clock } from 'lucide-react';
+import { ProgressBar, StatusBadge, AvatarGroup } from '../atomic';
+import type { StatusVariant } from '../atomic';
+import type { Project } from '../../types';
 
 export interface ProjectCardProps {
-  project: Project
-  onClick?: (project: Project) => void
+  project: Project;
+  onClick?: (project: Project) => void;
 }
 
 const STATUS_VARIANT_MAP: Record<string, StatusVariant> = {
@@ -14,41 +14,47 @@ const STATUS_VARIANT_MAP: Record<string, StatusVariant> = {
   risk: 'danger',
   planning: 'info',
   completed: 'default',
-}
+};
 
 const STATUS_LABEL_MAP: Record<string, string> = {
   active: '进行中',
   risk: '有风险',
   planning: '规划中',
   completed: '已完成',
-}
+};
 
 function memberToAvatar(name: string): { src: string; alt: string } {
-  const seed = encodeURIComponent(name)
+  const seed = encodeURIComponent(name);
   return {
     src: `https://api.dicebear.com/9.x/initials/svg?seed=${seed}&backgroundColor=6366f1,0ea5e9,10b981,f59e0b,ef4444&backgroundType=gradientLinear`,
     alt: name,
-  }
+  };
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
-  const avatars = (project.team_members ?? []).slice(0, 5).map(memberToAvatar)
+  const avatars = (project.team_members ?? []).slice(0, 5).map(memberToAvatar);
 
   return (
     <div
       className={[
-        'bg-white border border-[#E8E8E8] rounded-lg p-3.5',
+        'bg-white border border-[#E8ECF4] rounded-[10px] p-3.5',
         'transition-all duration-200 hover:shadow-md',
         onClick ? 'cursor-pointer' : '',
       ].join(' ')}
       onClick={() => onClick?.(project)}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? (e) => { if (e.key === 'Enter') onClick(project) } : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter') onClick(project);
+            }
+          : undefined
+      }
     >
       {/* Title + status */}
       <div className="flex items-start justify-between gap-1.5 mb-1.5">
-        <h4 className="text-[13px] font-semibold flex-1 min-w-0 text-[#333] truncate">
+        <h4 className="text-[13px] font-semibold flex-1 min-w-0 text-light-text truncate">
           {project.name}
         </h4>
         <StatusBadge
@@ -58,9 +64,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
         />
       </div>
 
-      <span className="block text-xs text-[#6C7688] mb-2.5">
-        {project.project_type}
-      </span>
+      <span className="block text-xs text-light-text-secondary mb-2.5">{project.project_type}</span>
 
       {/* Progress bar */}
       <div className="mb-2">
@@ -68,7 +72,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
       </div>
 
       {/* Footer: due date + team avatars */}
-      <div className="flex justify-between items-center text-xs text-[#6C7688]">
+      <div className="flex justify-between items-center text-xs text-light-text-secondary">
         {project.due_date && (
           <span className="flex items-center gap-1">
             <Clock size={12} />
@@ -84,7 +88,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onClick }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProjectCard
+export default ProjectCard;

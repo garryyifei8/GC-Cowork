@@ -1,11 +1,12 @@
 """Knowledge base API endpoints."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from src.core.auth import require_auth
 from src.stores.document_store import get_document, list_documents
 
-router = APIRouter(prefix="/knowledge", tags=["knowledge"])
+router = APIRouter(prefix="/knowledge", tags=["knowledge"], dependencies=[Depends(require_auth)])
 
 
 class KnowledgeDocResponse(BaseModel):

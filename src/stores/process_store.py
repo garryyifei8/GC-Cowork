@@ -158,3 +158,20 @@ def update(record_id: str, updates: dict) -> ProcessRecord | None:
     updated = existing.model_copy(update=updates)
     _records[record_id] = updated
     return updated
+
+
+def delete(record_id: str) -> bool:
+    """Delete a process record. Returns True if found and deleted."""
+    if record_id in _records:
+        del _records[record_id]
+        return True
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.process_store import *  # noqa: E402,F401,F403

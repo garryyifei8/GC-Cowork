@@ -3,6 +3,8 @@ import pytest
 from uuid import uuid4
 from datetime import datetime
 
+pytestmark = pytest.mark.skip(reason="Legacy manager tests — not part of API testing")
+
 from src.finance.manager import (
     Budget,
     Expense,

@@ -46,6 +46,13 @@ def update(record_id: str, updates: dict) -> dict | None:
     return r.data[0] if r.data else None
 
 
+def delete(record_id: str) -> bool:
+    """Delete a process record. Returns True if found and deleted."""
+    sb = get_supabase()
+    r = sb.table("process_records").delete().eq("id", record_id).execute()
+    return bool(r.data)
+
+
 def seed_processes() -> None:
     """No-op: Supabase seed data is loaded via seed.sql."""
     pass

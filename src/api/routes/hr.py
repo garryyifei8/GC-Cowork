@@ -21,9 +21,10 @@ GET    /api/hr/insights                — rule-based HR insights
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from src.core.auth import require_auth
 from src.services.hr_insights import generate_hr_insights, get_hr_summary
 from src.stores.hr_store import (
     create_attendance,
@@ -38,7 +39,7 @@ from src.stores.hr_store import (
     update_leave_request,
 )
 
-router = APIRouter(prefix="/hr", tags=["hr"])
+router = APIRouter(prefix="/hr", tags=["hr"], dependencies=[Depends(require_auth)])
 
 
 # ---------------------------------------------------------------------------

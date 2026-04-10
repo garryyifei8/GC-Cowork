@@ -142,12 +142,12 @@ const ProjectHealthMatrix: React.FC<ProjectHealthMatrixProps> = ({ data }) => {
   return (
     <div
       ref={containerRef}
-      className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 transition-colors duration-200"
+      className="relative bg-white dark:bg-dark-surface border border-[#E8ECF4] dark:border-dark-border rounded-[10px] p-5 transition-colors duration-200"
       style={{ minHeight: 300 }}
       role="region"
       aria-label="项目健康矩阵"
     >
-      <h2 className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-4">
+      <h2 className="text-base font-semibold text-light-text dark:text-dark-text mb-4">
         项目健康矩阵
       </h2>
 
@@ -353,7 +353,7 @@ const ProjectHealthMatrix: React.FC<ProjectHealthMatrixProps> = ({ data }) => {
         {Object.entries(STATUS_COLOR).map(([status, color]) => (
           <div
             key={status}
-            className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400"
+            className="flex items-center gap-1.5 text-xs text-light-text-secondary dark:text-dark-text-secondary"
           >
             <span
               className="w-2.5 h-2.5 rounded-full flex-shrink-0"
@@ -368,7 +368,7 @@ const ProjectHealthMatrix: React.FC<ProjectHealthMatrixProps> = ({ data }) => {
       {/* Hover tooltip */}
       {tooltip.visible && (
         <div
-          className="absolute z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 shadow-lg pointer-events-none min-w-[160px]"
+          className="absolute z-50 bg-white dark:bg-dark-surface border border-[#E8ECF4] dark:border-dark-border rounded-[10px] px-3 py-2.5 shadow-lg pointer-events-none min-w-[160px]"
           style={{
             left: tooltip.x,
             top: tooltip.y,
@@ -376,17 +376,19 @@ const ProjectHealthMatrix: React.FC<ProjectHealthMatrixProps> = ({ data }) => {
           }}
           role="tooltip"
         >
-          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1 leading-tight">
+          <p className="text-sm font-semibold text-light-text dark:text-dark-text mb-1 leading-tight">
             {tooltip.name}
           </p>
-          <div className="flex flex-col gap-0.5 text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex flex-col gap-0.5 text-xs text-light-text-secondary dark:text-dark-text-secondary">
             <span>
               进度:{' '}
-              <strong className="text-gray-700 dark:text-gray-300">{tooltip.progress}%</strong>
+              <strong className="text-light-text dark:text-dark-text">{tooltip.progress}%</strong>
             </span>
             <span>
               预算使用率:{' '}
-              <strong className="text-gray-700 dark:text-gray-300">{tooltip.budgetUsage}%</strong>
+              <strong className="text-light-text dark:text-dark-text">
+                {tooltip.budgetUsage}%
+              </strong>
             </span>
             <span
               className="mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold w-fit"

@@ -14,10 +14,10 @@ import {
   Sparkles,
   BookOpen,
   Coffee,
-  Target,
   Scale,
   ShieldCheck,
   HardHat,
+  Truck,
   BarChart3,
   FolderKanban,
   Menu,
@@ -56,10 +56,7 @@ const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
   },
   {
     title: '项目管理',
-    items: [
-      { path: '/projects', label: '项目总览', icon: <FolderKanban size={18} /> },
-      { path: '/bidding', label: '投标管理', icon: <Target size={18} /> },
-    ],
+    items: [{ path: '/projects', label: '项目总览', icon: <FolderKanban size={18} /> }],
   },
   {
     title: '企业管理',
@@ -69,6 +66,7 @@ const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
       { path: '/legal', label: '法务管理', icon: <Scale size={18} /> },
       { path: '/audit', label: '审计管理', icon: <ShieldCheck size={18} /> },
       { path: '/supervision', label: '监理管理', icon: <HardHat size={18} /> },
+      { path: '/suppliers', label: '供应商管理', icon: <Truck size={18} /> },
     ],
   },
   {

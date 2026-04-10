@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Package, ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
-import { projectService } from '../../services/api';
+import { projectService, supplierService } from '../../services/api';
+import type { Supplier } from '../../types';
 import {
   PROCUREMENT_STATUS_LABELS,
   PROCUREMENT_STATUS_COLORS,
@@ -288,16 +289,35 @@ const CreateProcurementDrawer: React.FC<CreateProcurementDrawerProps> = ({
   const [name, setName] = useState('');
   const [category, setCategory] = useState(PROCUREMENT_CATEGORIES[0]);
   const [supplier, setSupplier] = useState('');
+  const [supplierSearch, setSupplierSearch] = useState('');
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
   const [budgetAmount, setBudgetAmount] = useState('');
   const [planDate, setPlanDate] = useState('');
   const [responsible, setResponsible] = useState('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Load suppliers
+  useEffect(() => {
+    if (open) {
+      supplierService
+        .list({ status: 'active' })
+        .then(setSuppliers)
+        .catch(() => {});
+    }
+  }, [open]);
+
+  const filteredSuppliers = suppliers.filter((s) => {
+    const q = supplierSearch.toLowerCase();
+    return !q || s.name.toLowerCase().includes(q) || s.contact_person.toLowerCase().includes(q);
+  });
+
   const reset = () => {
     setName('');
     setCategory(PROCUREMENT_CATEGORIES[0]);
     setSupplier('');
+    setSupplierSearch('');
     setBudgetAmount('');
     setPlanDate('');
     setResponsible('');
@@ -372,15 +392,64 @@ const CreateProcurementDrawer: React.FC<CreateProcurementDrawerProps> = ({
             </select>
           </div>
 
-          {/* Supplier */}
-          <div>
+          {/* Supplier — searchable dropdown from supplier service */}
+          <div className="relative">
             <label className="block text-xs font-semibold text-[#676879] mb-1">供应商</label>
             <input
               className="w-full border border-[#d0d4e4] rounded-lg px-3 py-2 text-sm text-[#323338] focus:outline-none focus:border-[#0086C0] transition-colors"
-              placeholder="输入供应商名称"
-              value={supplier}
-              onChange={(e) => setSupplier(e.target.value)}
+              placeholder="搜索选择供应商..."
+              value={supplier || supplierSearch}
+              onChange={(e) => {
+                setSupplierSearch(e.target.value);
+                setSupplier('');
+                setShowSupplierDropdown(true);
+              }}
+              onFocus={() => setShowSupplierDropdown(true)}
             />
+            {supplier && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSupplier('');
+                  setSupplierSearch('');
+                }}
+                className="absolute right-2 top-[26px] p-1 text-[#9CA3AF] hover:text-[#333]"
+              >
+                <X size={14} />
+              </button>
+            )}
+            {showSupplierDropdown && !supplier && (
+              <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-[#d0d4e4] rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                {filteredSuppliers.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      setSupplier(s.name);
+                      setSupplierSearch('');
+                      setShowSupplierDropdown(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-[#f6f7fb] flex items-center justify-between"
+                  >
+                    <span className="text-[#323338]">{s.name}</span>
+                    <span className="text-xs text-[#9CA3AF]">{s.contact_person}</span>
+                  </button>
+                ))}
+                {filteredSuppliers.length === 0 && supplierSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSupplier(supplierSearch);
+                      setSupplierSearch('');
+                      setShowSupplierDropdown(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-[#f6f7fb]"
+                  >
+                    使用 "{supplierSearch}" 作为供应商
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Budget Amount */}

@@ -206,3 +206,12 @@ def update_vehicle_request(request_id: str, data: dict) -> VehicleRequest | None
     updated = existing.model_copy(update=data)
     _vehicle_requests[request_id] = updated
     return updated
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.oa_store import *  # noqa: E402,F401,F403

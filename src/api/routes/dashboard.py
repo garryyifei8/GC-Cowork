@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from src.core.auth import require_auth
 from src.core.models import TaskStatus
 from src.db.compat import val
 from src.services.ai_suggestions import generate_suggestions
@@ -15,7 +16,7 @@ from src.stores.project_store import list_projects
 from src.stores.task_store import list_tasks
 from src.workflow.engine import get_stage_label
 
-router = APIRouter(prefix="/dashboard", tags=["dashboard"])
+router = APIRouter(prefix="/dashboard", tags=["dashboard"], dependencies=[Depends(require_auth)])
 
 
 # ---------------------------------------------------------------------------

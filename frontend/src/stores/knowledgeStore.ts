@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { apiFetch } from '../services/api';
 
 interface KnowledgeDoc {
   id: string;
@@ -49,7 +50,7 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
       if (docType) params.set('doc_type', docType);
       if (status) params.set('status', status);
       const qs = params.toString();
-      const res = await fetch(`${BASE}/api/knowledge/documents${qs ? `?${qs}` : ''}`);
+      const res = await apiFetch(`${BASE}/api/knowledge/documents${qs ? `?${qs}` : ''}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ documents: data, isLoading: false });
@@ -64,7 +65,7 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
   search: async (query: string, category?: string) => {
     set({ isSearching: true, error: null });
     try {
-      const res = await fetch(`${BASE}/api/knowledge/search`, {
+      const res = await apiFetch(`${BASE}/api/knowledge/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, category, top_k: 20 }),

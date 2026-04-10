@@ -32,9 +32,10 @@ GET    /api/activities/recent         — global recent activities
 
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from src.core.auth import require_auth
 from src.core.exceptions import ProjectNotFoundError, TaskNotFoundError
 from src.core.models import (
     ActivityEvent,
@@ -66,9 +67,9 @@ from src.workflow.engine import can_transition, get_stage_label, get_valid_trans
 # Routers
 # ---------------------------------------------------------------------------
 
-router = APIRouter(prefix="/projects", tags=["projects"])
-task_router = APIRouter(prefix="/tasks", tags=["tasks"])
-activity_router = APIRouter(prefix="/activities", tags=["activities"])
+router = APIRouter(prefix="/projects", tags=["projects"], dependencies=[Depends(require_auth)])
+task_router = APIRouter(prefix="/tasks", tags=["tasks"], dependencies=[Depends(require_auth)])
+activity_router = APIRouter(prefix="/activities", tags=["activities"], dependencies=[Depends(require_auth)])
 
 # ---------------------------------------------------------------------------
 # Request / Response models
@@ -112,9 +113,14 @@ class CreateProjectRequest(BaseModel):
     name: str = Field(min_length=1, max_length=256)
     project_type: str = Field(default="", max_length=128)
     budget_display: str | None = None
+    budget: float | None = None  # 数字预算（万元）
     due_date: str | None = None
     description: str | None = None
     manager: str | None = None
+    team_members: list[str] = []  # 参与人员列表
+    stage: str | None = None  # 初始阶段
+    risk_level: str | None = None  # low/medium/high
+    milestones: list[dict] | None = None  # 初始里程碑
 
 
 class UpdateProjectRequest(BaseModel):
@@ -297,13 +303,45 @@ async def get_project_endpoint(project_id: str):
 
 @router.post("", response_model=ProjectListItem, status_code=201)
 async def create_project_endpoint(req: CreateProjectRequest):
+    # Build team members: manager first, then additional members (deduped)
+    members: list[str] = []
+    if req.manager:
+        members.append(req.manager)
+    for m in req.team_members:
+        if m and m not in members:
+            members.append(m)
+
+    # Resolve initial stage
+    stage = ProjectStage.INITIATION
+    if req.stage:
+        try:
+            stage = ProjectStage(req.stage)
+        except ValueError:
+            pass
+
+    # Build initial risks from risk_level
+    risks = []
+    if req.risk_level and req.risk_level in ("medium", "high"):
+        risks.append(
+            RiskItem(
+                title="项目初始风险评估",
+                description=f"项目创建时评估风险等级为{'中' if req.risk_level == 'medium' else '高'}",
+                severity=req.risk_level,
+                owner=req.manager,
+            )
+        )
+
     project = Project(
         id=str(uuid4()),
         name=req.name,
         project_type=req.project_type,
         budget_display=req.budget_display,
+        budget=req.budget,
         due_date=req.due_date,
-        team_members=[req.manager] if req.manager else [],
+        stage=stage,
+        team_members=members,
+        risks=risks,
+        milestones=req.milestones or [],
         metadata={"description": req.description} if req.description else {},
     )
     created = create_project(project)
@@ -952,6 +990,7 @@ async def create_procurement(project_id: str, body: dict):
 
 
 @router.put("/{project_id}/procurement/{pkg_id}")
+@router.patch("/{project_id}/procurement/{pkg_id}")
 async def update_procurement(project_id: str, pkg_id: str, body: dict):
     """Update a procurement package."""
     from src.stores.procurement_store import update as update_pkg
@@ -960,6 +999,15 @@ async def update_procurement(project_id: str, pkg_id: str, body: dict):
     if not updated:
         raise HTTPException(status_code=404, detail="Procurement package not found")
     return updated.model_dump()
+
+
+@router.delete("/{project_id}/procurement/{pkg_id}", status_code=204)
+async def delete_procurement(project_id: str, pkg_id: str):
+    """Delete a procurement package."""
+    from src.stores.procurement_store import delete as delete_pkg
+
+    if not delete_pkg(pkg_id):
+        raise HTTPException(status_code=404, detail="Procurement package not found")
 
 
 # ---------------------------------------------------------------------------
@@ -989,6 +1037,26 @@ async def create_process_record(project_id: str, body: dict):
 
     record = create_record(project_id, body)
     return record.model_dump()
+
+
+@router.patch("/{project_id}/processes/{record_id}")
+async def update_process_record(project_id: str, record_id: str, body: dict):
+    """Update a process record."""
+    from src.stores.process_store import update as update_record
+
+    updated = update_record(record_id, body)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Process record not found")
+    return updated.model_dump()
+
+
+@router.delete("/{project_id}/processes/{record_id}", status_code=204)
+async def delete_process_record(project_id: str, record_id: str):
+    """Delete a process record."""
+    from src.stores.process_store import delete as delete_record
+
+    if not delete_record(record_id):
+        raise HTTPException(status_code=404, detail="Process record not found")
 
 
 # ---------------------------------------------------------------------------

@@ -9,7 +9,6 @@ from src.agents.finance import FinanceAgent
 from src.agents.legal import LegalAgent
 from src.agents.procurement import ProcurementAgent
 from src.agents.hr import HRAgent
-from src.agents.bidding import BiddingAgent
 from src.agents.document import DocumentAgent
 from src.agents.knowledge import KnowledgeAgent
 from src.core.models import AgentRequest, AgentType
@@ -101,96 +100,6 @@ class TestProjectAgentBasic:
         messages = call_args[0][0] if call_args[0] else call_args[1]["messages"]
         assert messages[0]["role"] == "system"
         assert len(messages[0]["content"]) > 50
-
-
-class TestBiddingAgentBasic:
-    """BiddingAgent uses chat_json with bidding context; verify it integrates correctly."""
-
-    @pytest.mark.asyncio
-    async def test_handle_returns_response_via_chat_json(self):
-        client = AsyncMock(spec=LLMClient)
-        client.chat_json = AsyncMock(return_value={
-            "reply": "当前有4个投标机会。",
-            "cards": [
-                {"card_type": "data", "title": "投标机会概览", "data": {"count": 4}, "actions": []}
-            ],
-        })
-        agent = BiddingAgent(llm_client=client)
-        assert agent.agent_type == AgentType.BIDDING
-
-        request = _make_request(AgentType.BIDDING, "有哪些投标机会")
-        response = await agent.handle(request)
-
-        assert response.content == "当前有4个投标机会。"
-        assert response.agent_type == AgentType.BIDDING
-        assert len(response.cards) == 1
-        assert response.cards[0].title == "投标机会概览"
-        client.chat_json.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_handle_passes_system_prompt(self):
-        client = AsyncMock(spec=LLMClient)
-        client.chat_json = AsyncMock(return_value={
-            "reply": "回复",
-            "cards": [],
-        })
-        agent = BiddingAgent(llm_client=client)
-
-        request = _make_request(AgentType.BIDDING, "投标书编写")
-        await agent.handle(request)
-
-        call_args = client.chat_json.call_args
-        messages = call_args[0][0] if call_args[0] else call_args[1]["messages"]
-        assert messages[0]["role"] == "system"
-        assert len(messages[0]["content"]) > 50
-
-    @pytest.mark.asyncio
-    async def test_handle_injects_bidding_context(self):
-        client = AsyncMock(spec=LLMClient)
-        client.chat_json = AsyncMock(return_value={
-            "reply": "回复",
-            "cards": [],
-        })
-        agent = BiddingAgent(llm_client=client)
-
-        request = _make_request(AgentType.BIDDING, "查看投标机会")
-        await agent.handle(request)
-
-        call_args = client.chat_json.call_args
-        messages = call_args[0][0] if call_args[0] else call_args[1]["messages"]
-        # Second message should be the injected bidding context
-        assert messages[1]["role"] == "system"
-        assert "投标机会" in messages[1]["content"]
-
-    @pytest.mark.asyncio
-    async def test_handle_falls_back_to_chat_on_error(self):
-        client = AsyncMock(spec=LLMClient)
-        client.chat_json = AsyncMock(side_effect=Exception("LLM error"))
-        client.chat = AsyncMock(return_value="降级回复内容。")
-        agent = BiddingAgent(llm_client=client)
-
-        request = _make_request(AgentType.BIDDING, "投标机会")
-        response = await agent.handle(request)
-
-        assert response.content == "降级回复内容。"
-        assert response.cards == []
-        client.chat.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_parse_cards_handles_invalid_data(self):
-        client = AsyncMock(spec=LLMClient)
-        client.chat_json = AsyncMock(return_value={
-            "reply": "回复",
-            "cards": ["not_a_dict", None, 42, {"card_type": "data", "title": "有效卡片"}],
-        })
-        agent = BiddingAgent(llm_client=client)
-
-        request = _make_request(AgentType.BIDDING, "投标")
-        response = await agent.handle(request)
-
-        # Only the valid dict card should be parsed
-        assert len(response.cards) == 1
-        assert response.cards[0].title == "有效卡片"
 
 
 class TestDocumentAgentBasic:

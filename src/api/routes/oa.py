@@ -12,9 +12,10 @@ PATCH  /api/oa/vehicle-requests/{id}    — approve / reject vehicle request
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from src.core.auth import require_auth
 from src.core.models import ApprovalStatus
 from src.stores.oa_store import (
     create_notice,
@@ -25,7 +26,7 @@ from src.stores.oa_store import (
     update_vehicle_request,
 )
 
-router = APIRouter(prefix="/oa", tags=["oa"])
+router = APIRouter(prefix="/oa", tags=["oa"], dependencies=[Depends(require_auth)])
 
 
 # ---------------------------------------------------------------------------

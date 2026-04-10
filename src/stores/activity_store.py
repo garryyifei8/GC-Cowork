@@ -576,3 +576,12 @@ def list_task_comments(task_id: str) -> list[ActivityEvent]:
 def get_activity(activity_id: str) -> ActivityEvent | None:
     """Return a single activity by ID, or None if not found."""
     return _activities.get(activity_id)
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.activity_store import *  # noqa: E402,F401,F403

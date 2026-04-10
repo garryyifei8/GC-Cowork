@@ -40,6 +40,13 @@ def update(package_id: str, updates: dict) -> dict | None:
     return r.data[0] if r.data else None
 
 
+def delete(package_id: str) -> bool:
+    """Delete a procurement package. Returns True if found and deleted."""
+    sb = get_supabase()
+    r = sb.table("procurement_packages").delete().eq("id", package_id).execute()
+    return bool(r.data)
+
+
 def seed_procurement() -> None:
     """No-op: Supabase seed data is loaded via seed.sql."""
     pass

@@ -5,7 +5,6 @@ export type AgentType =
   | 'legal'
   | 'procurement'
   | 'hr'
-  | 'bidding'
   | 'document'
   | 'knowledge';
 
@@ -87,19 +86,6 @@ export interface ProjectTask {
   priority: string;
   due_date: string | null;
   description: string;
-}
-
-export interface BiddingOpportunity {
-  id: string;
-  title: string;
-  source: string;
-  publish_date: string;
-  deadline: string;
-  budget_amount: string | null;
-  region: string;
-  category: string;
-  status: string;
-  match_score: number;
 }
 
 export type ViewType = 'table' | 'kanban' | 'gantt';
@@ -231,6 +217,11 @@ export interface DocumentItem {
   author: string;
   status: string;
   category: string;
+  storage_path?: string | null;
+  file_name?: string | null;
+  file_size?: number | null;
+  mime_type?: string | null;
+  file_url?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -475,4 +466,34 @@ export interface SupervisionRecord {
   status: string;
   issues_found: number;
   photos: string[];
+}
+
+// ---------------------------------------------------------------------------
+// Supplier Management
+// ---------------------------------------------------------------------------
+
+export type SupplierCategory = 'material' | 'equipment' | 'subcontract' | 'service' | 'consulting';
+export type SupplierStatusType = 'active' | 'inactive' | 'blacklisted';
+
+export interface Supplier {
+  id: string;
+  name: string;
+  category: SupplierCategory;
+  contact_person: string;
+  phone: string;
+  email: string;
+  address: string;
+  qualification: string;
+  rating: number;
+  status: SupplierStatusType;
+  projects: string[];
+  notes: string;
+}
+
+export interface SupplierSummary {
+  total: number;
+  active: number;
+  inactive: number;
+  by_category: Record<string, number>;
+  avg_rating: number;
 }

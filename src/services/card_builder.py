@@ -21,8 +21,6 @@ def build_cards_for_intent(agent_type: AgentType, user_message: str) -> list[dic
             return _finance_cards(user_message)
         elif agent_type == AgentType.HR:
             return _hr_cards(user_message)
-        elif agent_type == AgentType.BIDDING:
-            return _bidding_cards(user_message)
         elif agent_type == AgentType.LEGAL:
             return _legal_cards(user_message)
         elif agent_type == AgentType.DOCUMENT or agent_type == AgentType.KNOWLEDGE:
@@ -154,31 +152,6 @@ def _hr_cards(msg: str) -> list[dict]:
                 "在职": sum(
                     1 for e in employees if (e.status if hasattr(e, "status") else e.get("status", "")) == "active"
                 ),
-            },
-        }
-    ]
-
-
-def _bidding_cards(msg: str) -> list[dict]:
-    from src.stores.bidding_store import list_opportunities
-
-    opps = list_opportunities()
-    return [
-        {
-            "type": "table",
-            "title": f"投标机会 ({len(opps)} 个)",
-            "data": {
-                "headers": ["标题", "区域", "预算", "截止", "匹配度"],
-                "rows": [
-                    [
-                        o.title if hasattr(o, "title") else o.get("title", ""),
-                        o.region if hasattr(o, "region") else o.get("region", ""),
-                        str(o.budget_amount if hasattr(o, "budget_amount") else o.get("budget_amount", "")),
-                        str(o.deadline if hasattr(o, "deadline") else o.get("deadline", "")),
-                        f"{float(o.match_score if hasattr(o, 'match_score') else o.get('match_score', 0)):.0f}%",
-                    ]
-                    for o in opps[:8]
-                ],
             },
         }
     ]

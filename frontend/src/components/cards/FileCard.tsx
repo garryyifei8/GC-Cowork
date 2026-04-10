@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { FileText, FileSpreadsheet, File, FileImage, Download, ExternalLink, Loader2, Check } from 'lucide-react';
+import {
+  FileText,
+  FileSpreadsheet,
+  File,
+  FileImage,
+  Download,
+  ExternalLink,
+  Loader2,
+  Check,
+} from 'lucide-react';
 import type { InteractiveCard } from '../../types';
 import { useNotificationStore } from '../../stores/notificationStore';
 
@@ -37,7 +46,13 @@ export const FileCard: React.FC<FileCardProps> = ({ card }) => {
   const author = data.author;
   const version = data.version;
   const summary = card.content || data.summary || data.content_summary;
-  const fileUrl = data.url || data.download_url || data.file_url;
+  const rawUrl = data.url || data.download_url || data.file_url;
+  // Normalize file URL: if it starts with bucket/path format, prefix with /api/documents/file/
+  const fileUrl = rawUrl
+    ? String(rawUrl).startsWith('/')
+      ? rawUrl
+      : `/api/documents/file/${rawUrl}`
+    : undefined;
 
   const handleDownload = async () => {
     if (downloaded || downloading) return;
@@ -102,15 +117,9 @@ export const FileCard: React.FC<FileCardProps> = ({ card }) => {
             <span className="text-xs px-1.5 py-0.5 rounded bg-[#edf1fc] text-light-text-secondary font-medium">
               {fileType}
             </span>
-            {size && (
-              <span className="text-xs text-light-text-secondary">{size}</span>
-            )}
-            {version && (
-              <span className="text-xs text-light-text-secondary">v{version}</span>
-            )}
-            {author && (
-              <span className="text-xs text-light-text-secondary">{author}</span>
-            )}
+            {size && <span className="text-xs text-light-text-secondary">{size}</span>}
+            {version && <span className="text-xs text-light-text-secondary">v{version}</span>}
+            {author && <span className="text-xs text-light-text-secondary">{author}</span>}
           </div>
         </div>
 

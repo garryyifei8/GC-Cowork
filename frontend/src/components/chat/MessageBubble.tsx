@@ -22,7 +22,6 @@ const AGENT_TYPE_LABELS: Record<string, string> = {
   legal: '法务',
   procurement: '采购',
   hr: '人事',
-  bidding: '招投标',
   document: '文档',
   knowledge: '知识库',
 };

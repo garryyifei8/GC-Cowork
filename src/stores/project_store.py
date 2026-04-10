@@ -387,3 +387,12 @@ def delete_project(project_id: str) -> bool:
         del _projects[project_id]
         return True
     return False
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.project_store import *  # noqa: E402,F401,F403

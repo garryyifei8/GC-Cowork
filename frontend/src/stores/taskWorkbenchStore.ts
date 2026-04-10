@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { TaskWithProject } from '../types';
-import { taskService, projectService } from '../services/api';
+import { taskService, projectService, apiFetch } from '../services/api';
 import { useToastStore } from './toastStore';
 
 export type SortField = 'name' | 'status' | 'priority' | 'due_date' | 'assignee';
@@ -124,7 +124,7 @@ export const useTaskWorkbenchStore = create<TaskWorkbenchState>((set, get) => ({
       // Optimistic removal for snappy UX
       set((state) => ({ tasks: state.tasks.filter((t) => t.id !== taskId) }));
       try {
-        await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+        await apiFetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
       } catch {
         await get().fetchTasks();
         return;
@@ -218,7 +218,7 @@ export const useTaskWorkbenchStore = create<TaskWorkbenchState>((set, get) => ({
     const toast = useToastStore.getState().addToast;
     try {
       await Promise.all(
-        Array.from(selectedTaskIds).map((id) => fetch(`/api/tasks/${id}`, { method: 'DELETE' }))
+        Array.from(selectedTaskIds).map((id) => apiFetch(`/api/tasks/${id}`, { method: 'DELETE' }))
       );
       toast(`已批量删除 ${selectedTaskIds.size} 个任务`, 'success');
       set({ selectedTaskIds: new Set<string>() });

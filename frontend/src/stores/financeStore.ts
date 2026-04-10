@@ -1,10 +1,6 @@
 import { create } from 'zustand';
-import type {
-  ExpenseReport,
-  BudgetLine,
-  FinanceInvoice,
-  FinanceSummary,
-} from '../types';
+import { apiFetch } from '../services/api';
+import type { ExpenseReport, BudgetLine, FinanceInvoice, FinanceSummary } from '../types';
 
 interface FinanceInsight {
   title: string;
@@ -55,7 +51,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const qs = buildQuery({ status, project_id: projectId, submitter });
-      const res = await fetch(`${BASE}/api/finance/expenses${qs}`);
+      const res = await apiFetch(`${BASE}/api/finance/expenses${qs}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ expenses: data, isLoading: false });
@@ -71,7 +67,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const qs = buildQuery({ project_id: projectId, fiscal_year: fiscalYear });
-      const res = await fetch(`${BASE}/api/finance/budgets${qs}`);
+      const res = await apiFetch(`${BASE}/api/finance/budgets${qs}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ budgets: data, isLoading: false });
@@ -87,7 +83,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const qs = buildQuery({ status, project_id: projectId });
-      const res = await fetch(`${BASE}/api/finance/invoices${qs}`);
+      const res = await apiFetch(`${BASE}/api/finance/invoices${qs}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ invoices: data, isLoading: false });
@@ -102,7 +98,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
   fetchSummary: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`${BASE}/api/finance/summary`);
+      const res = await apiFetch(`${BASE}/api/finance/summary`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ summary: data, isLoading: false });
@@ -116,7 +112,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
 
   fetchInsights: async () => {
     try {
-      const res = await fetch(`${BASE}/api/finance/insights`);
+      const res = await apiFetch(`${BASE}/api/finance/insights`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ insights: data.insights ?? [] });
@@ -127,7 +123,7 @@ export const useFinanceStore = create<FinanceState>((set) => ({
 
   approveExpense: async (id: string, approved: boolean) => {
     try {
-      const res = await fetch(`${BASE}/api/finance/expenses/${id}`, {
+      const res = await apiFetch(`${BASE}/api/finance/expenses/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: approved ? 'approved' : 'rejected' }),

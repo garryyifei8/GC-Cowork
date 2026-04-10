@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
+from src.core.auth import require_auth
 from src.core.exceptions import PlatformError
 from src.stores.legal_store import (
     create_contract,
@@ -14,7 +15,7 @@ from src.stores.legal_store import (
     update_contract,
 )
 
-router = APIRouter(prefix="/legal", tags=["legal"])
+router = APIRouter(prefix="/legal", tags=["legal"], dependencies=[Depends(require_auth)])
 
 
 # ---------------------------------------------------------------------------

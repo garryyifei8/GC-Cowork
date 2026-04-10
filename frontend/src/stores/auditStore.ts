@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { apiFetch } from '../services/api';
 import type { AuditReport } from '../types';
 
 interface AuditSummary {
@@ -40,7 +41,7 @@ export const useAuditStore = create<AuditState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const qs = buildQuery({ status, audit_type: auditType });
-      const res = await fetch(`${BASE}/api/audit/reports${qs}`);
+      const res = await apiFetch(`${BASE}/api/audit/reports${qs}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ reports: data, isLoading: false });
@@ -54,7 +55,7 @@ export const useAuditStore = create<AuditState>((set) => ({
 
   fetchSummary: async () => {
     try {
-      const res = await fetch(`${BASE}/api/audit/summary`);
+      const res = await apiFetch(`${BASE}/api/audit/summary`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ summary: data });

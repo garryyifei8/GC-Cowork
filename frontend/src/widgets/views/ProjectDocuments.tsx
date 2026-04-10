@@ -14,9 +14,10 @@ import {
   X,
   Check,
   Eye,
-  ChevronLeft,
 } from 'lucide-react';
 import { EmptyState } from '../atomic';
+import { DocumentPreview } from '../../components/documents';
+import { documentService } from '../../services/api';
 import type { DocumentItem } from '../../types';
 
 const EPC_CATEGORIES = [
@@ -57,6 +58,13 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   minutes: '纪要',
 };
 
+function formatFileSize(bytes: number | null | undefined): string {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export interface ProjectDocumentsProps {
   projectId: string;
   projectType: string;
@@ -68,6 +76,7 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newDoc, setNewDoc] = useState({
     title: '',
@@ -93,9 +102,8 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
   const fetchDocs = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/documents?project_id=${projectId}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setDocuments(await res.json());
+      const docs = await documentService.list({ project_id: projectId });
+      setDocuments(docs);
     } catch {
       /* */
     } finally {
@@ -129,48 +137,44 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
 
   const handleUpload = async (file: File) => {
     setUploading(true);
+    setUploadProgress(0);
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('project_id', projectId);
-      fd.append('category', activeCategory === 'all' ? 'general' : activeCategory);
-      const res = await fetch('/api/documents/upload', { method: 'POST', body: fd });
-      if (res.ok) await fetchDocs();
+      await documentService.upload(
+        file,
+        {
+          project_id: projectId,
+          category: activeCategory === 'all' ? 'general' : activeCategory,
+        },
+        (pct) => setUploadProgress(pct)
+      );
+      await fetchDocs();
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
   const handleCreate = async () => {
     if (!newDoc.title.trim()) return;
     try {
-      const res = await fetch('/api/documents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newDoc.title,
-          doc_type: newDoc.doc_type,
-          project_id: projectId,
-          category: newDoc.category,
-          content_summary: newDoc.content_summary,
-          author: '当前用户',
-        }),
+      await documentService.create({
+        title: newDoc.title,
+        doc_type: newDoc.doc_type,
+        project_id: projectId,
+        content_summary: newDoc.content_summary,
+        author: '当前用户',
       });
-      if (res.ok) {
-        await fetchDocs();
-        setNewDoc({ title: '', category: 'general', doc_type: 'report', content_summary: '' });
-        setShowCreateForm(false);
-      }
+      await fetchDocs();
+      setNewDoc({ title: '', category: 'general', doc_type: 'report', content_summary: '' });
+      setShowCreateForm(false);
     } catch {
       /* */
     }
   };
   const handleDelete = async (docId: string) => {
     try {
-      const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' });
-      if (res.ok) {
-        setDocuments((p) => p.filter((d) => d.id !== docId));
-        if (previewDoc?.id === docId) setPreviewDoc(null);
-      }
+      await documentService.delete(docId);
+      setDocuments((p) => p.filter((d) => d.id !== docId));
+      if (previewDoc?.id === docId) setPreviewDoc(null);
     } catch {
       /* */
     }
@@ -181,9 +185,11 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-500">{documents.length} 份资料</span>
+          <span className="text-sm font-medium text-light-text-secondary">
+            {documents.length} 份资料
+          </span>
           {isEPC && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
               EPC资料体系
             </span>
           )}
@@ -192,14 +198,14 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[10px] text-xs font-medium text-light-text-secondary border border-[#E8ECF4] hover:bg-[#F4F6FC] transition-colors disabled:opacity-50"
           >
             {uploading ? <Loader2 size={13} className="animate-spin" /> : <UploadCloud size={13} />}{' '}
             上传
           </button>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 transition-colors"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors"
           >
             <Plus size={13} /> 新建
           </button>
@@ -216,21 +222,37 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
         </div>
       </div>
 
+      {/* Upload progress bar */}
+      {uploading && (
+        <div className="bg-white border border-[#E8ECF4] rounded-[10px] p-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs text-light-text-secondary">上传中...</span>
+            <span className="text-xs font-medium text-primary">{uploadProgress}%</span>
+          </div>
+          <div className="h-1.5 bg-[#F4F6FC] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Create form */}
       {showCreateForm && (
-        <div className="p-3 rounded-lg border border-blue-500/30 bg-gray-50 space-y-2">
+        <div className="p-3 rounded-[10px] border border-primary/30 bg-[#EFF3F9] space-y-2">
           <input
             type="text"
             placeholder="文档标题"
             value={newDoc.title}
             onChange={(e) => setNewDoc((p) => ({ ...p, title: e.target.value }))}
-            className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white text-gray-800 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-1.5 text-sm border border-[#E8ECF4] rounded-[10px] bg-white text-light-text focus:outline-none focus:border-primary"
           />
           <div className="flex gap-2">
             <select
               value={newDoc.category}
               onChange={(e) => setNewDoc((p) => ({ ...p, category: e.target.value }))}
-              className="px-2 py-1.5 text-sm border border-gray-200 rounded-md bg-white text-gray-800"
+              className="px-2 py-1.5 text-sm border border-[#E8ECF4] rounded-[10px] bg-white text-light-text"
             >
               {categories
                 .filter((c) => c.key !== 'all')
@@ -243,7 +265,7 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
             <select
               value={newDoc.doc_type}
               onChange={(e) => setNewDoc((p) => ({ ...p, doc_type: e.target.value }))}
-              className="px-2 py-1.5 text-sm border border-gray-200 rounded-md bg-white text-gray-800"
+              className="px-2 py-1.5 text-sm border border-[#E8ECF4] rounded-[10px] bg-white text-light-text"
             >
               <option value="report">报告</option>
               <option value="proposal">方案</option>
@@ -255,20 +277,20 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
               placeholder="摘要（可选）"
               value={newDoc.content_summary}
               onChange={(e) => setNewDoc((p) => ({ ...p, content_summary: e.target.value }))}
-              className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white text-gray-800 focus:outline-none focus:border-blue-500"
+              className="flex-1 px-3 py-1.5 text-sm border border-[#E8ECF4] rounded-[10px] bg-white text-light-text focus:outline-none focus:border-primary"
             />
           </div>
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setShowCreateForm(false)}
-              className="px-3 py-1 text-sm text-gray-500 border border-gray-200 rounded-md hover:bg-gray-100"
+              className="px-3 py-1 text-sm text-light-text-secondary border border-[#E8ECF4] rounded-[10px] hover:bg-[#F4F6FC]"
             >
               取消
             </button>
             <button
               onClick={handleCreate}
               disabled={!newDoc.title.trim()}
-              className="inline-flex items-center gap-1 px-3 py-1 text-sm text-white bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50"
+              className="inline-flex items-center gap-1 px-3 py-1 text-sm text-white bg-primary rounded-[10px] hover:bg-primary/90 disabled:opacity-50"
             >
               <Check size={12} /> 创建
             </button>
@@ -279,14 +301,14 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
       {/* Main 3-column layout: sidebar | list | preview */}
       <div
         className="grid gap-4"
-        style={{ gridTemplateColumns: previewDoc ? '180px 1fr 320px' : '180px 1fr' }}
+        style={{ gridTemplateColumns: previewDoc ? '180px 1fr 400px' : '180px 1fr' }}
       >
         {/* Category sidebar */}
         <aside>
-          <div className="bg-white border border-gray-200 rounded-xl p-3 sticky top-0">
+          <div className="bg-white border border-[#E8ECF4] rounded-[10px] p-3 sticky top-0">
             <div className="flex items-center gap-1.5 mb-2 px-1">
-              <FolderOpen size={14} className="text-gray-400" />
-              <span className="text-xs font-semibold text-gray-600">分类</span>
+              <FolderOpen size={14} className="text-[#919AA3]" />
+              <span className="text-xs font-semibold text-light-text-secondary">分类</span>
             </div>
             <div className="space-y-0.5">
               {categories.map((cat) => {
@@ -297,14 +319,14 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
                     key={cat.key}
                     onClick={() => setActiveCategory(cat.key)}
                     type="button"
-                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${activeCategory === cat.key ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors ${activeCategory === cat.key ? 'bg-primary/8 text-primary font-medium' : 'text-light-text-secondary hover:bg-[#F4F6FC]'}`}
                   >
                     <span className="flex items-center gap-1">
                       <span className="text-xs">{cat.icon}</span>
                       <span>{cat.label}</span>
                     </span>
                     <span
-                      className={`text-[10px] px-1 py-0.5 rounded-full ${activeCategory === cat.key ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}`}
+                      className={`text-[10px] px-1 py-0.5 rounded-full ${activeCategory === cat.key ? 'bg-primary/10 text-primary' : 'bg-[#F4F6FC] text-[#919AA3]'}`}
                     >
                       {count}
                     </span>
@@ -313,8 +335,8 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
               })}
             </div>
             {isEPC && (
-              <div className="mt-3 pt-3 border-t border-gray-200">
-                <div className="text-[10px] font-semibold text-gray-400 uppercase mb-1 px-1">
+              <div className="mt-3 pt-3 border-t border-[#E8ECF4]">
+                <div className="text-[10px] font-semibold text-[#919AA3] uppercase mb-1 px-1">
                   完整度
                 </div>
                 {EPC_CATEGORIES.filter((c) => c.key !== 'all').map((cat) => {
@@ -325,12 +347,12 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
                       className="flex items-center gap-1.5 px-1 py-0.5 text-[10px]"
                     >
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${count > 0 ? 'bg-green-500' : 'bg-gray-300'}`}
+                        className={`w-1.5 h-1.5 rounded-full ${count > 0 ? 'bg-primary' : 'bg-[#E8ECF4]'}`}
                       />
-                      <span className={count > 0 ? 'text-gray-600' : 'text-gray-400'}>
+                      <span className={count > 0 ? 'text-light-text-secondary' : 'text-[#919AA3]'}>
                         {cat.label}
                       </span>
-                      <span className="ml-auto text-gray-400">{count}</span>
+                      <span className="ml-auto text-[#919AA3]">{count}</span>
                     </div>
                   );
                 })}
@@ -342,22 +364,22 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
         {/* Document list */}
         <main className="min-w-0">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white">
-              <Search size={14} className="text-gray-400" />
+            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-[10px] border border-[#E8ECF4] bg-white focus-within:border-primary/40 focus-within:ring-1 focus-within:ring-primary/20 transition-colors">
+              <Search size={14} className="text-[#919AA3]" />
               <input
                 type="text"
                 placeholder="搜索文档..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 bg-transparent text-sm text-gray-800 focus:outline-none placeholder:text-gray-400"
+                className="flex-1 bg-transparent text-sm text-light-text focus:outline-none placeholder:text-[#919AA3]"
               />
             </div>
           </div>
 
           {isLoading && (
             <div className="flex items-center justify-center py-12">
-              <Loader2 size={20} className="animate-spin text-blue-500" />
-              <span className="ml-2 text-sm text-gray-500">加载中...</span>
+              <Loader2 size={20} className="animate-spin text-primary" />
+              <span className="ml-2 text-sm text-light-text-secondary">加载中...</span>
             </div>
           )}
 
@@ -384,7 +406,7 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
                   <div
                     key={doc.id}
                     onClick={() => setPreviewDoc(doc)}
-                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all group ${isSelected ? 'border-blue-400 bg-blue-50/50 shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'}`}
+                    className={`flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer transition-all group ${isSelected ? 'border-primary bg-primary/5 shadow-sm' : 'border-[#E8ECF4] bg-white hover:border-primary/30 hover:shadow-sm'}`}
                   >
                     <div
                       className="w-1 self-stretch rounded-full shrink-0"
@@ -397,8 +419,10 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
                       {DOC_TYPE_ICONS[doc.doc_type] ?? '📄'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-800 truncate">{doc.title}</div>
-                      <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">
+                      <div className="text-sm font-medium text-light-text truncate">
+                        {doc.title}
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px] text-[#919AA3] mt-0.5">
                         <span>{doc.author}</span>
                         <span>v{doc.version}</span>
                         <span
@@ -407,6 +431,11 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
                         >
                           {statusLabel}
                         </span>
+                        {doc.file_name && (
+                          <span className="text-[10px] text-[#919AA3]">
+                            {formatFileSize(doc.file_size)}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -415,17 +444,27 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
                           e.stopPropagation();
                           setPreviewDoc(doc);
                         }}
-                        className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-blue-500"
+                        className="p-1 rounded hover:bg-[#F4F6FC] text-[#919AA3] hover:text-primary"
                         title="预览"
                       >
                         <Eye size={13} />
                       </button>
+                      {doc.file_url && (
+                        <a
+                          href={documentService.getDownloadUrl(doc.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1 rounded hover:bg-[#F4F6FC] text-[#919AA3] hover:text-primary"
+                          title="下载"
+                        >
+                          <Download size={13} />
+                        </a>
+                      )}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(doc.id);
                         }}
-                        className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-red-500"
+                        className="p-1 rounded hover:bg-[#F4F6FC] text-[#919AA3] hover:text-red-500"
                         title="删除"
                       >
                         <Trash2 size={13} />
@@ -440,99 +479,8 @@ const ProjectDocuments: React.FC<ProjectDocumentsProps> = ({ projectId, projectT
 
         {/* Preview panel */}
         {previewDoc && (
-          <aside className="bg-white border border-gray-200 rounded-xl overflow-hidden sticky top-0 self-start">
-            {/* Preview header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-              <span className="text-sm font-semibold text-gray-800 truncate">文档预览</span>
-              <button
-                onClick={() => setPreviewDoc(null)}
-                className="p-1 rounded hover:bg-gray-200 text-gray-400"
-              >
-                <X size={14} />
-              </button>
-            </div>
-            {/* Preview content */}
-            <div className="p-4 space-y-4">
-              {/* File icon + type */}
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-xl"
-                  style={{
-                    backgroundColor: `${(categories.find((c) => c.key === previewDoc.category) ?? categories[0]).color}12`,
-                  }}
-                >
-                  {DOC_TYPE_ICONS[previewDoc.doc_type] ?? '📄'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-gray-800 leading-snug">
-                    {previewDoc.title}
-                  </div>
-                  <div className="text-[11px] text-gray-400 mt-0.5">
-                    {DOC_TYPE_LABELS[previewDoc.doc_type] ?? previewDoc.doc_type} · v
-                    {previewDoc.version}
-                  </div>
-                </div>
-              </div>
-
-              {/* Meta fields */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <span className="text-gray-400 block mb-0.5">作者</span>
-                  <span className="text-gray-700 font-medium">{previewDoc.author}</span>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <span className="text-gray-400 block mb-0.5">状态</span>
-                  <span
-                    className="font-medium"
-                    style={{ color: STATUS_COLORS[previewDoc.status] ?? '#676879' }}
-                  >
-                    {STATUS_LABELS[previewDoc.status] ?? previewDoc.status}
-                  </span>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <span className="text-gray-400 block mb-0.5">分类</span>
-                  <span className="text-gray-700 font-medium">
-                    {(categories.find((c) => c.key === previewDoc.category) ?? categories[0]).label}
-                  </span>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <span className="text-gray-400 block mb-0.5">版本</span>
-                  <span className="text-gray-700 font-medium">{previewDoc.version}</span>
-                </div>
-              </div>
-
-              {/* Summary */}
-              {previewDoc.content_summary && (
-                <div>
-                  <div className="text-[11px] font-semibold text-gray-400 uppercase mb-1">
-                    内容摘要
-                  </div>
-                  <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 rounded-lg p-3">
-                    {previewDoc.content_summary}
-                  </p>
-                </div>
-              )}
-
-              {/* Mock preview area */}
-              <div className="border border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center gap-2 bg-gray-50/50">
-                <FileText size={32} className="text-gray-300" />
-                <span className="text-xs text-gray-400">文档预览区域</span>
-                <span className="text-[10px] text-gray-300">（接入文件存储后可在线预览）</span>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2">
-                <button className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 transition-colors">
-                  <Download size={13} /> 下载文件
-                </button>
-                <button
-                  onClick={() => handleDelete(previewDoc.id)}
-                  className="px-3 py-2 rounded-lg border border-red-200 text-red-500 text-xs font-medium hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </div>
+          <aside className="sticky top-0 self-start" style={{ height: 'calc(100vh - 200px)' }}>
+            <DocumentPreview document={previewDoc} onClose={() => setPreviewDoc(null)} />
           </aside>
         )}
       </div>

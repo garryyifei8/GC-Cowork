@@ -41,11 +41,6 @@ def get_activity_store():
 
 
 @lru_cache(maxsize=1)
-def get_bidding_store():
-    return _get_store_module("bidding_store")
-
-
-@lru_cache(maxsize=1)
 def get_document_store():
     return _get_store_module("document_store")
 
@@ -88,3 +83,8 @@ def get_audit_store():
 @lru_cache(maxsize=1)
 def get_supervision_store():
     return _get_store_module("supervision_store")
+
+
+@lru_cache(maxsize=1)
+def get_supplier_store():
+    return _get_store_module("supplier_store")

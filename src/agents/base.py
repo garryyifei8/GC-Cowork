@@ -44,21 +44,34 @@ class BaseAgent(ABC):
     def build_stream_messages(self, request: AgentRequest) -> list[dict[str, str]]:
         """Build messages for streaming mode (plain text, no JSON).
 
+        Strips JSON output format instructions from the system prompt and
+        replaces them with a natural-language directive so the LLM streams
+        readable Chinese text instead of raw JSON.
+
         Subclasses that inject data context should override this to include
         their domain data, then call super or append the override instruction.
         """
         messages = self._build_messages(request)
-        # Override the JSON requirement — tell LLM to respond in natural language
-        messages.append(
-            {
-                "role": "system",
-                "content": (
-                    "重要：本次请直接用自然语言回复用户。"
-                    "不要使用JSON格式，不要输出代码块。"
-                    "请使用清晰的中文段落和列表来组织回答。"
-                ),
-            }
-        )
+
+        if messages and messages[0]["role"] == "system":
+            content = messages[0]["content"]
+            # Truncate at the JSON format instruction, keeping the role
+            # description and domain expertise but dropping the JSON template.
+            for marker in ["你必须以JSON格式", "请返回JSON格式"]:
+                idx = content.find(marker)
+                if idx > 0:
+                    content = content[:idx].rstrip()
+                    break
+
+            # Append streaming-mode instruction
+            content += (
+                "\n\n【本次输出要求】\n"
+                "请直接用自然语言（中文）回复用户。禁止输出JSON格式或代码块。\n"
+                "使用清晰的段落、**加粗**标记、- 列表和 ### 小标题来组织你的回答。\n"
+                "数据卡片由系统自动生成，你不需要返回cards数据。"
+            )
+            messages[0]["content"] = content
+
         return messages
 
     def _base_response(self, request: AgentRequest, content: str) -> AgentResponse:

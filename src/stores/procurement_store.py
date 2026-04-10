@@ -176,3 +176,20 @@ def update(package_id: str, updates: dict) -> ProcurementPackage | None:
     updated = existing.model_copy(update=updates)
     _packages[package_id] = updated
     return updated
+
+
+def delete(package_id: str) -> bool:
+    """Delete a procurement package. Returns True if found and deleted."""
+    if package_id in _packages:
+        del _packages[package_id]
+        return True
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.procurement_store import *  # noqa: E402,F401,F403

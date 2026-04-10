@@ -3,7 +3,6 @@ import type {
   Project,
   ProjectDetail,
   ProjectTask,
-  BiddingOpportunity,
   ActivityEvent,
   DashboardMetrics,
   AISuggestion,
@@ -23,14 +22,31 @@ import type {
   LegalContract,
   AuditReport,
   SupervisionRecord,
+  Supplier,
+  SupplierSummary,
 } from '../types';
 
 const API_BASE = '/api';
 
+export function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem('access_token');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+}
+
+/** Fetch wrapper that auto-injects auth token. Use for direct fetch calls in stores. */
+export async function apiFetch(url: string, options?: RequestInit): Promise<Response> {
+  const token = localStorage.getItem('access_token');
+  const headers: Record<string, string> = { ...(options?.headers as Record<string, string>) };
+  if (token && !headers['Authorization']) headers['Authorization'] = `Bearer ${token}`;
+  return fetch(url, { ...options, headers });
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers: { ...authHeaders(), ...(options?.headers as Record<string, string>) },
   });
   if (!res.ok) {
     throw new Error(`API error: ${res.status}`);
@@ -65,7 +81,7 @@ export const chatService = {
   ): Promise<void> => {
     const res = await fetch(`${API_BASE}/chat/stream`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ message, context }),
     });
 
@@ -151,9 +167,14 @@ export const projectService = {
     name: string;
     project_type?: string;
     budget_display?: string;
+    budget?: number;
     due_date?: string;
     description?: string;
     manager?: string;
+    team_members?: string[];
+    stage?: string;
+    risk_level?: string;
+    milestones?: Array<{ name: string; date: string; status: string }>;
   }) =>
     request<Project>('/projects', {
       method: 'POST',
@@ -189,7 +210,7 @@ export const projectService = {
   delete: async (projectId: string) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json().catch(() => ({}));
@@ -200,7 +221,7 @@ export const projectService = {
   ) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/milestones`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -213,7 +234,7 @@ export const projectService = {
   ) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/milestones/${milestoneId}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -222,7 +243,7 @@ export const projectService = {
   deleteMilestone: async (projectId: string, milestoneId: string) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/milestones/${milestoneId}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json().catch(() => ({}));
@@ -233,7 +254,7 @@ export const projectService = {
   ) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/risks`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -242,7 +263,7 @@ export const projectService = {
   updateRisk: async (projectId: string, riskId: string, data: Record<string, unknown>) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/risks/${riskId}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -251,7 +272,7 @@ export const projectService = {
   deleteRisk: async (projectId: string, riskId: string) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/risks/${riskId}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json().catch(() => ({}));
@@ -259,7 +280,7 @@ export const projectService = {
   updateTeam: async (projectId: string, members: string[]) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/team`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ members }),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -268,7 +289,7 @@ export const projectService = {
   addTeamMember: async (projectId: string, name: string) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/team`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify({ name }),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -277,7 +298,7 @@ export const projectService = {
   removeTeamMember: async (projectId: string, name: string) => {
     const res = await fetch(`${API_BASE}/projects/${projectId}/team/${encodeURIComponent(name)}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json().catch(() => ({}));
@@ -285,7 +306,7 @@ export const projectService = {
   deleteTask: async (taskId: string) => {
     const res = await fetch(`${API_BASE}/tasks/${taskId}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
     });
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     return res.json().catch(() => ({}));
@@ -351,17 +372,6 @@ export const taskService = {
       method: 'POST',
       body: JSON.stringify({ content, author: author ?? '当前用户' }),
     }),
-};
-
-export const biddingService = {
-  list: (category?: string, status?: string) => {
-    const params = new URLSearchParams();
-    if (category) params.set('category', category);
-    if (status) params.set('status', status);
-    const qs = params.toString();
-    return request<BiddingOpportunity[]>(`/bidding/opportunities${qs ? `?${qs}` : ''}`);
-  },
-  get: (id: string) => request<BiddingOpportunity>(`/bidding/opportunities/${id}`),
 };
 
 export const hrService = {
@@ -482,6 +492,7 @@ export const documentService = {
     const qs = sp.toString();
     return request<DocumentItem[]>(`/documents${qs ? `?${qs}` : ''}`);
   },
+  get: (id: string) => request<DocumentItem>(`/documents/${id}`),
   create: (data: {
     title: string;
     doc_type?: string;
@@ -489,19 +500,60 @@ export const documentService = {
     content_summary?: string;
     author?: string;
   }) => request<DocumentItem>('/documents', { method: 'POST', body: JSON.stringify(data) }),
-  upload: async (
+  update: (id: string, data: Record<string, unknown>) =>
+    request<DocumentItem>(`/documents/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string) => request<{ ok: boolean }>(`/documents/${id}`, { method: 'DELETE' }),
+  upload: (
     file: File,
-    meta?: { title?: string; doc_type?: string; project_id?: string; author?: string }
-  ) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (meta?.title) formData.append('title', meta.title);
-    if (meta?.doc_type) formData.append('doc_type', meta.doc_type);
-    if (meta?.project_id) formData.append('project_id', meta.project_id);
-    if (meta?.author) formData.append('author', meta.author);
-    const res = await fetch(`${API_BASE}/documents/upload`, { method: 'POST', body: formData });
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    return res.json() as Promise<DocumentItem>;
+    meta?: {
+      title?: string;
+      doc_type?: string;
+      project_id?: string;
+      author?: string;
+      category?: string;
+    },
+    onProgress?: (pct: number) => void
+  ): Promise<DocumentItem> => {
+    return new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (meta?.title) formData.append('title', meta.title);
+      if (meta?.doc_type) formData.append('doc_type', meta.doc_type);
+      if (meta?.project_id) formData.append('project_id', meta.project_id);
+      if (meta?.author) formData.append('author', meta.author);
+      if (meta?.category) formData.append('category', meta.category);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${API_BASE}/documents/upload`);
+
+      const token = localStorage.getItem('access_token');
+      if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+      if (onProgress) {
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+        };
+      }
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(JSON.parse(xhr.responseText) as DocumentItem);
+        } else {
+          reject(new Error(`Upload failed: ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error('Upload network error'));
+      xhr.send(formData);
+    });
+  },
+  getDownloadUrl: (docId: string) => `${API_BASE}/documents/${docId}/download`,
+  getFileUrl: (fileUrl: string) => {
+    if (fileUrl.startsWith('/api/')) return fileUrl;
+    return `${API_BASE}/documents/file/${fileUrl}`;
   },
 };
 
@@ -562,4 +614,22 @@ export const supervisionService = {
     request<{ total: number; issues_open: number; inspections_this_month: number }>(
       '/supervision/summary'
     ),
+};
+
+export const supplierService = {
+  list: (params?: { category?: string; status?: string; project_id?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.category) sp.set('category', params.category);
+    if (params?.status) sp.set('status', params.status);
+    if (params?.project_id) sp.set('project_id', params.project_id);
+    const qs = sp.toString();
+    return request<Supplier[]>(`/suppliers${qs ? `?${qs}` : ''}`);
+  },
+  get: (id: string) => request<Supplier>(`/suppliers/${id}`),
+  create: (data: Record<string, unknown>) =>
+    request<Supplier>('/suppliers', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: Record<string, unknown>) =>
+    request<Supplier>(`/suppliers/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  delete: (id: string) => request<void>(`/suppliers/${id}`, { method: 'DELETE' }),
+  getSummary: () => request<SupplierSummary>('/suppliers/summary'),
 };

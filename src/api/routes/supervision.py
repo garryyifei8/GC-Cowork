@@ -2,9 +2,10 @@
 
 import datetime
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from src.core.auth import require_auth
 from src.core.exceptions import PlatformError
 from src.stores.supervision_store import (
     RecordStatus,
@@ -17,7 +18,7 @@ from src.stores.supervision_store import (
     update_record,
 )
 
-router = APIRouter(prefix="/supervision", tags=["supervision"])
+router = APIRouter(prefix="/supervision", tags=["supervision"], dependencies=[Depends(require_auth)])
 
 
 class CreateRecordRequest(BaseModel):

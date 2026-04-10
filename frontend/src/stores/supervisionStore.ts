@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { apiFetch } from '../services/api';
 import type { SupervisionRecord } from '../types';
 
 interface SupervisionSummary {
@@ -40,7 +41,7 @@ export const useSupervisionStore = create<SupervisionState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const qs = buildQuery({ project_id: projectId, record_type: recordType });
-      const res = await fetch(`${BASE}/api/supervision/records${qs}`);
+      const res = await apiFetch(`${BASE}/api/supervision/records${qs}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ records: data, isLoading: false });
@@ -54,7 +55,7 @@ export const useSupervisionStore = create<SupervisionState>((set) => ({
 
   fetchSummary: async () => {
     try {
-      const res = await fetch(`${BASE}/api/supervision/summary`);
+      const res = await apiFetch(`${BASE}/api/supervision/summary`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       set({ summary: data });
@@ -65,7 +66,7 @@ export const useSupervisionStore = create<SupervisionState>((set) => ({
 
   createRecord: async (data: Partial<SupervisionRecord>) => {
     try {
-      const res = await fetch(`${BASE}/api/supervision/records`, {
+      const res = await apiFetch(`${BASE}/api/supervision/records`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

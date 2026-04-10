@@ -459,3 +459,12 @@ def update_invoice(invoice_id: str, data: dict) -> Invoice | None:
     updated = existing.model_copy(update=data)
     _invoices[invoice_id] = updated
     return updated
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.finance_store import *  # noqa: E402,F401,F403

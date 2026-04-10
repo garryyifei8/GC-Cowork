@@ -18,7 +18,6 @@ def patch_stores_for_supabase():
         "project_store",
         "task_store",
         "activity_store",
-        "bidding_store",
         "document_store",
         "hr_store",
         "finance_store",
@@ -28,6 +27,7 @@ def patch_stores_for_supabase():
         "legal_store",
         "audit_store",
         "supervision_store",
+        "supplier_store",
     ]
 
     for name in store_names:

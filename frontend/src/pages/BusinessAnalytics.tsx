@@ -1,19 +1,11 @@
 import { useEffect, useMemo } from 'react';
-import { BarChart2, TrendingUp, Award, Users } from 'lucide-react';
-import { useBiddingStore } from '../stores/biddingStore';
+import { BarChart2, TrendingUp, Briefcase, Users } from 'lucide-react';
 import { useLegalStore } from '../stores/legalStore';
 import { StatCard } from '../widgets/atomic';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-interface FunnelStage {
-  key: string;
-  label: string;
-  color: string;
-  count: number;
-}
 
 interface MonthlyRevenue {
   month: string;
@@ -46,90 +38,6 @@ function fmtAmount(amount: number): string {
 // ---------------------------------------------------------------------------
 function fmtPct(val: number): string {
   return `${val.toFixed(1)}%`;
-}
-
-// ---------------------------------------------------------------------------
-// FunnelChart component (pure CSS divs)
-// ---------------------------------------------------------------------------
-interface FunnelChartProps {
-  stages: FunnelStage[];
-}
-
-function FunnelChart({ stages }: FunnelChartProps) {
-  if (!stages.length) return null;
-  const maxCount = Math.max(...stages.map((s) => s.count), 1);
-
-  return (
-    <div className="flex flex-col gap-2" role="list" aria-label="投标漏斗图">
-      {stages.map((stage, idx) => {
-        const pct = Math.round((stage.count / maxCount) * 100);
-        // Funnel narrows from top to bottom
-        const leftPad = idx * 4; // percent padding per step
-        return (
-          <div
-            key={stage.key}
-            role="listitem"
-            className="flex items-center gap-3"
-            aria-label={`${stage.label}: ${stage.count}件`}
-          >
-            {/* Stage label */}
-            <span className="text-xs text-[#6C7688]">{stage.label}</span>
-
-            {/* Bar track */}
-            <div
-              className="relative flex-1 h-8 rounded overflow-hidden"
-              style={{ paddingLeft: `${leftPad}%`, paddingRight: `${leftPad}%` }}
-            >
-              {/* Background track */}
-              <div className="absolute inset-0 bg-[#F0F2F8]" />
-              {/* Filled bar */}
-              <div
-                className="absolute top-0 bottom-0 left-0 rounded transition-all duration-500 flex items-center pl-3"
-                style={{
-                  width: `${pct}%`,
-                  backgroundColor: stage.color,
-                  marginLeft: `${leftPad}%`,
-                  maxWidth: `calc(100% - ${leftPad * 2}%)`,
-                }}
-              />
-              {/* Count label inside bar */}
-              <div
-                className="absolute inset-0 flex items-center"
-                style={{ paddingLeft: `calc(${leftPad}% + 10px)` }}
-              >
-                <span
-                  className="text-xs font-semibold z-10 relative"
-                  style={{ color: pct > 30 ? '#fff' : stage.color }}
-                >
-                  {stage.count} 件
-                </span>
-              </div>
-            </div>
-
-            {/* Percentage */}
-            <span className="text-xs font-medium text-[#6C7688]">
-              {fmtPct((stage.count / maxCount) * 100)}
-            </span>
-          </div>
-        );
-      })}
-
-      {/* Conversion annotations */}
-      {stages.length > 1 && (
-        <div className="mt-2 flex gap-2 flex-wrap">
-          {stages.slice(1).map((stage, idx) => {
-            const prev = stages[idx];
-            const conv = prev.count > 0 ? Math.round((stage.count / prev.count) * 100) : 0;
-            return (
-              <span key={stage.key} className="text-[10px] text-[#9CA3AF]">
-                {prev.label} → {stage.label}: {conv}%
-              </span>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -191,15 +99,12 @@ function BarChart({ data }: BarChartProps) {
 // ---------------------------------------------------------------------------
 
 export const BusinessAnalytics = () => {
-  const { opportunities, fetchOpportunities } = useBiddingStore();
-
   const { contracts, summary: legalSummary, fetchContracts, fetchSummary } = useLegalStore();
 
   useEffect(() => {
-    fetchOpportunities();
     fetchContracts();
     fetchSummary();
-  }, [fetchOpportunities, fetchContracts, fetchSummary]);
+  }, [fetchContracts, fetchSummary]);
 
   // ---------------------------------------------------------------------------
   // KPI calculations
@@ -211,10 +116,8 @@ export const BusinessAnalytics = () => {
 
   // 利润率: mock 18.5% or derive from finance if available
   const profitRate = useMemo(() => {
-    // If actual data is unavailable, use a conservative mock derived from contract mix
     const activeContracts = contracts.filter((c) => c.status === 'active');
     if (activeContracts.length === 0) return 18.5;
-    // High-risk contracts reduce profit rate
     const highRisk = activeContracts.filter(
       (c) => c.risk_level === 'high' || c.risk_level === 'critical'
     ).length;
@@ -222,36 +125,16 @@ export const BusinessAnalytics = () => {
     return Math.max(base, 8);
   }, [contracts]);
 
-  // 中标率: won / (won + lost) bids
-  const winRate = useMemo(() => {
-    const won = opportunities.filter((o) => o.status === 'won').length;
-    const lost = opportunities.filter((o) => o.status === 'lost').length;
-    const total = won + lost;
-    if (total === 0) return null;
-    return Math.round((won / total) * 100);
-  }, [opportunities]);
+  // 活跃合同数
+  const activeContractCount = useMemo(() => {
+    return legalSummary?.active ?? contracts.filter((c) => c.status === 'active').length;
+  }, [contracts, legalSummary]);
 
   // 人均产值: total contract amount / estimated headcount (mock 45 if unknown)
   const perCapitaOutput = useMemo(() => {
     const headcount = 45; // replace with HR store when integrated
     return totalContractAmount / headcount;
   }, [totalContractAmount]);
-
-  // ---------------------------------------------------------------------------
-  // Funnel stages
-  // ---------------------------------------------------------------------------
-  const funnelStages = useMemo<FunnelStage[]>(() => {
-    const countByStatus = (status: string) =>
-      opportunities.filter((o) => o.status === status).length;
-
-    return [
-      { key: 'monitoring', label: '跟踪中', color: '#0086C0', count: countByStatus('monitoring') },
-      { key: 'analyzing', label: '分析中', color: '#9B51E0', count: countByStatus('analyzing') },
-      { key: 'preparing', label: '准备中', color: '#FDAB3D', count: countByStatus('preparing') },
-      { key: 'submitted', label: '已投标', color: '#579BFC', count: countByStatus('submitted') },
-      { key: 'won', label: '已中标', color: '#00C875', count: countByStatus('won') },
-    ];
-  }, [opportunities]);
 
   // ---------------------------------------------------------------------------
   // Trend data — try to use contract amounts by month if enough data, else mock
@@ -275,7 +158,6 @@ export const BusinessAnalytics = () => {
       }
     }
     const result = Object.entries(monthData).map(([month, amount]) => ({ month, amount }));
-    // If all zeros fall back to mock
     const hasData = result.some((r) => r.amount > 0);
     return hasData ? result : MOCK_REVENUE;
   }, [contracts]);
@@ -289,7 +171,7 @@ export const BusinessAnalytics = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#333]">经营分析</h1>
-          <p className="text-sm text-[#6C7688]">合同、投标与营收综合概览</p>
+          <p className="text-sm text-[#6C7688]">合同与营收综合概览</p>
         </div>
         <span className="text-xs text-[#9CA3AF]">实时数据</span>
       </div>
@@ -313,11 +195,11 @@ export const BusinessAnalytics = () => {
           trend={1.4}
         />
         <StatCard
-          label="中标率"
-          value={winRate !== null ? fmtPct(winRate) : '—'}
-          icon={<Award size={20} />}
+          label="活跃合同"
+          value={`${activeContractCount}`}
+          icon={<Briefcase size={20} />}
           iconColor="bg-purple-100 text-purple-600"
-          trend={winRate !== null ? 3.1 : undefined}
+          trend={2}
         />
         <StatCard
           label="人均产值"
@@ -329,64 +211,32 @@ export const BusinessAnalytics = () => {
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Charts row — Funnel + Bar                                            */}
+      {/* Monthly Revenue Bar Chart                                            */}
       {/* ------------------------------------------------------------------ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bidding Funnel */}
-        <div className="bg-white border border-[#E8E8E8] rounded-lg shadow-[0_0_35px_0_rgba(104,134,177,0.1)] p-5">
-          <div className="mb-4">
-            <h2 className="text-base font-semibold text-[#333]">投标漏斗</h2>
-            <p className="text-xs text-[#9CA3AF]">各阶段机会数量及转化率</p>
-          </div>
-
-          <FunnelChart stages={funnelStages} />
-
-          {/* Summary badges */}
-          <div className="flex items-center gap-3 flex-wrap border-t border-[#F0F0F0] mt-4 pt-3">
-            <span className="text-xs text-[#6C7688]">
-              投标机会总计 <strong className="text-[#333]">{opportunities.length}</strong> 件
-            </span>
-            <span
-              className="text-xs font-semibold px-2 py-0.5 rounded"
-              style={{ color: '#00C875', backgroundColor: 'rgba(0,200,117,0.12)' }}
-            >
-              中标 {funnelStages.find((s) => s.key === 'won')?.count ?? 0} 件
-            </span>
-            <span
-              className="text-xs font-semibold px-2 py-0.5 rounded"
-              style={{ color: '#FDAB3D', backgroundColor: 'rgba(253,171,61,0.12)' }}
-            >
-              准备中 {funnelStages.find((s) => s.key === 'preparing')?.count ?? 0} 件
-            </span>
-          </div>
+      <div className="bg-white border border-[#E8E8E8] rounded-lg shadow-[0_0_35px_0_rgba(104,134,177,0.1)] p-5">
+        <div className="mb-4">
+          <h2 className="text-base font-semibold text-[#333]">月度营收趋势</h2>
+          <p className="text-xs text-[#9CA3AF]">近6个月合同签约金额</p>
         </div>
 
-        {/* Monthly Revenue Bar Chart */}
-        <div className="bg-white border border-[#E8E8E8] rounded-lg shadow-[0_0_35px_0_rgba(104,134,177,0.1)] p-5">
-          <div className="mb-4">
-            <h2 className="text-base font-semibold text-[#333]">月度营收趋势</h2>
-            <p className="text-xs text-[#9CA3AF]">近6个月合同签约金额</p>
-          </div>
+        <BarChart data={revenueData} />
 
-          <BarChart data={revenueData} />
-
-          {/* Trend footnote */}
-          <div className="border-t border-[#F0F0F0] mt-4 pt-3 flex items-center gap-1">
-            <TrendingUp size={13} className="text-emerald-500" />
-            <span className="text-xs text-[#6C7688]">
-              本月营收较上月增长{' '}
-              <strong className="text-emerald-600">
-                +
-                {Math.round(
-                  ((revenueData[revenueData.length - 1].amount -
-                    revenueData[revenueData.length - 2].amount) /
-                    Math.max(revenueData[revenueData.length - 2].amount, 1)) *
-                    100
-                )}
-                %
-              </strong>
-            </span>
-          </div>
+        {/* Trend footnote */}
+        <div className="border-t border-[#F0F0F0] mt-4 pt-3 flex items-center gap-1">
+          <TrendingUp size={13} className="text-emerald-500" />
+          <span className="text-xs text-[#6C7688]">
+            本月营收较上月增长{' '}
+            <strong className="text-emerald-600">
+              +
+              {Math.round(
+                ((revenueData[revenueData.length - 1].amount -
+                  revenueData[revenueData.length - 2].amount) /
+                  Math.max(revenueData[revenueData.length - 2].amount, 1)) *
+                  100
+              )}
+              %
+            </strong>
+          </span>
         </div>
       </div>
 

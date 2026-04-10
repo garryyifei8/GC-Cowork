@@ -10,7 +10,7 @@ from src.llm.client import LLMClient
 
 def create_agent_registry(llm_client: LLMClient) -> dict[AgentType, BaseAgent]:
     """Build and return a registry mapping every AgentType to its agent instance."""
-    from src.agents.bidding import BiddingAgent
+    from src.agents.audit import AuditAgent
     from src.agents.dispatch import DispatchAgent
     from src.agents.document import DocumentAgent
     from src.agents.finance import FinanceAgent
@@ -29,11 +29,11 @@ def create_agent_registry(llm_client: LLMClient) -> dict[AgentType, BaseAgent]:
         AgentType.LEGAL: LegalAgent(llm_client),
         AgentType.PROCUREMENT: ProcurementAgent(llm_client),
         AgentType.HR: HRAgent(llm_client),
-        AgentType.BIDDING: BiddingAgent(llm_client),
         AgentType.DOCUMENT: DocumentAgent(llm_client),
         AgentType.KNOWLEDGE: KnowledgeAgent(llm_client),
         AgentType.PROCESS_CONTROL: ProcessControlAgent(llm_client),
         AgentType.SUPERVISION: SupervisionAgent(llm_client),
+        AgentType.AUDIT: AuditAgent(llm_client),
     }
 
 

@@ -22,9 +22,13 @@ from __future__ import annotations
 
 import random
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
+# ---------------------------------------------------------------------------
+# Router
+# ---------------------------------------------------------------------------
+from src.core.auth import require_auth
 from src.core.models import (
     BudgetLine,
     ExpenseCategory,
@@ -47,11 +51,7 @@ from src.stores.finance_store import (
     update_invoice,
 )
 
-# ---------------------------------------------------------------------------
-# Router
-# ---------------------------------------------------------------------------
-
-router = APIRouter(prefix="/finance", tags=["finance"])
+router = APIRouter(prefix="/finance", tags=["finance"], dependencies=[Depends(require_auth)])
 
 
 # ---------------------------------------------------------------------------

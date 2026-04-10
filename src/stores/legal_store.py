@@ -281,3 +281,12 @@ def get_legal_summary() -> dict:
         "high_risk_count": len(high_risk),
         "expiring_soon_contracts": [c.id for c in expiring_soon],
     }
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.legal_store import *  # noqa: E402,F401,F403

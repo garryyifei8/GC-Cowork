@@ -1,52 +1,44 @@
-import React from 'react'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  Cell,
-  Tooltip,
-} from 'recharts'
-import { EmptyState } from '../atomic'
-import { useProjectStore } from '../../stores/projectStore'
-import type { Project } from '../../types'
+import React from 'react';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from 'recharts';
+import { EmptyState } from '../atomic';
+import { useProjectStore } from '../../stores/projectStore';
+import type { Project } from '../../types';
 
 export interface ProjectProgressProps {
-  data?: { projects?: Project[] }
+  data?: { projects?: Project[] };
 }
 
 function getProgressColor(pct: number): string {
-  if (pct >= 80) return '#00C875'
-  if (pct >= 40) return '#FFB264'
-  return '#E74C3C'
+  if (pct >= 80) return '#00C875';
+  if (pct >= 40) return '#FFB264';
+  return '#E74C3C';
 }
 
 function truncate(str: string, maxLen = 8): string {
-  return str.length > maxLen ? `${str.slice(0, maxLen)}...` : str
+  return str.length > maxLen ? `${str.slice(0, maxLen)}...` : str;
 }
 
 interface CustomTooltipProps {
-  active?: boolean
-  payload?: Array<{ value: number; payload: { name: string } }>
+  active?: boolean;
+  payload?: Array<{ value: number; payload: { name: string } }>;
 }
 
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
-  if (!active || !payload?.length) return null
-  const { value, payload: d } = payload[0]
+  if (!active || !payload?.length) return null;
+  const { value, payload: d } = payload[0];
   return (
-    <div className="bg-white  border border-[#E8ECF4]  rounded-[10px] p-3 shadow-lg text-sm max-w-[200px]">
-      <div className="font-medium mb-0.5 text-light-text ">{d.name}</div>
-      <div className="text-gray-600 ">
+    <div className="bg-white border border-[#E8ECF4] rounded-[10px] p-3 shadow-lg text-sm max-w-[200px]">
+      <div className="font-medium mb-0.5 text-light-text">{d.name}</div>
+      <div className="text-light-text-secondary">
         进度: <strong>{Math.round(value)}%</strong>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const ProjectProgress: React.FC<ProjectProgressProps> = ({ data }) => {
-  const storeProjects = useProjectStore((s) => s.projects)
-  const projects = data?.projects ?? storeProjects
+  const storeProjects = useProjectStore((s) => s.projects);
+  const projects = data?.projects ?? storeProjects;
 
   const chartData = [...projects]
     .sort((a, b) => (b.progress_pct ?? 0) - (a.progress_pct ?? 0))
@@ -55,21 +47,19 @@ const ProjectProgress: React.FC<ProjectProgressProps> = ({ data }) => {
       name: p.name,
       shortName: truncate(p.name),
       progress: Math.min(Math.max(p.progress_pct ?? 0, 0), 100),
-    }))
+    }));
 
   if (chartData.length === 0) {
-    return <EmptyState icon="bar-chart" title="暂无项目数据" description="尚未创建任何项目" />
+    return <EmptyState icon="bar-chart" title="暂无项目数据" description="尚未创建任何项目" />;
   }
 
   return (
     <div
-      className="bg-white  border border-[#E8ECF4]  rounded-[10px] p-5 transition-colors duration-200 flex flex-col gap-3.5 min-h-[220px]"
+      className="bg-white border border-[#E8ECF4] rounded-[10px] p-5 transition-colors duration-200 flex flex-col gap-3.5 min-h-[220px]"
       role="region"
       aria-label="项目进度对比柱状图"
     >
-      <h2 className="text-base font-medium text-light-text  flex-shrink-0">
-        项目进度对比
-      </h2>
+      <h2 className="text-base font-medium text-light-text flex-shrink-0">项目进度对比</h2>
 
       <ResponsiveContainer width="100%" height={Math.max(160, chartData.length * 32)}>
         <BarChart
@@ -102,7 +92,7 @@ const ProjectProgress: React.FC<ProjectProgressProps> = ({ data }) => {
         </BarChart>
       </ResponsiveContainer>
     </div>
-  )
-}
+  );
+};
 
-export default ProjectProgress
+export default ProjectProgress;

@@ -181,3 +181,12 @@ def get_audit_summary() -> dict:
         "findings_count": total_findings,
         "compliance_rate": compliance_rate,
     }
+
+
+# ---------------------------------------------------------------------------
+# Supabase delegation — when USE_SUPABASE=true, override all exports
+# ---------------------------------------------------------------------------
+from src.db.client import use_supabase as _use_sb  # noqa: E402
+
+if _use_sb():
+    from src.stores.supabase.audit_store import *  # noqa: E402,F401,F403

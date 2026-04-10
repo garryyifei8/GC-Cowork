@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from datetime import date
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from src.core.auth import require_auth
 from src.core.exceptions import PlatformError
 from src.stores.audit_store import (
     AuditReportRecord,
@@ -20,7 +21,7 @@ from src.stores.audit_store import (
     update_report,
 )
 
-router = APIRouter(prefix="/audit", tags=["audit"])
+router = APIRouter(prefix="/audit", tags=["audit"], dependencies=[Depends(require_auth)])
 
 
 # ---------------------------------------------------------------------------

@@ -22,7 +22,6 @@ from fastapi.responses import JSONResponse
 from src.api.routes import (
     audit,
     auth,
-    bidding,
     chat,
     dashboard,
     documents,
@@ -34,6 +33,7 @@ from src.api.routes import (
     oa,
     projects,
     supervision,
+    suppliers,
     ws,
 )
 from src.api.routes import settings as settings_routes
@@ -92,7 +92,6 @@ app.include_router(chat.router, prefix="/api")
 app.include_router(projects.router, prefix="/api")
 app.include_router(projects.task_router, prefix="/api")
 app.include_router(projects.activity_router, prefix="/api")
-app.include_router(bidding.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
 app.include_router(hr.router, prefix="/api")
 app.include_router(finance.router, prefix="/api")
@@ -102,6 +101,7 @@ app.include_router(documents.router, prefix="/api")
 app.include_router(legal.router, prefix="/api")
 app.include_router(audit.router, prefix="/api")
 app.include_router(supervision.router, prefix="/api")
+app.include_router(suppliers.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(settings_routes.router, prefix="/api")
 app.include_router(ws.router, prefix="/api")
@@ -129,7 +129,6 @@ async def startup_event():
     if not use_sb:
         # In-memory mode — seed all stores
         from src.stores.activity_store import seed_activities
-        from src.stores.bidding_store import seed_bidding
         from src.stores.document_store import seed_documents
         from src.stores.project_store import seed_projects
         from src.stores.task_store import seed_tasks
@@ -137,7 +136,6 @@ async def startup_event():
         seed_projects()
         seed_tasks()
         seed_activities()
-        seed_bidding()
         seed_documents()
 
         from src.stores.audit_store import seed_audit_reports as seed_audit
@@ -148,6 +146,7 @@ async def startup_event():
         from src.stores.process_store import seed_processes
         from src.stores.procurement_store import seed_procurement
         from src.stores.supervision_store import seed_supervision_records as seed_supervision
+        from src.stores.supplier_store import seed_suppliers
 
         seed_hr()
         seed_finance()
@@ -157,6 +156,7 @@ async def startup_event():
         seed_legal()
         seed_audit()
         seed_supervision()
+        seed_suppliers()
         print("✅ In-memory stores seeded")
 
     # Register automation rules (works in both modes)

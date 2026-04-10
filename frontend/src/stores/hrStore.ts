@@ -1,11 +1,5 @@
 import { create } from 'zustand';
-import type {
-  Employee,
-  AttendanceRecord,
-  LeaveRequest,
-  SalaryRecord,
-  HRSummary,
-} from '../types';
+import type { Employee, AttendanceRecord, LeaveRequest, SalaryRecord, HRSummary } from '../types';
 
 interface HRInsightItem {
   title: string;
@@ -46,7 +40,10 @@ function buildQuery(params: Record<string, string | undefined>): string {
 }
 
 async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, options);
+  const token = localStorage.getItem('access_token');
+  const headers: Record<string, string> = { ...(options?.headers as Record<string, string>) };
+  if (token && !headers['Authorization']) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(url, { ...options, headers });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(text || `HTTP ${res.status}`);
@@ -151,9 +148,7 @@ export const useHRStore = create<HRState>((set) => ({
         body: JSON.stringify({ status }),
       });
       set((state) => ({
-        leaveRequests: state.leaveRequests.map((lr) =>
-          lr.id === id ? updated : lr
-        ),
+        leaveRequests: state.leaveRequests.map((lr) => (lr.id === id ? updated : lr)),
       }));
     } catch (err) {
       set({
