@@ -74,3 +74,6 @@ blob-report/
 
 # Marketing videos (too large for git)
 doc/marketing/videos/
+
+# Git worktrees (isolated feature workspaces)
+.worktrees/
