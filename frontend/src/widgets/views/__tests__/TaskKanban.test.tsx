@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { screen, fireEvent, within } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { renderWithRouter, setupFetchMock } from '../../../test/utils';
 
 // ---------------------------------------------------------------------------
@@ -52,7 +52,7 @@ vi.mock('@dnd-kit/core', async (importOriginal) => {
       transform: null,
       isDragging: false,
     }),
-    useDroppable: ({ id }: { id: string }) => ({
+    useDroppable: ({ id: _id }: { id: string }) => ({
       setNodeRef: vi.fn(),
       isOver: false,
       over: null,

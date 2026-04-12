@@ -51,12 +51,6 @@ const DOC_TYPE_ICONS: Record<string, string> = {
   template: '📄',
   minutes: '📝',
 };
-const DOC_TYPE_LABELS: Record<string, string> = {
-  report: '报告',
-  proposal: '方案',
-  template: '模板',
-  minutes: '纪要',
-};
 
 function formatFileSize(bytes: number | null | undefined): string {
   if (!bytes) return '';

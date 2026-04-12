@@ -1,6 +1,5 @@
-import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { screen, fireEvent, within } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { renderWithRouter, setupFetchMock } from '../../../test/utils';
 
 // ---------------------------------------------------------------------------
@@ -48,8 +47,6 @@ function makeTask(overrides: Partial<TaskWithProject> = {}): TaskWithProject {
   };
 }
 
-const TODAY = new Date().toISOString().slice(0, 10);
-const YESTERDAY = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 const PAST_DATE = '2020-01-01';
 
 const SAMPLE_TASKS: TaskWithProject[] = [

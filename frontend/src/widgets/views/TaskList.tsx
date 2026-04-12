@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { EmptyState } from '../atomic';
 import { useTaskWorkbenchStore } from '../../stores/taskWorkbenchStore';
-import { TASK_STATUS_COLORS, TASK_STATUS_LABELS, PRIORITY_LABELS } from '../../utils/constants';
+import { TASK_STATUS_LABELS, PRIORITY_LABELS } from '../../utils/constants';
 import type { TaskWithProject } from '../../types';
 
 // ---------------------------------------------------------------------------
@@ -745,8 +745,6 @@ const TaskList: React.FC<TaskListProps> = ({ data, onTaskClick, onQuickAdd }) =>
   const updateTaskPriority = useTaskWorkbenchStore((s) => s.updateTaskPriority);
   const selectedTaskIds = useTaskWorkbenchStore((s) => s.selectedTaskIds);
   const toggleTaskSelection = useTaskWorkbenchStore((s) => s.toggleTaskSelection);
-  const selectAllTasks = useTaskWorkbenchStore((s) => s.selectAllTasks);
-  const clearSelection = useTaskWorkbenchStore((s) => s.clearSelection);
 
   const tasks: TaskWithProject[] = data?.tasks ?? storeTasks;
   const [localGroupBy, setLocalGroupBy] = useState<'date' | 'none' | 'project' | 'priority'>(
