@@ -380,3 +380,33 @@ class KnowledgeRAG:
             highlighted = highlighted[:500] + "..."
 
         return highlighted
+
+
+# ---------------------------------------------------------------------------
+# Factory
+# ---------------------------------------------------------------------------
+
+
+def build_rag() -> KnowledgeRAG:
+    """Build a KnowledgeRAG instance based on environment config."""
+    backend = os.environ.get("VECTOR_DB_BACKEND", "memory").lower()
+    dimension = int(os.environ.get("EMBEDDING_DIMENSION", "512"))
+
+    if backend == "memory":
+        embedding_model: EmbeddingModel = EmbeddingModel(dimension=dimension)
+    else:
+        from src.knowledge.fastembed_model import FastEmbedModel
+
+        embedding_model = FastEmbedModel(dimension=dimension)
+
+    if backend == "memory":
+        vector_store: VectorStore = InMemoryVectorStore()
+    elif backend == "pgvector":
+        from src.db.client import get_db_url
+        from src.knowledge.pgvector_store import PgVectorStore
+
+        vector_store = PgVectorStore(dsn=get_db_url(), dimension=dimension)
+    else:
+        raise ValueError(f"Unknown vector DB backend: {backend!r}")
+
+    return KnowledgeRAG(vector_store=vector_store, embedding_model=embedding_model)
