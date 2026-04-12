@@ -126,3 +126,71 @@ jobs:
 
       - run: cd frontend && npm ci
       - run: cd frontend && npm run build
+
+  docker-build:
+    name: Docker Build + Compose Smoke Test
+    runs-on: ubuntu-latest
+    needs: [lint, lint-backend, type-check, test-frontend, test-backend, build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: false
+          tags: gc-teamwork-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: frontend/Dockerfile
+          push: false
+          tags: gc-teamwork-frontend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Compose smoke test
+        run: |
+          # Create a minimal .env so compose can start without real secrets
+          cat > .env <<'ENVEOF'
+          DEBUG=false
+          LLM_API_KEY=ci-dummy-key
+          LLM_API_BASE=https://api.deepseek.com
+          LLM_MODEL=deepseek-chat
+          USE_SUPABASE=false
+          SUPABASE_URL=
+          SUPABASE_ANON_KEY=
+          SUPABASE_SERVICE_ROLE_KEY=
+          DATABASE_URL=
+          VECTOR_DB_BACKEND=memory
+          EMBEDDING_MODEL=BAAI/bge-small-zh-v1.5
+          EMBEDDING_DIMENSION=512
+          ENVEOF
+
+          # Patch compose to use locally built CI images (not build: directives)
+          sed 's|build:|#build:|g; s|context:|#context:|g; s|dockerfile:|#dockerfile:|g' docker-compose.yml > docker-compose.ci.yml
+          sed -i 's|image: gc-teamwork-backend:latest|image: gc-teamwork-backend:ci|g' docker-compose.ci.yml
+          sed -i 's|image: gc-teamwork-frontend:latest|image: gc-teamwork-frontend:ci|g' docker-compose.ci.yml
+
+          docker compose -f docker-compose.ci.yml up -d
+          sleep 20
+
+          # Health check backend
+          curl -fsS http://localhost:8000/api/health || \
+            (docker compose -f docker-compose.ci.yml logs backend && exit 1)
+
+          # Reachability check frontend
+          HTTP_CODE=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:80/)
+          echo "Frontend HTTP status: ${HTTP_CODE}"
+          [ "${HTTP_CODE}" = "200" ] || \
+            (docker compose -f docker-compose.ci.yml logs frontend && exit 1)
+
+          docker compose -f docker-compose.ci.yml down

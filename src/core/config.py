@@ -24,7 +24,9 @@ class Settings(BaseSettings):
     # Vector DB
     vector_db_host: str = Field(default="localhost", alias="VECTOR_DB_HOST")
     vector_db_port: int = Field(default=19530, alias="VECTOR_DB_PORT")
-    embedding_model: str = "BAAI/bge-m3"
+    embedding_model: str = Field(default="BAAI/bge-small-zh-v1.5", alias="EMBEDDING_MODEL")
+    embedding_dimension: int = Field(default=512, alias="EMBEDDING_DIMENSION")
+    vector_db_backend: str = Field(default="memory", alias="VECTOR_DB_BACKEND")
 
     # Performance targets (from specs)
     max_simple_response_seconds: float = 3.0

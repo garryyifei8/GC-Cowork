@@ -1,0 +1,54 @@
+name: gc-teamwork
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gc-teamwork-backend:latest
+    container_name: gc-backend
+    restart: unless-stopped
+    environment:
+      DEBUG: ${DEBUG:-false}
+      LLM_API_KEY: ${LLM_API_KEY}
+      LLM_API_BASE: ${LLM_API_BASE:-https://api.deepseek.com}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-chat}
+      USE_SUPABASE: ${USE_SUPABASE:-true}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      DATABASE_URL: ${DATABASE_URL}
+      VECTOR_DB_BACKEND: ${VECTOR_DB_BACKEND:-pgvector}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-BAAI/bge-small-zh-v1.5}
+      EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-512}
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - gc-net
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: gc-teamwork-frontend:latest
+    container_name: gc-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - gc-net
+
+networks:
+  gc-net:
+    driver: bridge

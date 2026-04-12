@@ -80,39 +80,25 @@ async def get_knowledge_document(doc_id: str):
 
 @router.post("/search", response_model=list[SearchResultItem])
 async def search_knowledge(req: SearchRequest):
-    """Search knowledge base using keyword matching (RAG integration ready)."""
-    docs = list_documents()
-    query_lower = req.query.lower()
+    """Search knowledge base using semantic RAG retrieval."""
+    from src.knowledge.dependencies import get_rag
 
-    results: list[tuple[float, any]] = []
-    for doc in docs:
-        score = 0.0
-        searchable = f"{doc.title} {doc.content_summary} {doc.author}".lower()
-        # Simple keyword scoring
-        for keyword in query_lower.split():
-            if keyword in searchable:
-                score += 30.0
-            if keyword in doc.title.lower():
-                score += 20.0
-        if score > 0:
-            # Normalize to 0-100
-            score = min(score, 100.0)
-            if req.category and doc.doc_type != req.category:
-                continue
-            results.append((score, doc))
-
-    results.sort(key=lambda x: x[0], reverse=True)
-    results = results[: req.top_k]
+    rag = get_rag()
+    results = await rag.search(
+        query=req.query,
+        top_k=req.top_k,
+        category=req.category,
+    )
 
     return [
         SearchResultItem(
-            id=doc.id,
-            title=doc.title,
-            doc_type=doc.doc_type,
-            content_summary=doc.content_summary,
-            author=doc.author,
-            status=doc.status,
-            score=score,
+            id=r.item.id,
+            title=r.item.title,
+            doc_type=r.item.category,
+            content_summary=r.highlight or r.item.content[:200],
+            author=r.item.created_by or "",
+            status="published",
+            score=round(r.score * 100, 2),
         )
-        for score, doc in results
+        for r in results
     ]

@@ -10,6 +10,7 @@ from collections.abc import AsyncIterator
 import httpx
 
 from src.core.exceptions import LLMAuthError, LLMConnectionError, LLMResponseError
+from src.llm.retry import retry_llm
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +110,11 @@ class LLMClient:
                 detail={"raw_content": content[:500]},
             )
 
+    # Note: chat_stream is NOT decorated with @retry_llm because streaming
+    # responses are not idempotent — partial tokens may have already been
+    # yielded to the client. Retry at the HTTP level would cause duplicate
+    # content. Instead, the frontend handles stream failures via its
+    # retryLastMessage() fallback (see chatStore.ts).
     async def chat_stream(
         self,
         messages: list[dict[str, str]],
@@ -196,8 +202,9 @@ class LLMClient:
         except httpx.ConnectError as exc:
             raise LLMConnectionError("Failed to connect to LLM API for streaming", detail={"url": url}) from exc
 
+    @retry_llm(max_attempts=3, base_delay=1.0)
     async def _post(self, payload: dict) -> dict:
-        """POST to chat/completions endpoint with error handling."""
+        """POST to chat/completions endpoint with error handling and retry."""
         url = f"{self._api_base}/chat/completions"
         try:
             resp = await self._http.post(url, json=payload)

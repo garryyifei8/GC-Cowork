@@ -77,3 +77,7 @@ doc/marketing/videos/
 
 # Git worktrees (isolated feature workspaces)
 .worktrees/
+
+# Python virtual environments
+.venv/
+venv/
