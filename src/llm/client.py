@@ -10,6 +10,7 @@ from collections.abc import AsyncIterator
 import httpx
 
 from src.core.exceptions import LLMAuthError, LLMConnectionError, LLMResponseError
+from src.llm.retry import retry_llm
 
 logger = logging.getLogger(__name__)
 
@@ -196,8 +197,9 @@ class LLMClient:
         except httpx.ConnectError as exc:
             raise LLMConnectionError("Failed to connect to LLM API for streaming", detail={"url": url}) from exc
 
+    @retry_llm(max_attempts=3, base_delay=1.0)
     async def _post(self, payload: dict) -> dict:
-        """POST to chat/completions endpoint with error handling."""
+        """POST to chat/completions endpoint with error handling and retry."""
         url = f"{self._api_base}/chat/completions"
         try:
             resp = await self._http.post(url, json=payload)
