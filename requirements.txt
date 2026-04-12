@@ -5,6 +5,7 @@ pydantic-settings==2.6.1
 httpx==0.28.1
 python-multipart==0.0.20
 python-dotenv==1.0.1
+PyJWT==2.12.1
 
 # Vector search (pgvector + FastEmbed)
 asyncpg==0.30.0
