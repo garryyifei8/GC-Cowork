@@ -110,6 +110,11 @@ class LLMClient:
                 detail={"raw_content": content[:500]},
             )
 
+    # Note: chat_stream is NOT decorated with @retry_llm because streaming
+    # responses are not idempotent — partial tokens may have already been
+    # yielded to the client. Retry at the HTTP level would cause duplicate
+    # content. Instead, the frontend handles stream failures via its
+    # retryLastMessage() fallback (see chatStore.ts).
     async def chat_stream(
         self,
         messages: list[dict[str, str]],

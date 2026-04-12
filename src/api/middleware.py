@@ -47,6 +47,11 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
             return response
         except Exception as exc:
             duration = time.perf_counter() - start
+
+            from src.api.routes.metrics import record_request
+
+            record_request(request.method, request.url.path, 500, duration)
+
             log.error(
                 "request_failed",
                 error=str(exc),
