@@ -164,6 +164,20 @@ async def startup_event():
 
     register_preset_rules()
 
+    # Initialize RAG singleton (pgvector or memory based on VECTOR_DB_BACKEND)
+    from src.knowledge.dependencies import init_rag
+    try:
+        await init_rag()
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning("RAG init failed: %s", exc)
+
+
+@app.on_event("shutdown")
+async def _shutdown_rag() -> None:
+    from src.knowledge.dependencies import shutdown_rag
+    await shutdown_rag()
+
 
 @app.get("/")
 async def root():
