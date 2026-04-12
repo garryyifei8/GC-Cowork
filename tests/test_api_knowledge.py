@@ -6,7 +6,6 @@ Covers:
   - POST /api/knowledge/search (keyword search)
 """
 
-import pytest
 
 
 # ---------------------------------------------------------------------------
@@ -91,14 +90,46 @@ def test_get_knowledge_document_not_found(client):
 # ---------------------------------------------------------------------------
 
 
-def test_search_knowledge_returns_results(client):
+def test_search_knowledge_returns_results(client, monkeypatch):
     """POST /api/knowledge/search with valid query should return matching results."""
+    from src.knowledge import dependencies
+    from src.knowledge.rag import KnowledgeItem, SearchResult
+
+    class FakeRag:
+        async def search(self, query, top_k=5, category=None, project_id=None):
+            return [
+                SearchResult(
+                    item=KnowledgeItem(
+                        id="doc-epc-1",
+                        title="EPC合同模板",
+                        content="EPC总承包合同相关内容",
+                        category="template",
+                        created_by="张工程师",
+                    ),
+                    score=0.92,
+                    highlight="**EPC**总承包合同相关内容",
+                ),
+                SearchResult(
+                    item=KnowledgeItem(
+                        id="doc-epc-2",
+                        title="EPC项目管理规范",
+                        content="EPC项目全生命周期管理规范",
+                        category="process",
+                        created_by="李经理",
+                    ),
+                    score=0.85,
+                    highlight="**EPC**项目全生命周期管理规范",
+                ),
+            ]
+
+    monkeypatch.setattr(dependencies, "_rag_instance", FakeRag())
+
     payload = {"query": "EPC", "top_k": 10}
     response = client.post("/api/knowledge/search", json=payload)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    # "EPC" appears in multiple documents
+    # RAG returns results for EPC query
     assert len(data) >= 1
 
 
@@ -151,3 +182,40 @@ def test_search_knowledge_category_filter(client):
     # All returned items must be of type "proposal"
     for item in data:
         assert item["doc_type"] == "proposal"
+
+
+class TestSemanticSearch:
+    """POST /api/knowledge/search should use RAG when available."""
+
+    def test_search_calls_rag(self, client, monkeypatch):
+        """When RAG returns results, endpoint should return them."""
+        from src.knowledge import dependencies
+        from src.knowledge.rag import KnowledgeItem, SearchResult
+
+        class FakeRag:
+            async def search(self, query, top_k=5, category=None, project_id=None):
+                return [
+                    SearchResult(
+                        item=KnowledgeItem(
+                            id="k-1",
+                            title="测试文档",
+                            content="测试内容",
+                            category="process",
+                        ),
+                        score=0.87,
+                        highlight="**测试**内容",
+                    )
+                ]
+
+        monkeypatch.setattr(dependencies, "_rag_instance", FakeRag())
+
+        resp = client.post(
+            "/api/knowledge/search",
+            json={"query": "测试", "top_k": 5},
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert len(body) == 1
+        assert body[0]["id"] == "k-1"
+        assert body[0]["title"] == "测试文档"
+        assert 0.8 <= body[0]["score"] <= 100.0
