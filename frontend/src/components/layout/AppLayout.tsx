@@ -21,17 +21,11 @@ import {
   BarChart3,
   FolderKanban,
   Menu,
-  X,
-  FileText,
-  Cog,
-  Package,
-  ClipboardList,
 } from 'lucide-react';
 import { NotificationToast } from '../ui/NotificationToast';
 import { NotificationPanel } from '../ui/NotificationPanel';
 import { useNotificationStore } from '../../stores/notificationStore';
 import { useProjectStore } from '../../stores/projectStore';
-import { AIChatPanel } from '../chat/AIChatPanel';
 import { useChatStore } from '../../stores/chatStore';
 
 // ---------------------------------------------------------------------------

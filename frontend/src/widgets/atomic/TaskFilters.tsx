@@ -1,14 +1,5 @@
 import React from 'react';
-import {
-  Search,
-  User,
-  Filter,
-  ArrowUpDown,
-  EyeOff,
-  Layers,
-  MoreHorizontal,
-  ChevronDown,
-} from 'lucide-react';
+import { Search, User, Filter, ArrowUpDown, EyeOff, Layers, MoreHorizontal } from 'lucide-react';
 import { TASK_STATUS_LABELS, PRIORITY_LABELS } from '../../utils/constants';
 import { useTaskWorkbenchStore } from '../../stores/taskWorkbenchStore';
 import type { SortField } from '../../stores/taskWorkbenchStore';

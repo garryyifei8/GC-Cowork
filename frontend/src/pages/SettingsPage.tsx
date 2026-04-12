@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Bot, Check, Plus, Trash2, Radio, Cloud, Monitor, Loader2, X } from 'lucide-react';
+import { Bot, Check, Plus, Trash2, Cloud, Monitor, Loader2, X } from 'lucide-react';
 
 interface LLMProvider {
   id: string;

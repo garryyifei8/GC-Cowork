@@ -283,7 +283,6 @@ describe('TaskCreateDrawer', () => {
     });
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'proj-1' } });
 
-    const onSubmit = makeProps().onSubmit;
     // Just verify the button can be clicked without error
     expect(highBtn).toBeInTheDocument();
   });

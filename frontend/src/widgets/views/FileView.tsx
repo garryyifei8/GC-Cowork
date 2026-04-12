@@ -34,7 +34,7 @@ const DOC_TYPE_CONFIG: Record<
     label: string;
     color: string;
     bgColor: string;
-    Icon: React.FC<{ size?: number; className?: string }>;
+    Icon: React.FC<{ size?: number; className?: string; style?: React.CSSProperties }>;
   }
 > = {
   report: {

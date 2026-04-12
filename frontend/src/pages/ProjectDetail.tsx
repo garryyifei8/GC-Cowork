@@ -6,7 +6,6 @@ import {
   X,
   Check,
   ChevronDown,
-  ChevronRight,
   Trash2,
   Users,
   AlertTriangle,
@@ -19,8 +18,6 @@ import {
   DollarSign,
   ShieldAlert,
   Calendar,
-  Percent,
-  Package,
 } from 'lucide-react';
 import { LoadingSpinner, AvatarGroup } from '../widgets/atomic';
 import ProjectDocuments from '../widgets/views/ProjectDocuments';
@@ -66,17 +63,6 @@ const PIPELINE_STAGES = [
   'settlement',
   'archived',
 ];
-const STAGE_CLR: Record<string, string> = {
-  initiation: '#0086C0',
-  bidding: '#2ED47E',
-  contract: '#796DF6',
-  design: '#00C875',
-  procurement: '#FFB264',
-  construction: '#E74C3C',
-  acceptance: '#FF7A59',
-  settlement: '#37B4E3',
-  archived: '#919AA3',
-};
 const SEV_CLR: Record<string, string> = {
   critical: '#E74C3C',
   high: '#FFB264',
@@ -259,10 +245,6 @@ export const ProjectDetail = () => {
     await addTeamMember(id, memberName.trim());
     setMemberName('');
     setShowAddMember(false);
-  };
-  const handleProcStatusChange = async (pkgId: string, pid: string, ns: string) => {
-    await projectService.updateProcurement(pid, pkgId, { status: ns });
-    setProcurements((p) => p.map((x) => (x.id === pkgId ? { ...x, status: ns } : x)));
   };
   const handleCreateProcess = async (rec: Partial<ProcessRecord>) => {
     if (!id) return;

@@ -1,18 +1,18 @@
-import React, { useState } from 'react'
-import { Loader2, Plus, X } from 'lucide-react'
+import React, { useState } from 'react';
+import { Loader2, Plus } from 'lucide-react';
 
-import { EmptyState } from '../atomic'
-import type { ProcurementPackage } from '../../types'
+import { EmptyState } from '../atomic';
+import type { ProcurementPackage } from '../../types';
 import {
   PROCUREMENT_STATUS_LABELS,
   PROCUREMENT_STATUS_COLORS,
   PROCUREMENT_CATEGORIES,
-} from '../../utils/constants'
+} from '../../utils/constants';
 
 export interface ProcurementTableProps {
-  data?: { packages?: ProcurementPackage[] }
-  onStatusChange?: (pkgId: string, projectId: string, newStatus: string) => Promise<void>
-  onCreate?: (data: Partial<ProcurementPackage>) => Promise<void>
+  data?: { packages?: ProcurementPackage[] };
+  onStatusChange?: (pkgId: string, projectId: string, newStatus: string) => Promise<void>;
+  onCreate?: (data: Partial<ProcurementPackage>) => Promise<void>;
 }
 
 const STATUS_OPTIONS = [
@@ -22,51 +22,56 @@ const STATUS_OPTIONS = [
   { value: 'in_progress', label: '执行中' },
   { value: 'delivered', label: '已到货' },
   { value: 'completed', label: '已完成' },
-]
+];
 
 const ProcurementTable: React.FC<ProcurementTableProps> = ({ data, onStatusChange, onCreate }) => {
-  const packages = data?.packages ?? []
-  const [localPackages, setLocalPackages] = useState<ProcurementPackage[]>(packages)
-  const [updatingId, setUpdatingId] = useState<string | null>(null)
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [newPkg, setNewPkg] = useState({ name: '', category: '材料', supplier: '', budget_amount: '' })
-  const [creating, setCreating] = useState(false)
+  const packages = data?.packages ?? [];
+  const [localPackages, setLocalPackages] = useState<ProcurementPackage[]>(packages);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newPkg, setNewPkg] = useState({
+    name: '',
+    category: '材料',
+    supplier: '',
+    budget_amount: '',
+  });
+  const [creating, setCreating] = useState(false);
 
   // Sync prop changes
   React.useEffect(() => {
-    if (data?.packages) setLocalPackages(data.packages)
-  }, [data?.packages])
+    if (data?.packages) setLocalPackages(data.packages);
+  }, [data?.packages]);
 
   const handleCreate = async () => {
-    if (!newPkg.name.trim() || !onCreate) return
-    setCreating(true)
+    if (!newPkg.name.trim() || !onCreate) return;
+    setCreating(true);
     try {
       await onCreate({
         name: newPkg.name,
         category: newPkg.category,
         supplier: newPkg.supplier || null,
         budget_amount: newPkg.budget_amount ? parseFloat(newPkg.budget_amount) : null,
-      })
-      setNewPkg({ name: '', category: '材料', supplier: '', budget_amount: '' })
-      setShowAddForm(false)
+      });
+      setNewPkg({ name: '', category: '材料', supplier: '', budget_amount: '' });
+      setShowAddForm(false);
     } finally {
-      setCreating(false)
+      setCreating(false);
     }
-  }
+  };
 
   const handleStatusChange = async (pkg: ProcurementPackage, newStatus: string) => {
-    setUpdatingId(pkg.id)
+    setUpdatingId(pkg.id);
     try {
       if (onStatusChange) {
-        await onStatusChange(pkg.id, pkg.project_id, newStatus)
+        await onStatusChange(pkg.id, pkg.project_id, newStatus);
       }
       setLocalPackages((prev) =>
         prev.map((p) => (p.id === pkg.id ? { ...p, status: newStatus } : p))
-      )
+      );
     } finally {
-      setUpdatingId(null)
+      setUpdatingId(null);
     }
-  }
+  };
 
   if (localPackages.length === 0 && !showAddForm) {
     return (
@@ -82,7 +87,7 @@ const ProcurementTable: React.FC<ProcurementTableProps> = ({ data, onStatusChang
           </button>
         )}
       </div>
-    )
+    );
   }
 
   return (
@@ -117,7 +122,9 @@ const ProcurementTable: React.FC<ProcurementTableProps> = ({ data, onStatusChang
               className="px-2 py-1.5 text-sm border border-[#E8ECF4] dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100"
             >
               {PROCUREMENT_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
           </div>
@@ -161,27 +168,43 @@ const ProcurementTable: React.FC<ProcurementTableProps> = ({ data, onStatusChang
       <table className="w-full table-auto border-collapse text-sm">
         <thead>
           <tr className="bg-[#E6FAF0] dark:bg-gray-900/50 border-b border-[#E8ECF4] dark:border-gray-700">
-            <th className="px-3 py-2 text-left text-base font-medium text-light-text dark:text-gray-400">采购包</th>
-            <th className="px-3 py-2 text-left text-base font-medium text-light-text dark:text-gray-400">分类</th>
-            <th className="px-3 py-2 text-left text-base font-medium text-light-text dark:text-gray-400">供应商</th>
-            <th className="px-3 py-2 text-right text-base font-medium text-light-text dark:text-gray-400">预算</th>
-            <th className="px-3 py-2 text-left text-base font-medium text-light-text dark:text-gray-400">状态</th>
+            <th className="px-3 py-2 text-left text-base font-medium text-light-text dark:text-gray-400">
+              采购包
+            </th>
+            <th className="px-3 py-2 text-left text-base font-medium text-light-text dark:text-gray-400">
+              分类
+            </th>
+            <th className="px-3 py-2 text-left text-base font-medium text-light-text dark:text-gray-400">
+              供应商
+            </th>
+            <th className="px-3 py-2 text-right text-base font-medium text-light-text dark:text-gray-400">
+              预算
+            </th>
+            <th className="px-3 py-2 text-left text-base font-medium text-light-text dark:text-gray-400">
+              状态
+            </th>
           </tr>
         </thead>
         <tbody>
           {localPackages.map((pkg) => {
-            const statusColor = PROCUREMENT_STATUS_COLORS[pkg.status] ?? '#919AA3'
-            const statusLabel = PROCUREMENT_STATUS_LABELS[pkg.status] ?? pkg.status
-            const isUpdating = updatingId === pkg.id
+            const statusColor = PROCUREMENT_STATUS_COLORS[pkg.status] ?? '#919AA3';
+            const statusLabel = PROCUREMENT_STATUS_LABELS[pkg.status] ?? pkg.status;
+            const isUpdating = updatingId === pkg.id;
 
             return (
               <tr
                 key={pkg.id}
                 className="border-b border-[#E8ECF4] dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-800/50 group"
               >
-                <td className="px-3 py-2 font-medium text-base text-light-text dark:text-gray-100">{pkg.name}</td>
-                <td className="px-3 py-2 text-base text-light-text-secondary dark:text-gray-400">{pkg.category || '—'}</td>
-                <td className="px-3 py-2 text-base text-light-text-secondary dark:text-gray-400">{pkg.supplier ?? '—'}</td>
+                <td className="px-3 py-2 font-medium text-base text-light-text dark:text-gray-100">
+                  {pkg.name}
+                </td>
+                <td className="px-3 py-2 text-base text-light-text-secondary dark:text-gray-400">
+                  {pkg.category || '—'}
+                </td>
+                <td className="px-3 py-2 text-base text-light-text-secondary dark:text-gray-400">
+                  {pkg.supplier ?? '—'}
+                </td>
                 <td className="px-3 py-2 text-right font-mono text-base text-light-text dark:text-gray-100">
                   {pkg.budget_amount != null ? `${(pkg.budget_amount / 10000).toFixed(1)}万` : '—'}
                 </td>
@@ -205,19 +228,21 @@ const ProcurementTable: React.FC<ProcurementTableProps> = ({ data, onStatusChang
                         className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity text-[13px] bg-white dark:bg-gray-700 border border-[#E8ECF4] dark:border-gray-600 rounded px-1 py-0.5 cursor-pointer text-light-text dark:text-gray-100"
                       >
                         {STATUS_OPTIONS.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
                         ))}
                       </select>
                     )}
                   </div>
                 </td>
               </tr>
-            )
+            );
           })}
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};
 
-export default ProcurementTable
+export default ProcurementTable;

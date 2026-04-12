@@ -1,6 +1,5 @@
-import React from 'react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { screen, fireEvent, act } from '@testing-library/react';
 import { renderWithRouter } from '../../../test/utils';
 
 // ---------------------------------------------------------------------------

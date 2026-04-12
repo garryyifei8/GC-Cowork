@@ -1,4 +1,3 @@
-import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
 import { renderWithRouter } from '../../../test/utils';
 import { NotificationPanel } from '../NotificationPanel';

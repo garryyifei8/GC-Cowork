@@ -4,7 +4,6 @@
  * Tests the "更新" button in TaskDetailModal: typing a message and clicking
  * send creates a comment that appears in the activity/comments list.
  */
-import React from 'react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { renderWithRouter } from '../../../test/utils';

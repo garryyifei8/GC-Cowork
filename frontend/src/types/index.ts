@@ -25,6 +25,7 @@ export interface ChatMessage {
 }
 
 export interface InteractiveCard {
+  id?: string;
   type:
     | 'action'
     | 'data'
@@ -126,7 +127,7 @@ export interface ActivityEvent {
   event_type: 'task_created' | 'task_updated' | 'stage_transition' | 'status_changed';
   actor: string;
   summary: string;
-  detail: Record<string, any>;
+  detail?: Record<string, any>;
   created_at: string;
 }
 

@@ -3,7 +3,6 @@
  */
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import {
-  FileText,
   Search,
   Plus,
   UploadCloud,
@@ -11,7 +10,6 @@ import {
   FolderOpen,
   Download,
   Trash2,
-  X,
   Check,
   Eye,
 } from 'lucide-react';

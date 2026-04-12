@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { HardHat, Eye, AlertCircle, Calendar } from 'lucide-react';
+import { HardHat, AlertCircle, Calendar } from 'lucide-react';
 import { useSupervisionStore } from '../stores/supervisionStore';
 import { StatCard, DataTable, LoadingSpinner } from '../widgets/atomic';
 import type { Column } from '../widgets/atomic/DataTable';

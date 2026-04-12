@@ -1,5 +1,4 @@
-import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { renderWithRouter, setupFetchMock } from '../../test/utils';
 import { Overview } from '../Overview';
 import { ProjectsDashboard } from '../ProjectsDashboard';
