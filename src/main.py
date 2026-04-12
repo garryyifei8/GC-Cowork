@@ -37,6 +37,8 @@ from src.api.routes import (
     ws,
 )
 from src.api.routes import settings as settings_routes
+from src.api import middleware
+from src.api.routes import metrics
 from src.core.config import settings
 from src.core.exceptions import (
     PlatformError,
@@ -44,6 +46,16 @@ from src.core.exceptions import (
     platform_error_handler,
     unhandled_exception_handler,
 )
+
+# Initialize structured logging and Sentry
+from src.core.logging import setup_logging
+from src.core.observability import setup_sentry
+
+setup_logging(
+    log_level=os.environ.get("LOG_LEVEL", "INFO"),
+    json_output=os.environ.get("DEBUG", "false").lower() not in ("true", "1"),
+)
+setup_sentry()
 
 app = FastAPI(
     title=settings.app_name,
@@ -58,6 +70,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(middleware.ObservabilityMiddleware)
 
 # Register exception handlers
 app.add_exception_handler(PlatformError, platform_error_handler)
@@ -105,6 +119,7 @@ app.include_router(suppliers.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(settings_routes.router, prefix="/api")
 app.include_router(ws.router, prefix="/api")
+app.include_router(metrics.router, prefix="/api")
 
 
 @app.on_event("startup")
