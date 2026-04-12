@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 import asyncpg
@@ -26,6 +27,8 @@ class PgVectorStore(VectorStore):
         min_pool_size: int = 1,
         max_pool_size: int = 10,
     ):
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", table):
+            raise ValueError(f"Unsafe table name: {table!r}")
         self.dsn = dsn
         self.table = table
         self.dimension = dimension
@@ -35,6 +38,8 @@ class PgVectorStore(VectorStore):
 
     async def connect(self) -> None:
         """Create connection pool and register pgvector codec."""
+        if self._pool is not None:
+            raise RuntimeError("Already connected. Call disconnect() first.")
 
         async def _init_conn(conn: asyncpg.Connection) -> None:
             from pgvector.asyncpg import register_vector

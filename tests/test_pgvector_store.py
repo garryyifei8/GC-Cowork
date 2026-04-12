@@ -70,14 +70,14 @@ class TestPgVectorStore:
         assert id1 not in ids
 
     async def test_add_is_upsert(self, store):
+        unique_project = f"pgv-test-upsert-{uuid.uuid4()}"
         item_id = f"pgv-test-{uuid.uuid4()}"
-        item = KnowledgeItem(id=item_id, title="v1", content="c1", category="general")
+        item = KnowledgeItem(id=item_id, title="v1", content="c1", category="general", project_id=unique_project)
         await store.add(item, _make_embedding(0.3))
-        # re-add with same id, different title
         item.title = "v2"
         await store.add(item, _make_embedding(0.3))
 
-        results = await store.search(_make_embedding(0.3), top_k=1)
+        results = await store.search(_make_embedding(0.3), top_k=1, filters={"project_id": unique_project})
         assert results[0][0].title == "v2"
 
     async def test_delete_removes_item(self, store):
