@@ -268,7 +268,10 @@ async def _stream_chat_response(
     target_agent = get_agent(registry, agent_type)
 
     # Build the LLM messages with data context and plain-text override
-    stream_messages = target_agent.build_stream_messages(agent_request)
+    if hasattr(target_agent, "abuild_stream_messages"):
+        stream_messages = await target_agent.abuild_stream_messages(agent_request)
+    else:
+        stream_messages = target_agent.build_stream_messages(agent_request)
 
     # Build cards from real data (instant, no LLM needed)
     from src.services.card_builder import build_cards_for_intent

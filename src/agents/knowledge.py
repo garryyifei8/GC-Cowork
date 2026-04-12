@@ -2,8 +2,8 @@
 
 from src.agents.base import BaseAgent
 from src.core.models import AgentRequest, AgentResponse, AgentType
+from src.knowledge.dependencies import get_rag
 from src.llm.prompts import KNOWLEDGE_SYSTEM_PROMPT
-from src.stores.document_store import list_documents
 
 
 class KnowledgeAgent(BaseAgent):
@@ -11,9 +11,12 @@ class KnowledgeAgent(BaseAgent):
     system_prompt = KNOWLEDGE_SYSTEM_PROMPT
 
     async def handle(self, request: AgentRequest) -> AgentResponse:
-        context = self._build_knowledge_context()
+        context = await self._build_knowledge_context(request.user_message)
         messages = self._build_messages(request)
-        messages.insert(1, {"role": "system", "content": f"以下是当前知识库中的文档数据：\n\n{context}"})
+        messages.insert(
+            1,
+            {"role": "system", "content": f"以下是 RAG 检索到的相关知识：\n\n{context}"},
+        )
 
         try:
             result = await self.llm_client.chat_json(messages, max_tokens=2048)
@@ -28,30 +31,24 @@ class KnowledgeAgent(BaseAgent):
         return response
 
     def build_stream_messages(self, request: AgentRequest) -> list[dict[str, str]]:
-        """Build messages for streaming with knowledge data context."""
+        """Build messages for streaming — sync version (base compat).
+
+        Note: This does NOT include RAG context because RAG requires async.
+        For RAG-enhanced streaming, use abuild_stream_messages() instead.
+        """
+        return super().build_stream_messages(request)
+
+    async def abuild_stream_messages(self, request: AgentRequest) -> list[dict[str, str]]:
+        """Async variant that includes RAG context for streaming."""
         messages = super().build_stream_messages(request)
-        context = self._build_knowledge_context()
-        messages.insert(1, {"role": "system", "content": f"以下是当前知识库中的文档数据：\n\n{context}"})
+        context = await self._build_knowledge_context(request.user_message)
+        messages.insert(
+            1,
+            {"role": "system", "content": f"以下是 RAG 检索到的相关知识：\n\n{context}"},
+        )
         return messages
 
-    def _build_knowledge_context(self) -> str:
-        docs = list_documents()
-        if not docs:
-            return "当前知识库中暂无文档。"
-        lines = []
-        for doc in docs:
-            if isinstance(doc, dict):
-                lines.append(
-                    f"- 文档: {doc.get('title', '')} (ID: {doc.get('id', '')})\n"
-                    f"  类型: {doc.get('doc_type', '')} | 分类: {doc.get('category', '')}\n"
-                    f"  作者: {doc.get('author', '')} | 版本: {doc.get('version', '')}\n"
-                    f"  状态: {doc.get('status', '')} | 摘要: {doc.get('content_summary', '')[:80]}"
-                )
-            else:
-                lines.append(
-                    f"- 文档: {doc.title} (ID: {doc.id})\n"
-                    f"  类型: {doc.doc_type} | 分类: {doc.category}\n"
-                    f"  作者: {doc.author} | 版本: {doc.version}\n"
-                    f"  状态: {doc.status} | 摘要: {doc.content_summary[:80]}"
-                )
-        return "\n\n".join(lines)
+    async def _build_knowledge_context(self, query: str) -> str:
+        """Use RAG to retrieve top-k relevant chunks for the query."""
+        rag = get_rag()
+        return await rag.get_context_for_llm(query, top_k=3)
